@@ -6,8 +6,8 @@ import { t } from '@/lib/i18n';
 import { getRoleBasePath, UserRole } from '@/lib/auth';
 import {
     LogOut, LayoutDashboard, Building2, Users, User,
-    GitBranch, ShoppingCart, Package, Menu, X, Settings,
-    HomeIcon, ChefHat, Wallet,
+    ShoppingCart, Package, Menu, X, Settings,
+    HomeIcon, Wallet,
     Receipt,
     Monitor,
 } from 'lucide-react';
@@ -28,9 +28,7 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
     ],
     MANAGER: [
         { label: "Bosh sahifa", path: "/manager", icon: LayoutDashboard },
-        { label: "Filiallar", path: "/manager/branches", icon: GitBranch },
         { label: "Xodimlar", path: "/manager/staff", icon: Users },
-        { label: "Oshxonalar", path: "/manager/kitchens", icon: ChefHat },
         { label: "Mahsulotlar", path: "/manager/products", icon: Package },
         { label: "Buyurtmalar", path: "/manager/orders", icon: ShoppingCart },
         { label: "Xonalar va zal", path: "/manager/rooms", icon: HomeIcon },
