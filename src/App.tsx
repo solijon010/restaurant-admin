@@ -20,13 +20,11 @@ import SAProfile from "./pages/superadmin/Profile";
 
 // MANAGER pages
 import MDashboard from "./pages/manager/Dashboard";
-import MBranches from "./pages/manager/Branches";
 import MStaff from "./pages/manager/Staff";
 import MProducts from "./pages/manager/Products";
 import MOrders from "./pages/manager/Orders";
 import MProfile from "./pages/manager/Profile";
 import MRooms from "./pages/manager/ManagerRooms";
-import Kitchens from "./pages/manager/Kitchens";
 import Finance from "./pages/manager/Finance";
 import Costs from "./pages/manager/Costs";
 import PosPage from "./pages/manager/PosPage";
@@ -63,12 +61,10 @@ const App = () => (
                                 element={<BranchProvider><AppLayout requiredRole="MANAGER" /></BranchProvider>}
                             >
                                 <Route index element={<MDashboard />} />
-                                <Route path="branches" element={<MBranches />} />
                                 <Route path="staff" element={<MStaff />} />
                                 <Route path="products" element={<MProducts />} />
                                 <Route path="orders" element={<MOrders />} />
                                 <Route path="rooms" element={<MRooms />} />
-                                <Route path="kitchens" element={<Kitchens />} />
                                 <Route path="finance" element={<Finance />} />
                                 <Route path="expenses" element={<Costs />} />
                                 <Route path="profile" element={<MProfile />} />
