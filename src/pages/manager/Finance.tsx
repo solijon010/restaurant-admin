@@ -14,10 +14,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useBranch } from "@/contexts/BranchContext";
 import api from "@/lib/api";
 import { formatPrice } from "@/lib/mock-data";
-import { Loader2, Wallet, Search, Calendar } from "lucide-react";
+import { Loader2, Search, Calendar } from "lucide-react";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
-interface WaiterFinance { id: string; firstName: string; lastName: string; phoneNumer: string; totalOrders: number; totalSum: number; totalKpi: number; }
+interface WaiterFinance { id: string; firstName: string; lastName: string; totalOrders: number; totalSum: number; }
 type TimeType = "today" | "weekly" | "monthly" | "custom";
 
 const TIME_OPTIONS: { value: TimeType; label: string }[] = [
@@ -68,8 +68,8 @@ export default function Finance() {
     });
     const waitersList = toArray<WaiterFinance>(waitersRaw);
 
-    const totalKpi = waitersList.reduce((s, w) => s + (w.totalKpi || 0), 0);
     const totalOrders = waitersList.reduce((s, w) => s + (w.totalOrders || 0), 0);
+    const totalSum = waitersList.reduce((s, w) => s + (w.totalSum || 0), 0);
 
     return (
         <div className="space-y-6">
@@ -129,7 +129,7 @@ export default function Finance() {
                                             Jami buyurtma: <span className="font-semibold text-foreground">{totalOrders}</span>
                                         </span>
                                         <span className="text-muted-foreground">
-                                            Jami KPI: <span className="font-semibold text-green-600">{formatPrice(totalKpi)}</span>
+                                            Jami summa: <span className="font-semibold text-foreground">{formatPrice(totalSum)}</span>
                                         </span>
                                     </div>
                                 )}
@@ -168,28 +168,26 @@ export default function Finance() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Ism</TableHead>
-                                    <TableHead>Telefon</TableHead>
                                     <TableHead>Buyurtmalar</TableHead>
                                     <TableHead>Jami summa</TableHead>
-                                    <TableHead>KPI (ulush)</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {waitersLoading ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-10">
+                                        <TableCell colSpan={3} className="text-center py-10">
                                             <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
                                         </TableCell>
                                     </TableRow>
                                 ) : timeType === "custom" && (!fromDate || !toDate) ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
+                                        <TableCell colSpan={3} className="text-center text-muted-foreground py-10">
                                             Sana oralig'ini tanlang
                                         </TableCell>
                                     </TableRow>
                                 ) : waitersList.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
+                                        <TableCell colSpan={3} className="text-center text-muted-foreground py-10">
                                             {waiterSearch ? "Qidiruv bo'yicha natija topilmadi" : "Ma'lumot topilmadi"}
                                         </TableCell>
                                     </TableRow>
@@ -197,17 +195,10 @@ export default function Finance() {
                                     waitersList.map((w) => (
                                         <TableRow key={w.id}>
                                             <TableCell className="font-medium">{w.firstName} {w.lastName}</TableCell>
-                                            <TableCell className="text-muted-foreground text-sm">{w.phoneNumer}</TableCell>
                                             <TableCell>
                                                 <Badge variant="secondary">{w.totalOrders} ta</Badge>
                                             </TableCell>
                                             <TableCell className="font-semibold">{formatPrice(w.totalSum)}</TableCell>
-                                            <TableCell>
-                                                <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 border border-green-200 rounded-md px-2 py-0.5 text-sm font-semibold">
-                                                    <Wallet className="h-3 w-3" />
-                                                    {formatPrice(w.totalKpi)}
-                                                </span>
-                                            </TableCell>
                                         </TableRow>
                                     ))
                                 )}
