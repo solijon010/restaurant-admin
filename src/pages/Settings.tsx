@@ -4,11 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useBranch } from '@/contexts/BranchContext';
 import { t } from '@/lib/i18n';
-import { Sun, Moon, Type, Languages, GitBranch, MapPin, Star } from 'lucide-react';
+import { Sun, Moon, Type, Languages, GitBranch, MapPin, Star, Loader2 } from 'lucide-react';
 
 export default function Settings() {
   const { theme, setTheme, language, setLanguage, fontSize, setFontSize } = useSettings();
-  const { branches, selectedBranchId } = useBranch();
+  const { branches, branchesLoading, selectedBranchId } = useBranch();
+  const isManagerContext = branches.length > 0 || branchesLoading;
 
   return (
     <div>
@@ -95,51 +96,61 @@ export default function Settings() {
         </Card>
       </div>
 
-      {/* Filiallar — faqat manager uchun (branches mavjud bo'lganda) */}
-      {branches.length > 0 && (
+      {/* Filiallar — faqat manager uchun */}
+      {isManagerContext && (
         <div className="mt-8">
           <div className="flex items-center gap-2 mb-4">
             <GitBranch className="h-5 w-5 text-muted-foreground" />
             <h3 className="text-lg font-semibold text-foreground">Filiallar</h3>
-            <Badge variant="secondary" className="ml-1">{branches.length} ta</Badge>
+            {!branchesLoading && (
+              <Badge variant="secondary" className="ml-1">{branches.length} ta</Badge>
+            )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {branches.map((b, i) => {
-              const isDefault = b.id === selectedBranchId;
-              return (
-                <Card key={b.id} className={`p-4 ${isDefault ? 'ring-2 ring-primary' : ''}`}>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <GitBranch className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="font-medium text-foreground truncate">{b.name}</span>
+
+          {branchesLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground py-4">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Yuklanmoqda...</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {branches.map((b, i) => {
+                const isDefault = b.id === selectedBranchId;
+                return (
+                  <Card key={b.id} className={`p-4 ${isDefault ? 'ring-2 ring-primary' : ''}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <GitBranch className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="font-medium text-foreground truncate">{b.name}</span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {i === 0 && (
+                          <span title="Default filial">
+                            <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+                          </span>
+                        )}
+                        <Badge
+                          variant={b.status === 'ACTIVE' ? 'default' : 'secondary'}
+                          className="text-xs"
+                        >
+                          {b.status === 'ACTIVE' ? 'Faol' : b.status}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      {i === 0 && (
-                        <span title="Default filial">
-                          <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
-                        </span>
-                      )}
-                      <Badge
-                        variant={b.status === 'ACTIVE' ? 'default' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {b.status === 'ACTIVE' ? 'Faol' : b.status}
-                      </Badge>
-                    </div>
-                  </div>
-                  {b.addres && (
-                    <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3 shrink-0" />
-                      <span className="truncate">{b.addres}</span>
-                    </div>
-                  )}
-                  {isDefault && (
-                    <p className="mt-2 text-xs text-primary font-medium">Joriy filial</p>
-                  )}
-                </Card>
-              );
-            })}
-          </div>
+                    {b.addres && (
+                      <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{b.addres}</span>
+                      </div>
+                    )}
+                    {isDefault && (
+                      <p className="mt-2 text-xs text-primary font-medium">Joriy filial</p>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>
