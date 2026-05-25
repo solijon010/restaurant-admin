@@ -1,15 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import {
     Table,
     TableBody,
@@ -22,10 +14,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useBranch } from "@/contexts/BranchContext";
 import api from "@/lib/api";
 import { formatPrice } from "@/lib/mock-data";
-import { Loader2, Users, Wallet, Search, GitBranch, Calendar } from "lucide-react";
+import { Loader2, Wallet, Search, Calendar } from "lucide-react";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
-interface BranchResponse { id: string; name: string; status: string; }
 interface WaiterFinance { id: string; firstName: string; lastName: string; phoneNumer: string; totalOrders: number; totalSum: number; totalKpi: number; }
 type TimeType = "today" | "weekly" | "monthly" | "custom";
 
@@ -50,8 +41,7 @@ function toArray<T>(raw: unknown): T[] {
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 export default function Finance() {
-    const { branches, branchesLoading, selectedBranchId, setSelectedBranchId } = useBranch();
-    const [detailWaiter, setDetailWaiter] = useState<WaiterFinance | null>(null);
+    const { selectedBranchId } = useBranch();
 
     // Waiter filters
     const [waiterSearch, setWaiterSearch] = useState("");
@@ -85,31 +75,9 @@ export default function Finance() {
         <div className="space-y-6">
 
             {/* ── Header ────────────────────────────────────────────────────────── */}
-            <div className="flex items-start justify-between gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-foreground">Moliya</h2>
-                    <p className="text-sm text-muted-foreground mt-0.5">Xodimlar bo'yicha moliyaviy hisobot</p>
-                </div>
-
-                {/* Branch — global, o'ng tomonda */}
-                <div className="flex items-center gap-2 shrink-0">
-                    <GitBranch className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground hidden sm:inline">Filial:</span>
-                    {branchesLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    ) : (
-                        <Select value={selectedBranchId} onValueChange={setSelectedBranchId}>
-                            <SelectTrigger className="w-44 h-9">
-                                <SelectValue placeholder="Tanlang" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {branches.map((b) => (
-                                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
-                </div>
+            <div>
+                <h2 className="text-2xl font-bold text-foreground">Moliya</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">Afitsantlar bo'yicha moliyaviy hisobot</p>
             </div>
 
             {/* ── Waiters ────────────────────────────────────────────────────────── */}
