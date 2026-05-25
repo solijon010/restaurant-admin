@@ -9,7 +9,6 @@ import {
     ShoppingCart, Package, Menu, X, Settings,
     HomeIcon, Wallet,
     Receipt,
-    Monitor,
 } from 'lucide-react';
 
 interface NavItem {
@@ -34,7 +33,6 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
         { label: "Xonalar va zal", path: "/manager/rooms", icon: HomeIcon },
         { label: "Moliya", path: "/manager/finance", icon: Wallet },
         { label: "Xarajatlar", path: "/manager/expenses", icon: Receipt },
-        { label: "POS Terminallar", path: "/manager/pos", icon: Monitor },
         { label: "Profil", path: "/manager/profile", icon: User },
         { label: "Sozlamalar", path: "/manager/settings", icon: Settings },
     ],

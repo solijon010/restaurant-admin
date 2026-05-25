@@ -27,7 +27,7 @@ import MProfile from "./pages/manager/Profile";
 import MRooms from "./pages/manager/ManagerRooms";
 import Finance from "./pages/manager/Finance";
 import Costs from "./pages/manager/Costs";
-import PosPage from "./pages/manager/PosPage";
+
 
 const queryClient = new QueryClient();
 
@@ -69,7 +69,6 @@ const App = () => (
                                 <Route path="expenses" element={<Costs />} />
                                 <Route path="profile" element={<MProfile />} />
                                 <Route path="settings" element={<Settings />} />
-                                <Route path="/manager/pos" element={<PosPage />} />
                             </Route>
 
                             <Route path="*" element={<NotFound />} />
