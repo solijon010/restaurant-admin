@@ -1,0 +1,9 @@
+======================= BAJRILMAGANLAR ========================
+2. Dashboard toliq qilish
+4. Xarajatlar qoshish
+
+
+======================= BAJARLGANLR ========================
+
+1. Moliya qoshish
+3. Oshhona frontga qoshish
