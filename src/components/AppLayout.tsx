@@ -7,7 +7,7 @@ import { getRoleBasePath, UserRole } from '@/lib/auth';
 import {
     LogOut, LayoutDashboard, Building2, Users, User,
     ShoppingCart, Package, Menu, X, Settings,
-    HomeIcon, Wallet, ArrowLeft, ChefHat,
+    HomeIcon, Wallet, ArrowLeft,
 } from 'lucide-react';
 
 interface NavItem {
@@ -61,7 +61,6 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
     if (!user || user.role !== requiredRole) return null;
 
     const navItems = NAV_BY_ROLE[user.role] ?? [];
-    const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase();
 
     const handleLogout = () => {
         logout();
@@ -74,7 +73,7 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
         <div className="flex h-screen w-full overflow-hidden">
             {sidebarOpen && (
                 <div
-                    className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
+                    className="fixed inset-0 bg-black/40 z-40 lg:hidden"
                     onClick={closeSidebar}
                 />
             )}
@@ -82,38 +81,27 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
             <aside className={`
         fixed lg:sticky lg:top-0
         inset-y-0 left-0 z-50
-        h-screen w-64 shrink-0
+        h-screen
+        w-64 shrink-0
+        bg-sidebar text-sidebar-foreground
         flex flex-col
-        transform transition-transform duration-300 ease-in-out
+        transform transition-transform duration-200 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}
-                style={{ background: 'linear-gradient(180deg, #080e1f 0%, #0a1628 60%, #0c1a30 100%)' }}
-            >
-                {/* Logo */}
-                <div className="px-5 pt-6 pb-5 shrink-0">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                                <ChefHat className="h-5 w-5 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-[15px] font-bold text-white tracking-wide">Restourant</h1>
-                                <p className="text-[10px] text-blue-400/70 font-medium tracking-wider uppercase">
-                                    {t('Boshqaruv', language)}
-                                </p>
-                            </div>
-                        </div>
-                        <button onClick={closeSidebar} className="lg:hidden text-white/40 hover:text-white/80 transition-colors">
-                            <X className="h-5 w-5" />
-                        </button>
+      `}>
+                <div className="p-6 border-b border-sidebar-border flex items-center justify-between shrink-0">
+                    <div>
+                        <h1 className="text-lg font-bold text-sidebar-primary-foreground">Restourant</h1>
+                        <p className="text-xs text-sidebar-foreground/60 mt-1">{t('Boshqaruv tizimi', language)}</p>
                     </div>
-
-                    {/* Divider */}
-                    <div className="mt-5 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+                    <button
+                        onClick={closeSidebar}
+                        className="lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground"
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
                 </div>
 
-                {/* Nav */}
-                <nav className="flex-1 px-3 pb-3 space-y-0.5 overflow-y-auto">
+                <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.path}
@@ -121,47 +109,28 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                             end={item.path === getRoleBasePath(user.role)}
                             onClick={closeSidebar}
                             className={({ isActive }) =>
-                                `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${isActive
-                                    ? 'bg-blue-500/20 text-white font-semibold shadow-inner border border-blue-500/25'
-                                    : 'text-white/45 hover:bg-white/5 hover:text-white/85 border border-transparent'
+                                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 border-l-[3px] ${isActive
+                                    ? 'border-sidebar-primary bg-sidebar-primary/20 text-white font-semibold'
+                                    : 'border-transparent text-sidebar-foreground/60 hover:border-sidebar-primary/50 hover:bg-sidebar-primary/10 hover:text-white'
                                 }`
                             }
                         >
-                            {({ isActive }) => (
-                                <>
-                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 ${isActive
-                                        ? 'bg-blue-500 shadow-md shadow-blue-500/40'
-                                        : 'bg-white/5 group-hover:bg-white/10'
-                                    }`}>
-                                        <item.icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-white/50 group-hover:text-white/80'}`} />
-                                    </div>
-                                    <span>{t(item.label, language)}</span>
-                                    {isActive && (
-                                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400 shadow-sm shadow-blue-400" />
-                                    )}
-                                </>
-                            )}
+                            <item.icon className="h-4 w-4 shrink-0" />
+                            {t(item.label, language)}
                         </NavLink>
                     ))}
                 </nav>
 
-                {/* User & Logout */}
-                <div className="px-3 pb-5 shrink-0">
-                    <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-3" />
-                    <div className="flex items-center gap-3 px-2 py-2 rounded-xl mb-1">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-md shadow-blue-500/30">
-                            {initials || <User className="h-4 w-4" />}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold text-white/90 truncate">
-                                {user.firstName} {user.lastName}
-                            </p>
-                            <p className="text-[11px] text-blue-400/70 font-medium">{user.role}</p>
-                        </div>
+                <div className="p-4 border-t border-sidebar-border shrink-0">
+                    <div className="mb-3 px-3">
+                        <p className="text-sm font-medium text-sidebar-foreground">
+                            {user.firstName} {user.lastName}
+                        </p>
+                        <p className="text-xs text-sidebar-foreground/50">{user.role}</p>
                     </div>
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 border border-transparent hover:border-red-500/20"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
                     >
                         <LogOut className="h-4 w-4" />
                         {t('Chiqish', language)}
@@ -169,10 +138,8 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                 </div>
             </aside>
 
-            {/* Main */}
-            <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto bg-background">
-                {/* Mobile topbar */}
-                <div className="sticky top-0 z-30 lg:hidden bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3 shrink-0">
+            <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+                <div className="sticky top-0 z-30 lg:hidden bg-background border-b border-border px-4 py-3 flex items-center gap-3 shrink-0">
                     {!isRoot ? (
                         <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm font-medium text-foreground">
                             <ArrowLeft className="h-5 w-5" />
@@ -183,9 +150,8 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                             <Menu className="h-5 w-5" />
                         </button>
                     )}
-                    <span className="font-bold text-foreground">Restourant</span>
+                    <span className="font-semibold text-foreground">Restourant</span>
                 </div>
-
                 <div className="flex-1 p-4 sm:p-6 lg:p-8">
                     {!isRoot && (
                         <button
