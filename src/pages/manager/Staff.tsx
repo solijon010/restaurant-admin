@@ -36,7 +36,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   userService,
@@ -61,7 +60,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 // ✅ Xodim rollari (SUPER_AFITSANT ham qo'shilgan)
 const STAFF_ROLES: UserRole[] = [
@@ -72,10 +70,11 @@ const STAFF_ROLES: UserRole[] = [
   "KASSA",
 ];
 
+type ApiError = { response?: { data?: { message?: string } } };
+const errMsg = (e: unknown, fallback: string) => (e as ApiError)?.response?.data?.message || fallback;
+
 export default function ManagerStaff() {
-  const { user } = useAuth();
   const queryClient = useQueryClient();
-  const isMobile = useIsMobile();
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
@@ -138,8 +137,9 @@ export default function ManagerStaff() {
 
         console.log("⚠️ Unexpected response structure");
         return [];
-      } catch (err: any) {
-        if (err?.response?.status === 404) return [];
+      } catch (err: unknown) {
+        const e = err as { response?: { status?: number } };
+        if (e?.response?.status === 404) return [];
         console.error("❌ API Error:", err);
         throw err;
       }
@@ -181,9 +181,9 @@ export default function ManagerStaff() {
         branchId: "",
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Create error:", error);
-      toast.error(error?.response?.data?.message || "Xatolik yuz berdi");
+      toast.error(errMsg(error, "Xatolik yuz berdi"));
     },
   });
 
@@ -205,17 +205,16 @@ export default function ManagerStaff() {
         branchId: "",
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Update error:", error);
-      toast.error(error?.response?.data?.message || "Xatolik yuz berdi");
+      toast.error(errMsg(error, "Xatolik yuz berdi"));
     },
   });
 
   // ✅ Status o'zgartirish (PATCH /user/status/{id})
   const toggleStatusMutation = useMutation({
     mutationFn: (id: string) => userService.toggleStatus(id),
-    onSuccess: (response, id) => {
-      // Yangi statusni aniqlash
+    onSuccess: (_response, id) => {
       const user = staffList.find((u) => u.id === id);
       const newStatus = user?.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
 
@@ -224,11 +223,9 @@ export default function ManagerStaff() {
       );
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Toggle status error:", error);
-      toast.error(
-        error?.response?.data?.message || "Status o'zgartirishda xatolik"
-      );
+      toast.error(errMsg(error, "Status o'zgartirishda xatolik"));
     },
   });
 
@@ -240,9 +237,9 @@ export default function ManagerStaff() {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setDeleteId(null);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Delete error:", error);
-      toast.error(error?.response?.data?.message || "Xatolik yuz berdi");
+      toast.error(errMsg(error, "Xatolik yuz berdi"));
     },
   });
 
@@ -298,7 +295,7 @@ export default function ManagerStaff() {
 
     if (editItem) {
       // ✅ Tahrirlash - faqat shaxsiy ma'lumotlar (role va branchId YUBORILMAYDI)
-      const updateData: any = {
+      const updateData: Partial<StaffPayload> = {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         phoneNumer: form.phoneNumer.trim(),

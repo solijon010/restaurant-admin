@@ -20,7 +20,7 @@ import api from "@/lib/api";
 import { formatPrice } from "@/lib/mock-data";
 import {
     Loader2, Plus, Search, GitBranch, Tag, Layers,
-    ChevronLeft, ChevronRight, Calendar, MoreVertical, Eye, Pencil,
+    ChevronLeft, ChevronRight, Calendar, MoreVertical, Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -31,8 +31,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
-interface BranchResponse { id: string; name: string; status: string; }
-
 interface CostCategory {
     id: string; name: string; branchId: string;
     status: string; createdAt: string; updatedAt: string;
@@ -227,7 +225,7 @@ export default function Xarajatlar() {
     const openEditCat = (c: CostCategory) => { setCatEdit(c); setCatName(c.name); setCatDialog(true); };
     const saveCat = () => {
         if (!catName.trim()) return toast.error("Nom kiriting");
-        catEdit ? catUpdateMut.mutate({ id: catEdit.id, name: catName.trim() }) : catCreateMut.mutate(catName.trim());
+        if (catEdit) { catUpdateMut.mutate({ id: catEdit.id, name: catName.trim() }); } else { catCreateMut.mutate(catName.trim()); }
     };
 
     const openAddCost = () => {
@@ -244,7 +242,7 @@ export default function Xarajatlar() {
         if (!costForm.name.trim()) return toast.error("Nom kiriting");
         if (!costForm.costAmount) return toast.error("Summa kiriting");
         if (!costForm.costsCategoryId) return toast.error("Kategoriya tanlang");
-        costEdit ? costUpdateMut.mutate() : costCreateMut.mutate();
+        if (costEdit) { costUpdateMut.mutate(); } else { costCreateMut.mutate(); }
     };
 
     const isCatSaving = catCreateMut.isPending || catUpdateMut.isPending;

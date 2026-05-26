@@ -198,7 +198,7 @@ export default function ManagerOrders() {
     });
 
     const allOrders = toArray<Order>(ordersRaw);
-    const total     = (ordersRaw as any)?.total ?? allOrders.length;
+    const total     = (ordersRaw as Record<string, unknown>)?.total as number ?? allOrders.length;
     const totalPages = Math.max(Math.ceil(total / limit), 1);
     const startItem  = total === 0 ? 0 : (page - 1) * limit + 1;
     const endItem    = Math.min(page * limit, total);
@@ -474,7 +474,7 @@ export default function ManagerOrders() {
                                     <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(1)} disabled={page === 1}><ChevronsLeft className="h-3.5 w-3.5" /></Button>
                                     <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(p => p - 1)} disabled={page === 1}><ChevronLeft className="h-3.5 w-3.5" /></Button>
                                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                                        let p = totalPages <= 5 ? i + 1 : page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i;
+                                        const p = totalPages <= 5 ? i + 1 : page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i;
                                         return (
                                             <Button key={p} variant={p === page ? 'default' : 'outline'} size="icon"
                                                 className={`h-7 w-7 text-xs ${p === page ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}`}

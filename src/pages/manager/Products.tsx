@@ -429,7 +429,7 @@ export default function ManagerProducts() {
     const { data: kitchensRaw } = useQuery({
         queryKey: ["kitchens", selectedBranchId],
         queryFn: async () => {
-            const res = await kitchenService.getAll(selectedBranchId) as any;
+            const res = await kitchenService.getAll(selectedBranchId) as { data?: { data?: unknown } | unknown[] } | unknown[];
             const raw = res?.data?.data ?? res?.data ?? res ?? [];
             return Array.isArray(raw) ? raw : [];
         },

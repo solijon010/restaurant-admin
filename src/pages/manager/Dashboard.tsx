@@ -45,12 +45,13 @@ function toArray<T>(raw: unknown): T[] {
     return [];
 }
 
-const BarTooltip = ({ active, payload, label }: any) => {
+interface TooltipEntry { dataKey: string; name: string; value: number; fill: string; }
+const BarTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipEntry[]; label?: string }) => {
     if (!active || !payload?.length) return null;
     return (
         <div className="bg-background border border-border rounded-lg shadow-lg p-3 text-sm min-w-[160px]">
             <p className="font-semibold mb-2 text-foreground">{label}</p>
-            {payload.map((p: any) => (
+            {payload.map((p) => (
                 <div key={p.dataKey} className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-1.5">
                         <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: p.fill }} />

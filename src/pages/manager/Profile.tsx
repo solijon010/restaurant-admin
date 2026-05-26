@@ -25,7 +25,7 @@ export default function ManagerProfile() {
       try {
         const res = await companyService.getMy();
         const d = res.data ?? res;
-        return (d as any)?.data || d || null;
+        return (d as Record<string, unknown>)?.data || d || null;
       } catch {
         return mockCompanies.find(c => c.id === user?.companyId) || null;
       }
@@ -34,7 +34,7 @@ export default function ManagerProfile() {
   });
 
   const updateCompanyMutation = useMutation({
-    mutationFn: (data: { id: string; payload: any }) => companyService.update(data.id, data.payload),
+    mutationFn: (data: { id: string; payload: Record<string, unknown> }) => companyService.update(data.id, data.payload),
     onSuccess: () => { toast.success('Kompaniya yangilandi'); setEditingCompany(false); },
     onError: () => toast.error('Xatolik yuz berdi'),
   });
@@ -44,7 +44,7 @@ export default function ManagerProfile() {
   const branch = branches.find(b => b.id === user.branchId);
 
   const startEditProfile = () => {
-    setProfileForm({ firstName: user.firstName, lastName: user.lastName, phoneNumber: user.phoneNumber || '' });
+    setProfileForm({ firstName: user.firstName, lastName: user.lastName, phoneNumber: user.phone || '' });
     setEditingProfile(true);
   };
 
