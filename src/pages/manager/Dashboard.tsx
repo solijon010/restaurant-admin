@@ -37,12 +37,12 @@ interface OrderRoom { name: string; }
 interface DayOrder { orderItem: OrderItem[]; room: OrderRoom; status: string; }
 type FilterType = 'today' | 'yesterday' | 'last7' | 'last30' | 'custom';
 
-const RANGES: { label: string; filter: FilterType }[] = [
-    { label: 'Bugun', filter: 'today' },
-    { label: 'Kecha', filter: 'yesterday' },
-    { label: '7 kun', filter: 'last7' },
-    { label: '30 kun', filter: 'last30' },
-    { label: 'Boshqa', filter: 'custom' },
+const RANGES: { label: string; filter: FilterType; active: string; inactive: string }[] = [
+    { label: 'Bugun',  filter: 'today',     active: 'bg-emerald-500 text-white border-emerald-500', inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
+    { label: 'Kecha',  filter: 'yesterday', active: 'bg-blue-500 text-white border-blue-500',       inactive: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' },
+    { label: '7 kun',  filter: 'last7',     active: 'bg-violet-500 text-white border-violet-500',   inactive: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100' },
+    { label: '30 kun', filter: 'last30',    active: 'bg-orange-500 text-white border-orange-500',   inactive: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' },
+    { label: 'Boshqa', filter: 'custom',    active: 'bg-slate-700 text-white border-slate-700',     inactive: 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100' },
 ];
 
 const PIE_COLORS = ['#22c55e', '#ef4444'];
@@ -272,24 +272,17 @@ export default function ManagerDashboard() {
                             <span className="text-xs text-muted-foreground">
                                 Daromad: <span className="font-semibold text-green-600">{formatPrice(totalRevenue)}</span>
                             </span>
-                            <span className="text-xs text-muted-foreground">
-                                Xarajat: <span className="font-semibold text-red-500">{formatPrice(totalExpense)}</span>
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                                Foyda: <span className={`font-semibold ${totalProfit >= 0 ? 'text-blue-600' : 'text-orange-500'}`}>{formatPrice(totalProfit)}</span>
-                            </span>
                         </div>
                     </div>
                     <div className="flex flex-col gap-2 items-end">
-                        <div className="flex gap-1 flex-wrap justify-end">
+                        <div className="flex gap-1.5 flex-wrap justify-end">
                             {RANGES.map(r => (
-                                <Button key={r.filter}
-                                    variant={activeFilter === r.filter ? 'default' : 'ghost'}
-                                    size="sm" className="text-xs h-7 px-2.5"
+                                <button key={r.filter}
+                                    className={`flex items-center gap-1 text-xs h-7 px-3 rounded-lg border font-medium transition-all ${activeFilter === r.filter ? r.active : r.inactive}`}
                                     onClick={() => setActiveFilter(r.filter)}>
-                                    {r.filter === 'custom' && <Calendar className="h-3 w-3 mr-1" />}
+                                    {r.filter === 'custom' && <Calendar className="h-3 w-3" />}
                                     {t(r.label, language)}
-                                </Button>
+                                </button>
                             ))}
                         </div>
                         {activeFilter === 'custom' && (
@@ -329,7 +322,6 @@ export default function ManagerDashboard() {
                                 <Tooltip formatter={(v: number) => formatPrice(v)} contentStyle={{ background: 'hsl(0,0%,100%)', border: '1px solid hsl(222,12%,90%)', borderRadius: '8px', fontSize: '12px' }} />
                                 <Legend formatter={(v: string) => <span style={{ color: 'hsl(222,25%,12%)', fontSize: '12px' }}>{v}</span>} />
                                 <Bar dataKey="revenue" fill="hsl(32,95%,52%)" name={t('Daromad', language)} radius={[4, 4, 0, 0]} />
-                                <Bar dataKey="expense" fill="hsl(222,30%,16%)" name={t('Xarajat', language)} radius={[4, 4, 0, 0]} opacity={0.7} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
