@@ -255,26 +255,32 @@ export default function ManagerOrders() {
             </div>
 
             <Tabs defaultValue="orders">
-                <TabsList className="bg-transparent p-0 h-auto border-b border-border rounded-none gap-0 w-full justify-start mb-6">
+                <TabsList className="bg-transparent p-0 h-auto rounded-none gap-3 w-full justify-start mb-6">
                     <TabsTrigger
                         value="orders"
-                        className="rounded-none px-5 pb-3 pt-0 h-auto border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:bg-transparent text-muted-foreground text-sm font-medium gap-2 hover:text-foreground transition-colors"
+                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-blue-200 bg-blue-50 text-blue-700 text-sm font-semibold shadow-none transition-all
+                            data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-md
+                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
                     >
-                        <UtensilsCrossed className="h-4 w-4" />
+                        <UtensilsCrossed className="h-4 w-4 shrink-0" />
                         Buyurtmalar tarixi
                     </TabsTrigger>
                     <TabsTrigger
                         value="shashlik"
-                        className="rounded-none px-5 pb-3 pt-0 h-auto border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:bg-transparent text-muted-foreground text-sm font-medium gap-2 hover:text-foreground transition-colors"
+                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-orange-200 bg-orange-50 text-orange-700 text-sm font-semibold shadow-none transition-all
+                            data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=active]:shadow-md
+                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
                     >
-                        <Flame className="h-4 w-4" />
+                        <Flame className="h-4 w-4 shrink-0" />
                         Shashlik hisobi
                     </TabsTrigger>
                     <TabsTrigger
                         value="qanot-ordak"
-                        className="rounded-none px-5 pb-3 pt-0 h-auto border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:bg-transparent text-muted-foreground text-sm font-medium gap-2 hover:text-foreground transition-colors"
+                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-yellow-200 bg-yellow-50 text-yellow-700 text-sm font-semibold shadow-none transition-all
+                            data-[state=active]:bg-yellow-500 data-[state=active]:text-white data-[state=active]:border-yellow-500 data-[state=active]:shadow-md
+                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
                     >
-                        <Bird className="h-4 w-4" />
+                        <Bird className="h-4 w-4 shrink-0" />
                         Qanot va O'rdak
                     </TabsTrigger>
                 </TabsList>
@@ -342,21 +348,27 @@ export default function ManagerOrders() {
                         <div className="hidden md:block overflow-x-auto">
                             <Table>
                                 <TableHeader>
-                                    <TableRow className="hover:bg-transparent border-border/60">
-                                        <TableHead className="text-xs uppercase tracking-wide text-muted-foreground font-medium">Xona / Stol</TableHead>
-                                        <TableHead className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-                                            <span className="flex items-center gap-1"><LogIn className="h-3 w-3 text-green-500" />O'tirgan</span>
+                                    <TableRow className="hover:bg-muted/40 bg-muted/40 border-border/60">
+                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Xona / Stol</TableHead>
+                                        <TableHead className="text-xs font-bold py-3">
+                                            <span className="flex items-center gap-1.5 text-green-600">
+                                                <LogIn className="h-3.5 w-3.5" />O'tirgan
+                                            </span>
                                         </TableHead>
-                                        <TableHead className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-                                            <span className="flex items-center gap-1"><LogOut className="h-3 w-3 text-red-500" />Turgan</span>
+                                        <TableHead className="text-xs font-bold py-3">
+                                            <span className="flex items-center gap-1.5 text-red-500">
+                                                <LogOut className="h-3.5 w-3.5" />Turgan
+                                            </span>
                                         </TableHead>
-                                        <TableHead className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-                                            <span className="flex items-center gap-1"><Clock className="h-3 w-3" />Davomiylik</span>
+                                        <TableHead className="text-xs font-bold py-3">
+                                            <span className="flex items-center gap-1.5 text-blue-500">
+                                                <Clock className="h-3.5 w-3.5" />Davomiylik
+                                            </span>
                                         </TableHead>
-                                        <TableHead className="text-xs uppercase tracking-wide text-muted-foreground font-medium">Mahsulotlar</TableHead>
-                                        <TableHead className="text-xs uppercase tracking-wide text-muted-foreground font-medium">Summa</TableHead>
-                                        <TableHead className="text-xs uppercase tracking-wide text-muted-foreground font-medium">Holat</TableHead>
-                                        <TableHead className="text-right text-xs uppercase tracking-wide text-muted-foreground font-medium">Amallar</TableHead>
+                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Mahsulotlar</TableHead>
+                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Summa</TableHead>
+                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Holat</TableHead>
+                                        <TableHead className="text-right text-xs font-bold text-foreground/70 py-3">Amallar</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
