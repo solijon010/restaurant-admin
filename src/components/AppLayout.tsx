@@ -7,8 +7,7 @@ import { getRoleBasePath, UserRole } from '@/lib/auth';
 import {
     LogOut, LayoutDashboard, Building2, Users, User,
     ShoppingCart, Package, Menu, X, Settings,
-    HomeIcon, Wallet,
-    Receipt,
+    HomeIcon, Wallet, Receipt,
 } from 'lucide-react';
 
 interface NavItem {
@@ -69,43 +68,40 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
 
     const closeSidebar = () => setSidebarOpen(false);
 
+    const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase();
+
     return (
         <div className="flex h-screen w-full overflow-hidden">
-            {/* Mobile overlay */}
             {sidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/40 z-40 lg:hidden"
-                    onClick={closeSidebar}
-                />
+                <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={closeSidebar} />
             )}
 
             {/* Sidebar */}
             <aside className={`
-        fixed lg:sticky lg:top-0
-        inset-y-0 left-0 z-50
-        h-screen
-        w-64 shrink-0
-        bg-sidebar text-sidebar-foreground
-        flex flex-col
-        transform transition-transform duration-200 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
+                fixed lg:sticky lg:top-0 inset-y-0 left-0 z-50
+                h-screen w-56 shrink-0
+                bg-sidebar flex flex-col
+                transform transition-transform duration-200 ease-in-out
+                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            `}>
+
                 {/* Logo */}
-                <div className="p-6 border-b border-sidebar-border flex items-center justify-between shrink-0">
-                    <div>
-                        <h1 className="text-lg font-bold text-sidebar-primary-foreground">Restourant</h1>
-                        <p className="text-xs text-sidebar-foreground/60 mt-1">{t('Boshqaruv tizimi', language)}</p>
+                <div className="h-14 px-4 flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-sidebar-primary flex items-center justify-center shrink-0">
+                            <span className="text-white text-[10px] font-bold">R</span>
+                        </div>
+                        <span className="text-[13px] font-semibold text-sidebar-foreground tracking-wide">
+                            Restourant
+                        </span>
                     </div>
-                    <button
-                        onClick={closeSidebar}
-                        className="lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground"
-                    >
-                        <X className="h-5 w-5" />
+                    <button onClick={closeSidebar} className="lg:hidden text-sidebar-foreground/40 hover:text-sidebar-foreground">
+                        <X className="h-4 w-4" />
                     </button>
                 </div>
 
                 {/* Nav */}
-                <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+                <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.path}
@@ -113,39 +109,44 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                             end={item.path === getRoleBasePath(user.role)}
                             onClick={closeSidebar}
                             className={({ isActive }) =>
-                                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${isActive
-                                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                                `flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] transition-all duration-150 ${
+                                    isActive
+                                        ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                                        : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
                                 }`
                             }
                         >
-                            <item.icon className="h-4 w-4 shrink-0" />
+                            <item.icon className="h-[15px] w-[15px] shrink-0 opacity-80" />
                             {t(item.label, language)}
                         </NavLink>
                     ))}
                 </nav>
 
-                {/* User info + logout */}
-                <div className="p-4 border-t border-sidebar-border shrink-0">
-                    <div className="mb-3 px-3">
-                        <p className="text-sm font-medium text-sidebar-foreground">
-                            {user.firstName} {user.lastName}
-                        </p>
-                        <p className="text-xs text-sidebar-foreground/50">{user.role}</p>
+                {/* User */}
+                <div className="px-2 py-3 border-t border-sidebar-border shrink-0">
+                    <div className="flex items-center gap-2.5 px-3 py-2 rounded-md">
+                        <div className="w-6 h-6 rounded-full bg-sidebar-accent flex items-center justify-center shrink-0">
+                            <span className="text-sidebar-accent-foreground text-[9px] font-bold">{initials}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[12px] font-medium text-sidebar-foreground truncate leading-tight">
+                                {user.firstName} {user.lastName}
+                            </p>
+                            <p className="text-[10px] text-sidebar-foreground/40 leading-tight">{user.role}</p>
+                        </div>
                     </div>
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
+                        className="mt-1 flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] w-full text-sidebar-foreground/50 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
                     >
-                        <LogOut className="h-4 w-4" />
+                        <LogOut className="h-[14px] w-[14px] shrink-0" />
                         {t('Chiqish', language)}
                     </button>
                 </div>
             </aside>
 
-            {/* Main content */}
+            {/* Main */}
             <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
-                {/* Mobile topbar */}
                 <div className="sticky top-0 z-30 lg:hidden bg-background border-b border-border px-4 py-3 flex items-center gap-3 shrink-0">
                     <button onClick={() => setSidebarOpen(true)} className="text-foreground">
                         <Menu className="h-5 w-5" />
