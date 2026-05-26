@@ -109,9 +109,9 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                             end={item.path === getRoleBasePath(user.role)}
                             onClick={closeSidebar}
                             className={({ isActive }) =>
-                                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 border-l-2 ${isActive
-                                    ? 'border-sidebar-primary bg-white/10 text-white font-semibold'
-                                    : 'border-transparent text-sidebar-foreground/60 hover:border-sidebar-primary/50 hover:bg-sidebar-primary/15 hover:text-white'
+                                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 border-l-[3px] ${isActive
+                                    ? 'border-orange-400 bg-gradient-to-r from-orange-500/25 to-orange-400/5 text-white font-semibold shadow-sm'
+                                    : 'border-transparent text-sidebar-foreground/60 hover:border-orange-400/50 hover:bg-gradient-to-r hover:from-orange-500/15 hover:to-orange-400/5 hover:text-white'
                                 }`
                             }
                         >
