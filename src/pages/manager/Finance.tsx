@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useBranch } from "@/contexts/BranchContext";
 import api from "@/lib/api";
 import { formatPrice } from "@/lib/mock-data";
-import { Loader2, Search, Calendar } from "lucide-react";
+import { Loader2, Search, Calendar, Wallet, TrendingUp, ShoppingBag } from "lucide-react";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 interface WaiterFinance { id: string; firstName: string; lastName: string; totalOrders: number; totalSum: number; }
@@ -71,141 +71,161 @@ export default function Finance() {
     const totalOrders = waitersList.reduce((s, w) => s + (w.totalOrders || 0), 0);
     const totalSum = waitersList.reduce((s, w) => s + (w.totalSum || 0), 0);
 
+  const timeButtonStyles: Record<TimeType, string> = {
+    today: "bg-emerald-500 text-white shadow-sm",
+    weekly: "bg-blue-500 text-white shadow-sm",
+    monthly: "bg-violet-500 text-white shadow-sm",
+    custom: "bg-slate-500 text-white shadow-sm",
+  };
+  const timeButtonInactive = "text-muted-foreground hover:text-foreground hover:bg-muted";
+
     return (
         <div className="space-y-6">
 
             {/* ── Header ────────────────────────────────────────────────────────── */}
-            <div>
-                <h2 className="text-2xl font-bold text-foreground">Moliya</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Afitsantlar bo'yicha moliyaviy hisobot</p>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
+                        <Wallet className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-foreground leading-tight">Ofitsiant hisoboti</h2>
+                        <p className="text-xs text-muted-foreground">Afitsantlar bo'yicha moliyaviy hisobot</p>
+                    </div>
+                </div>
+                {waitersLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
             </div>
+
+            {/* ── Summary mini-cards ────────────────────────────────────────────── */}
+            {!waitersLoading && waitersList.length > 0 && (
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+                            <ShoppingBag className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                            <p className="text-xs text-muted-foreground">Jami buyurtma</p>
+                            <p className="text-lg font-bold text-blue-700">{totalOrders}</p>
+                        </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-green-50 border border-green-100 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
+                            <TrendingUp className="h-4 w-4 text-green-600" />
+                        </div>
+                        <div>
+                            <p className="text-xs text-muted-foreground">Jami summa</p>
+                            <p className="text-lg font-bold text-green-700">{formatPrice(totalSum)}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ── Waiters ────────────────────────────────────────────────────────── */}
-            <div className="mt-2">
-                    <Card>
-                        {/* ── Filter bar ─────────────────────────────────────────────── */}
-                        <div className="p-4 border-b border-border space-y-3">
-                            {/* Row 1: search + time buttons */}
-                            <div className="flex flex-wrap items-center gap-2">
-                                {/* Search */}
-                                <div className="relative w-52">
-                                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                                    <Input
-                                        placeholder="Afitsant qidirish..."
-                                        value={waiterSearch}
-                                        onChange={(e) => setWaiterSearch(e.target.value)}
-                                        className="pl-8 h-9"
-                                    />
-                                </div>
-
-                                {/* Divider */}
-                                <div className="w-px h-6 bg-border hidden sm:block" />
-
-                                {/* Time type buttons */}
-                                <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-                                    {TIME_OPTIONS.map((opt) => (
-                                        <button
-                                            key={opt.value}
-                                            onClick={() => setTimeType(opt.value)}
-                                            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${timeType === opt.value
-                                                    ? "bg-background text-foreground shadow-sm"
-                                                    : "text-muted-foreground hover:text-foreground"
-                                                }`}
-                                        >
-                                            {opt.label}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* Loading */}
-                                {waitersLoading && (
-                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground ml-auto" />
-                                )}
-
-                                {/* Summary — o'ng tomonda */}
-                                {!waitersLoading && waitersList.length > 0 && (
-                                    <div className="ml-auto flex items-center gap-4 text-sm">
-                                        <span className="text-muted-foreground">
-                                            Jami buyurtma: <span className="font-semibold text-foreground">{totalOrders}</span>
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                            Jami summa: <span className="font-semibold text-foreground">{formatPrice(totalSum)}</span>
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Row 2: custom date range — faqat "Boshqa" tanlanganda */}
-                            {timeType === "custom" && (
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-                                    <Input
-                                        type="date"
-                                        value={fromDate}
-                                        onChange={(e) => setFromDate(e.target.value)}
-                                        className="w-40 h-9"
-                                        placeholder="Dan"
-                                    />
-                                    <span className="text-muted-foreground text-sm">—</span>
-                                    <Input
-                                        type="date"
-                                        value={toDate}
-                                        onChange={(e) => setToDate(e.target.value)}
-                                        className="w-40 h-9"
-                                        placeholder="Gacha"
-                                    />
-                                    {(!fromDate || !toDate) && (
-                                        <span className="text-xs text-amber-600">
-                                            Ikkala sanani ham tanlang
-                                        </span>
-                                    )}
-                                </div>
-                            )}
+            <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
+                {/* ── Filter bar ─────────────────────────────────────────────── */}
+                <div className="bg-muted/40 rounded-2xl p-3 m-3 mb-0 space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                        {/* Search */}
+                        <div className="relative w-52">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                            <Input
+                                placeholder="Afitsant qidirish..."
+                                value={waiterSearch}
+                                onChange={(e) => setWaiterSearch(e.target.value)}
+                                className="pl-8 h-9 bg-background"
+                            />
                         </div>
 
-                        {/* ── Table ──────────────────────────────────────────────────── */}
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Ism</TableHead>
-                                    <TableHead>Buyurtmalar</TableHead>
-                                    <TableHead>Jami summa</TableHead>
+                        {/* Time type pill buttons */}
+                        <div className="flex items-center gap-1 bg-background rounded-xl p-1 border border-border/60">
+                            {TIME_OPTIONS.map((opt) => (
+                                <button
+                                    key={opt.value}
+                                    onClick={() => setTimeType(opt.value)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${timeType === opt.value ? timeButtonStyles[opt.value] : timeButtonInactive}`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Custom date range */}
+                    {timeType === "custom" && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <Input
+                                type="date"
+                                value={fromDate}
+                                onChange={(e) => setFromDate(e.target.value)}
+                                className="w-40 h-9 bg-background"
+                            />
+                            <span className="text-muted-foreground text-sm">—</span>
+                            <Input
+                                type="date"
+                                value={toDate}
+                                onChange={(e) => setToDate(e.target.value)}
+                                className="w-40 h-9 bg-background"
+                            />
+                            {(!fromDate || !toDate) && (
+                                <span className="text-xs text-amber-600">Ikkala sanani ham tanlang</span>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* ── Table ──────────────────────────────────────────────────── */}
+                <Table>
+                    <TableHeader>
+                        <TableRow className="bg-gradient-to-r from-slate-50 to-green-50/30 hover:from-slate-50 hover:to-green-50/30">
+                            <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">#</TableHead>
+                            <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ism</TableHead>
+                            <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Buyurtmalar</TableHead>
+                            <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Jami summa</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {waitersLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center py-12">
+                                    <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
+                                </TableCell>
+                            </TableRow>
+                        ) : timeType === "custom" && (!fromDate || !toDate) ? (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center py-12">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <Calendar className="h-10 w-10 text-muted-foreground opacity-20" />
+                                        <p className="text-muted-foreground text-sm">Sana oralig'ini tanlang</p>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : waitersList.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center py-12">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <Wallet className="h-10 w-10 text-muted-foreground opacity-20" />
+                                        <p className="text-muted-foreground text-sm">{waiterSearch ? "Qidiruv bo'yicha natija topilmadi" : "Ma'lumot topilmadi"}</p>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            waitersList.map((w, idx) => (
+                                <TableRow key={w.id} className={idx % 2 === 0 ? "bg-white" : "bg-muted/20"}>
+                                    <TableCell className="text-muted-foreground text-sm w-10">{idx + 1}</TableCell>
+                                    <TableCell className="font-medium">{w.firstName} {w.lastName}</TableCell>
+                                    <TableCell>
+                                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+                                            {w.totalOrders} ta
+                                        </span>
+                                    </TableCell>
+                                    <TableCell className="font-semibold text-green-700">{formatPrice(w.totalSum)}</TableCell>
                                 </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {waitersLoading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={3} className="text-center py-10">
-                                            <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
-                                        </TableCell>
-                                    </TableRow>
-                                ) : timeType === "custom" && (!fromDate || !toDate) ? (
-                                    <TableRow>
-                                        <TableCell colSpan={3} className="text-center text-muted-foreground py-10">
-                                            Sana oralig'ini tanlang
-                                        </TableCell>
-                                    </TableRow>
-                                ) : waitersList.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={3} className="text-center text-muted-foreground py-10">
-                                            {waiterSearch ? "Qidiruv bo'yicha natija topilmadi" : "Ma'lumot topilmadi"}
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    waitersList.map((w) => (
-                                        <TableRow key={w.id}>
-                                            <TableCell className="font-medium">{w.firstName} {w.lastName}</TableCell>
-                                            <TableCell>
-                                                <Badge variant="secondary">{w.totalOrders} ta</Badge>
-                                            </TableCell>
-                                            <TableCell className="font-semibold">{formatPrice(w.totalSum)}</TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </Card>
-            </div>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </Card>
         </div>
     );
 }
