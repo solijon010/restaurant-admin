@@ -111,7 +111,7 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                             onClick={closeSidebar}
                             className={({ isActive }) =>
                                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 ${isActive
-                                    ? 'bg-sidebar-primary text-white font-semibold shadow-sm'
+                                    ? 'bg-white/10 text-white font-semibold border-l-2 border-sidebar-primary'
                                     : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                                 }`
                             }
@@ -142,8 +142,9 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
             <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
                 <div className="sticky top-0 z-30 lg:hidden bg-background border-b border-border px-4 py-3 flex items-center gap-3 shrink-0">
                     {!isRoot ? (
-                        <button onClick={() => navigate(-1)} className="text-foreground">
+                        <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm font-medium text-foreground">
                             <ArrowLeft className="h-5 w-5" />
+                            Orqaga
                         </button>
                     ) : (
                         <button onClick={() => setSidebarOpen(true)} className="text-foreground">
@@ -156,7 +157,7 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                     {!isRoot && (
                         <button
                             onClick={() => navigate(-1)}
-                            className="hidden lg:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
+                            className="hidden lg:flex items-center gap-2 px-4 py-2 mb-5 rounded-lg border border-border bg-card text-sm font-medium text-foreground shadow-sm hover:bg-muted transition-colors"
                         >
                             <ArrowLeft className="h-4 w-4" />
                             Orqaga
