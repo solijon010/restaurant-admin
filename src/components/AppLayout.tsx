@@ -7,7 +7,7 @@ import { getRoleBasePath, UserRole } from '@/lib/auth';
 import {
     LogOut, LayoutDashboard, Building2, Users, User,
     ShoppingCart, Package, Menu, X, Settings,
-    HomeIcon, Wallet, Receipt, ArrowLeft,
+    HomeIcon, Wallet, ArrowLeft,
 } from 'lucide-react';
 
 interface NavItem {
@@ -31,7 +31,6 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
         { label: "Umumiy hisobot", path: "/manager/orders", icon: ShoppingCart },
         { label: "Xona yaratish", path: "/manager/rooms", icon: HomeIcon },
         { label: "Ofitsiant hisoboti", path: "/manager/finance", icon: Wallet },
-        { label: "Kirim Chiqim", path: "/manager/expenses", icon: Receipt },
         { label: "Profil", path: "/manager/profile", icon: User },
         { label: "Sozlamalar", path: "/manager/settings", icon: Settings },
     ],
