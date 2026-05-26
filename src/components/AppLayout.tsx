@@ -156,7 +156,7 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                     {!isRoot && (
                         <button
                             onClick={() => navigate(-1)}
-                            className="hidden lg:flex items-center gap-2 px-4 py-2 mb-5 rounded-xl border border-border bg-card text-sm font-medium text-foreground shadow-sm hover:bg-muted transition-colors"
+                            className="hidden lg:flex items-center gap-2 px-4 py-2 mb-5 rounded-xl border border-blue-200 bg-blue-50 text-sm font-medium text-blue-600 hover:bg-blue-100 hover:border-blue-300 transition-colors shadow-sm"
                         >
                             <ArrowLeft className="h-4 w-4" />
                             Orqaga
