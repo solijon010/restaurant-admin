@@ -16,8 +16,7 @@ import { dashboardService } from '@/services/dashboardService';
 import api from '@/lib/api';
 import {
     Loader2, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight,
-    Calendar, Users, Building2, ShoppingBag, Banknote,
-    Home, ChevronRight,
+    Calendar, Users, Building2, ShoppingBag, Banknote, Home,
 } from 'lucide-react';
 import { InsufficientDataOverlay } from '@/components/InsufficientDataOverlay';
 
@@ -366,8 +365,7 @@ export default function ManagerDashboard() {
                         ))}
                     </div>
 
-                    <div className="grid gap-3 grid-cols-1 lg:grid-cols-3">
-                        <Card className="p-4 shadow-none border border-border/60">
+                    <Card className="p-4 shadow-none border border-border/60">
                             <h3 className="text-sm font-semibold text-foreground mb-4">Daromad vs Xarajat</h3>
                             <div className="h-[180px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -384,53 +382,6 @@ export default function ManagerDashboard() {
                                 <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-red-500" /><span className="text-muted-foreground">Xarajat</span></div>
                             </div>
                         </Card>
-
-                        <Card className="p-4 lg:col-span-2 shadow-none border border-border/60">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-sm font-semibold text-foreground">Filiallar bo'yicha</h3>
-                                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                    <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-green-500" />Daromad</div>
-                                    <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-red-500" />Xarajat</div>
-                                </div>
-                            </div>
-                            {branchChartData.length === 0 ? (
-                                <div className="h-[180px]">
-                                    <InsufficientDataOverlay compact title="Ma'lumot yo'q" description="Filiallar bo'yicha tahlil mavjud emas" />
-                                </div>
-                            ) : (
-                                <div className="h-[180px]">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={branchChartData} barGap={4} barCategoryGap="30%">
-                                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(222,12%,92%)" vertical={false} />
-                                            <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'hsl(222,10%,50%)' }} tickLine={false} axisLine={false} />
-                                            <YAxis tick={{ fontSize: 11, fill: 'hsl(222,10%,50%)' }} tickLine={false} axisLine={false}
-                                                tickFormatter={v => v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v / 1_000).toFixed(0)}K` : String(v)} />
-                                            <Tooltip content={<BarTooltip />} />
-                                            <Bar dataKey="Daromad" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                                            <Bar dataKey="Xarajat" fill="#ef4444" radius={[4, 4, 0, 0]} opacity={0.85} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            )}
-                            {branches.length > 0 && (
-                                <div className="mt-3 border-t border-border/60 pt-3 space-y-2">
-                                    {branches.map(b => (
-                                        <div key={b.branchId} className="flex items-center justify-between text-sm">
-                                            <div className="flex items-center gap-2">
-                                                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                                                <span className="font-medium text-foreground">{b.branchName}</span>
-                                            </div>
-                                            <div className="flex items-center gap-3 text-xs">
-                                                <span className="text-green-600 font-medium">{formatPrice(b.income)}</span>
-                                                <span className="text-red-500 font-medium">{formatPrice(b.expense)}</span>
-                                                <Badge variant={b.profit >= 0 ? 'default' : 'destructive'} className="text-[10px] px-1.5">{b.growth}</Badge>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </Card>
-                    </div>
                 </>
             )}
         </div>

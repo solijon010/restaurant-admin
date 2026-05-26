@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';
 import { t } from '@/lib/i18n';
@@ -7,8 +7,7 @@ import { getRoleBasePath, UserRole } from '@/lib/auth';
 import {
     LogOut, LayoutDashboard, Building2, Users, User,
     ShoppingCart, Package, Menu, X, Settings,
-    HomeIcon, Wallet,
-    Receipt,
+    HomeIcon, Wallet, Receipt, ArrowLeft,
 } from 'lucide-react';
 
 interface NavItem {
@@ -46,7 +45,9 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
     const { user, isAuthenticated, logout } = useAuth();
     const { language } = useSettings();
     const navigate = useNavigate();
+    const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const isRoot = location.pathname === getRoleBasePath(requiredRole);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -109,9 +110,9 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                             end={item.path === getRoleBasePath(user.role)}
                             onClick={closeSidebar}
                             className={({ isActive }) =>
-                                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${isActive
-                                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 ${isActive
+                                    ? 'bg-sidebar-primary text-white font-semibold shadow-sm'
+                                    : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                                 }`
                             }
                         >
@@ -140,12 +141,27 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
 
             <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
                 <div className="sticky top-0 z-30 lg:hidden bg-background border-b border-border px-4 py-3 flex items-center gap-3 shrink-0">
-                    <button onClick={() => setSidebarOpen(true)} className="text-foreground">
-                        <Menu className="h-5 w-5" />
-                    </button>
+                    {!isRoot ? (
+                        <button onClick={() => navigate(-1)} className="text-foreground">
+                            <ArrowLeft className="h-5 w-5" />
+                        </button>
+                    ) : (
+                        <button onClick={() => setSidebarOpen(true)} className="text-foreground">
+                            <Menu className="h-5 w-5" />
+                        </button>
+                    )}
                     <span className="font-semibold text-foreground">Restourant</span>
                 </div>
                 <div className="flex-1 p-4 sm:p-6 lg:p-8">
+                    {!isRoot && (
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="hidden lg:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Orqaga
+                        </button>
+                    )}
                     <Outlet />
                 </div>
             </main>
