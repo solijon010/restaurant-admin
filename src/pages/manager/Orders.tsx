@@ -258,8 +258,8 @@ export default function ManagerOrders() {
                 <TabsList className="bg-transparent p-0 h-auto rounded-none gap-3 w-full justify-start mb-6">
                     <TabsTrigger
                         value="orders"
-                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-blue-200 bg-blue-50 text-blue-700 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-md
+                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-slate-200 bg-slate-50 text-slate-600 text-sm font-semibold shadow-none transition-all
+                            data-[state=active]:bg-slate-800 data-[state=active]:text-white data-[state=active]:border-slate-800 data-[state=active]:shadow-md
                             data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
                     >
                         <UtensilsCrossed className="h-4 w-4 shrink-0" />
@@ -267,8 +267,8 @@ export default function ManagerOrders() {
                     </TabsTrigger>
                     <TabsTrigger
                         value="shashlik"
-                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-orange-200 bg-orange-50 text-orange-700 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=active]:shadow-md
+                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-stone-200 bg-stone-50 text-stone-600 text-sm font-semibold shadow-none transition-all
+                            data-[state=active]:bg-stone-700 data-[state=active]:text-white data-[state=active]:border-stone-700 data-[state=active]:shadow-md
                             data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
                     >
                         <Flame className="h-4 w-4 shrink-0" />
@@ -276,8 +276,8 @@ export default function ManagerOrders() {
                     </TabsTrigger>
                     <TabsTrigger
                         value="qanot-ordak"
-                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-yellow-200 bg-yellow-50 text-yellow-700 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-yellow-500 data-[state=active]:text-white data-[state=active]:border-yellow-500 data-[state=active]:shadow-md
+                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-sky-200 bg-sky-50 text-sky-600 text-sm font-semibold shadow-none transition-all
+                            data-[state=active]:bg-sky-500 data-[state=active]:text-white data-[state=active]:border-sky-500 data-[state=active]:shadow-md
                             data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
                     >
                         <Bird className="h-4 w-4 shrink-0" />
