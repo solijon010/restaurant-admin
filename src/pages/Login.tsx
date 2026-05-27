@@ -117,18 +117,9 @@ export default function Login() {
         display: 'flex', flexDirection: 'column', alignItems: 'center',
       }}>
 
-        {/* Leaf icon */}
-        <div className="leaf-float" style={{ marginBottom: 12, filter: 'drop-shadow(0 0 12px rgba(80,200,80,0.6))' }}>
-          <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-            <path d="M26 4 C26 4 14 12 14 26 C14 34 20 40 26 42 C32 40 38 34 38 26 C38 12 26 4 26 4Z" fill="#2d8c30" opacity="0.9"/>
-            <path d="M26 4 C26 4 20 16 22 28 C23 33 24.5 38 26 42 C26 42 26 20 26 4Z" fill="#1a5c1e" opacity="0.7"/>
-            <path d="M18 8 C18 8 8 16 10 28 C11 33 14 37 18 40" stroke="#4caf50" strokeWidth="1.5" fill="none" opacity="0.6" strokeLinecap="round"/>
-            <path d="M34 8 C34 8 44 16 42 28 C41 33 38 37 34 40" stroke="#4caf50" strokeWidth="1.5" fill="none" opacity="0.6" strokeLinecap="round"/>
-            {/* Vein */}
-            <path d="M26 8 L26 40" stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeLinecap="round"/>
-            <path d="M26 15 L20 22 M26 21 L19 29 M26 27 L21 33" stroke="rgba(255,255,255,0.15)" strokeWidth="0.8" strokeLinecap="round"/>
-            <path d="M26 15 L32 22 M26 21 L33 29 M26 27 L31 33" stroke="rgba(255,255,255,0.15)" strokeWidth="0.8" strokeLinecap="round"/>
-          </svg>
+        {/* Logo */}
+        <div className="leaf-float" style={{ marginBottom: 12, filter: 'drop-shadow(0 0 16px rgba(212,160,20,0.5))' }}>
+          <img src="/LOGO.PNJ.png" alt="Sohil Choyxonasi" style={{ width: 72, height: 72, objectFit: 'contain' }} />
         </div>
 
         {/* Title */}
