@@ -20,7 +20,7 @@ export interface BranchResponse {
 
 export const branchService = {
     getById: async (id: string): Promise<BranchResponse> => {
-        const res = await api.get(`/branch/${id}`);
+        const res = await api.get(`/branch/one/${id}`);
         return res.data;
     },
     getAll: async (): Promise<BranchResponse[]> => {
