@@ -359,21 +359,21 @@ export default function ManagerRooms() {
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
-      {/* Header */}
+      {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Xonalar</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Filial bo'yicha xona va kategoriyalarni boshqaring
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+            <BedDouble className="h-5 w-5 text-indigo-600" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-foreground leading-tight">Xonalar</h2>
+            <p className="text-xs text-muted-foreground">Filial bo'yicha xona va kategoriyalarni boshqaring</p>
+          </div>
         </div>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => {
-            refetchCats();
-            refetchRooms();
-          }}
+          onClick={() => { refetchCats(); refetchRooms(); }}
           className="gap-1.5"
           disabled={!selectedBranchId}
         >
@@ -381,173 +381,161 @@ export default function ManagerRooms() {
         </Button>
       </div>
 
-      {/* Branch selector */}
-      <Card className="p-4">
-        {branchesLoading ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Filiallar
-            yuklanmoqda...
-          </div>
-        ) : branches.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center">
-            Hech qanday filial topilmadi
-          </p>
-        ) : (
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 shrink-0">
-                <Store className="h-4 w-4 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground mb-0.5">
-                  Faol filial
-                </p>
-                <Select
-                  value={selectedBranchId}
-                  onValueChange={setSelectedBranchId}
-                >
-                  <SelectTrigger className="h-8 border-0 p-0 text-sm font-semibold shadow-none focus:ring-0 w-72">
-                    <SelectValue placeholder="Filial tanlang" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {branches.map((b) => (
-                      <SelectItem key={b.id} value={b.id}>
-                        <div className="flex flex-col py-0.5">
-                          <span className="font-medium">{b.name}</span>
-                          {/* {b.addres && (
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {b.addres}
-                            </span>
-                          )} */}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      {/* ── Branch selector card ─────────────────────────────────────────────── */}
+      <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
+        <div className="p-4">
+          {branchesLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" /> Filiallar yuklanmoqda...
             </div>
-
-            {selectedBranchId && (
-              <div className="flex gap-5 text-center shrink-0">
-                <div>
-                  <p className="text-lg font-bold">{roomsList.length}</p>
-                  <p className="text-xs text-muted-foreground">Xona</p>
+          ) : branches.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center">Hech qanday filial topilmadi</p>
+          ) : (
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-50 shrink-0">
+                  <Store className="h-4 w-4 text-indigo-600" />
                 </div>
-                <div className="w-px bg-border" />
-                <div>
-                  <p className="text-lg font-bold">{categories.length}</p>
-                  <p className="text-xs text-muted-foreground">Kategoriya</p>
-                </div>
-                <div className="w-px bg-border" />
-                <div>
-                  <p className="text-lg font-bold text-green-600">
-                    {roomsList.filter((r) => r.status === "ACTIVE").length}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Faol</p>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground mb-0.5">Faol filial</p>
+                  <Select value={selectedBranchId} onValueChange={setSelectedBranchId}>
+                    <SelectTrigger className="h-8 border-0 p-0 text-sm font-semibold shadow-none focus:ring-0 w-72">
+                      <SelectValue placeholder="Filial tanlang" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {branches.map((b) => (
+                        <SelectItem key={b.id} value={b.id}>
+                          <span className="font-medium">{b.name}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+
+              {selectedBranchId && (
+                <div className="flex gap-4 shrink-0">
+                  <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-100 text-center min-w-[60px]">
+                    <p className="text-lg font-bold text-indigo-700">{roomsList.length}</p>
+                    <p className="text-xs text-muted-foreground">Xona</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center min-w-[60px]">
+                    <p className="text-lg font-bold text-slate-700">{categories.length}</p>
+                    <p className="text-xs text-muted-foreground">Kategoriya</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-center min-w-[60px]">
+                    <p className="text-lg font-bold text-emerald-700">{roomsList.filter((r) => r.status === "ACTIVE").length}</p>
+                    <p className="text-xs text-muted-foreground">Faol</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </Card>
 
       {!selectedBranchId ? (
-        <div className="text-center py-16 text-muted-foreground text-sm">
-          Davom etish uchun yuqoridan filial tanlang
-        </div>
+        <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
+          <div className="py-16 flex flex-col items-center gap-3 text-center px-6">
+            <BedDouble className="h-12 w-12 text-muted-foreground opacity-20" />
+            <p className="font-medium text-foreground">Filialni tanlang</p>
+            <p className="text-sm text-muted-foreground">Davom etish uchun yuqoridan filial tanlang</p>
+          </div>
+        </Card>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="rooms">
+          {/* ── Tab triggers ─────────────────────────────────────────────── */}
+          <TabsList className="mb-4 bg-muted/40 rounded-xl p-1 h-auto gap-1">
+            <TabsTrigger
+              value="rooms"
+              className="rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              <BedDouble className="h-3.5 w-3.5 mr-1.5" />
               Xonalar
               {roomsList.length > 0 && (
-                <Badge variant="secondary" className="ml-1.5 px-1.5 text-xs">
+                <span className="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-white/20 data-[state=inactive]:bg-muted">
                   {roomsList.length}
-                </Badge>
+                </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="categories">
+            <TabsTrigger
+              value="categories"
+              className="rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-slate-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              <Store className="h-3.5 w-3.5 mr-1.5" />
               Kategoriyalar
               {categories.length > 0 && (
-                <Badge variant="secondary" className="ml-1.5 px-1.5 text-xs">
+                <span className="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-white/20">
                   {categories.length}
-                </Badge>
+                </span>
               )}
             </TabsTrigger>
           </TabsList>
 
           {/* ══ Rooms ══════════════════════════════════════════════════════ */}
           <TabsContent value="rooms">
-            <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-              <div className="flex gap-2 flex-1 min-w-0">
-                <Input
-                  placeholder="Xona qidirish..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="max-w-xs"
-                />
-                <Select value={catFilter} onValueChange={setCatFilter}>
-                  <SelectTrigger className="w-52">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">Barcha kategoriyalar</SelectItem>
-                    {categories.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        <div className="flex items-center gap-2">
-                          {c.name}
-                          {c.status === "INACTIVE" && (
-                            <Badge
-                              variant="outline"
-                              className="text-xs py-0 px-1"
-                            >
-                              Nofaol
-                            </Badge>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                onClick={openAddRoom}
-                size="sm"
-                disabled={activeCats.length === 0}
-              >
-                <Plus className="h-4 w-4 mr-1" /> Xona qo'shish
+            {/* Filter bar */}
+            <div className="bg-muted/40 rounded-2xl p-3 mb-4 flex flex-wrap items-center gap-3">
+              <Input
+                placeholder="Xona qidirish..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="max-w-xs bg-background"
+              />
+              <Select value={catFilter} onValueChange={setCatFilter}>
+                <SelectTrigger className="w-52 bg-background">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">Barcha kategoriyalar</SelectItem>
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      <div className="flex items-center gap-2">
+                        {c.name}
+                        {c.status === "INACTIVE" && (
+                          <Badge variant="outline" className="text-xs py-0 px-1">Nofaol</Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={openAddRoom} size="sm" disabled={activeCats.length === 0} className="ml-auto gap-1.5">
+                <Plus className="h-4 w-4" /> Xona qo'shish
               </Button>
             </div>
 
             {activeCats.length === 0 && !catsLoading && (
-              <div className="text-center py-3 text-sm text-amber-700 bg-amber-50 rounded-lg border border-amber-200 mb-4">
-                ⚠️ Xona qo'shish uchun avval faol kategoriya yarating
+              <div className="text-center py-3 text-sm text-amber-700 bg-amber-50 rounded-xl border border-amber-200 mb-4">
+                Xona qo'shish uchun avval faol kategoriya yarating
               </div>
             )}
 
-            {/* ═══ MOBILE CARDS ═══ */}
+            {/* Mobile Cards */}
             <div className="md:hidden space-y-3">
               {roomsLoading ? (
                 <div className="text-center py-8"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></div>
               ) : filteredRooms.length === 0 ? (
-                <Card className="p-8 text-center text-muted-foreground text-sm">
-                  {search || catFilter !== "ALL" ? "Qidiruv natijasi topilmadi" : "Xonalar mavjud emas"}
+                <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
+                  <div className="py-14 flex flex-col items-center gap-3 text-center px-6">
+                    <BedDouble className="h-10 w-10 text-muted-foreground opacity-20" />
+                    <p className="text-sm text-muted-foreground">{search || catFilter !== "ALL" ? "Qidiruv natijasi topilmadi" : "Xonalar mavjud emas"}</p>
+                  </div>
                 </Card>
               ) : (
                 filteredRooms.map((r) => {
                   const cat = categories.find((c) => c.id === r.roomCategoryId);
                   return (
-                    <Card key={r.id} className="p-4">
+                    <Card key={r.id} className="p-4 shadow-sm border border-border/60 rounded-2xl">
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <BedDouble className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <BedDouble className="h-4 w-4 text-indigo-500 shrink-0" />
                             <p className="font-medium truncate">{r.name}</p>
                           </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            {cat && <Badge variant="secondary" className="text-xs">{cat.name}</Badge>}
-                            <span className="text-sm font-semibold">{formatPrice(r.price)}</span>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            {cat && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">{cat.name}</span>}
+                            <span className="text-sm font-semibold text-foreground">{formatPrice(r.price)}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -571,91 +559,113 @@ export default function ManagerRooms() {
               )}
             </div>
 
-            {/* ═══ DESKTOP TABLE ═══ */}
+            {/* Desktop Table */}
             <div className="hidden md:block">
-            <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nomi</TableHead>
-                    <TableHead>Kategoriya</TableHead>
-                    <TableHead>Narx</TableHead>
-                    <TableHead>Holat</TableHead>
-                    <TableHead className="text-right">Amallar</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {roomsLoading ? (
-                    <TableRow><TableCell colSpan={5} className="text-center py-10"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></TableCell></TableRow>
-                  ) : filteredRooms.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-10">{search || catFilter !== "ALL" ? "Qidiruv natijasi topilmadi" : "Xonalar mavjud emas"}</TableCell></TableRow>
-                  ) : (
-                    filteredRooms.map((r) => {
-                      const cat = categories.find((c) => c.id === r.roomCategoryId);
-                      return (
-                        <TableRow key={r.id}>
-                          <TableCell className="font-medium"><div className="flex items-center gap-2"><BedDouble className="h-4 w-4 text-muted-foreground" />{r.name}</div></TableCell>
-                          <TableCell>{cat ? <Badge variant="secondary">{cat.name}</Badge> : <span className="text-muted-foreground text-sm">—</span>}</TableCell>
-                          <TableCell className="font-semibold">{formatPrice(r.price)}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Switch checked={r.status === "ACTIVE"} onCheckedChange={() => toggleRoomMutation.mutate(r.id)} disabled={toggleRoomMutation.isPending} />
-                              <Badge variant={r.status === "ACTIVE" ? "default" : "secondary"} className="text-xs">{statusLabels[r.status]}</Badge>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => openEditRoom(r)}><Pencil className="h-4 w-4 mr-2" /> Tahrirlash</DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteRoomId(r.id)}><Trash2 className="h-4 w-4 mr-2" /> O'chirish</DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </Card>
+              <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gradient-to-r from-slate-50 to-indigo-50/30 hover:from-slate-50 hover:to-indigo-50/30">
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Nomi</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Kategoriya</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Narx</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Holat</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide">Amallar</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {roomsLoading ? (
+                      <TableRow><TableCell colSpan={5} className="text-center py-10"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></TableCell></TableRow>
+                    ) : filteredRooms.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5}>
+                          <div className="py-14 flex flex-col items-center gap-3 text-center">
+                            <BedDouble className="h-10 w-10 text-muted-foreground opacity-20" />
+                            <p className="text-sm text-muted-foreground">{search || catFilter !== "ALL" ? "Qidiruv natijasi topilmadi" : "Xonalar mavjud emas"}</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredRooms.map((r) => {
+                        const cat = categories.find((c) => c.id === r.roomCategoryId);
+                        return (
+                          <TableRow key={r.id} className="hover:bg-muted/30 transition-colors">
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-2">
+                                <BedDouble className="h-4 w-4 text-indigo-400" />{r.name}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {cat ? (
+                                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">{cat.name}</span>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="font-semibold">{formatPrice(r.price)}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Switch checked={r.status === "ACTIVE"} onCheckedChange={() => toggleRoomMutation.mutate(r.id)} disabled={toggleRoomMutation.isPending} />
+                                <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${r.status === "ACTIVE" ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                                  {statusLabels[r.status]}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => openEditRoom(r)}><Pencil className="h-4 w-4 mr-2" /> Tahrirlash</DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteRoomId(r.id)}><Trash2 className="h-4 w-4 mr-2" /> O'chirish</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </Card>
             </div>
           </TabsContent>
 
           {/* ══ Categories ════════════════════════════════════════════════════ */}
           <TabsContent value="categories">
-            <div className="flex items-center justify-between mb-4">
+            <div className="bg-muted/40 rounded-2xl p-3 mb-4 flex items-center justify-between gap-3">
               <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">
-                  {selectedBranch?.name}
-                </span>{" "}
+                <span className="font-medium text-foreground">{selectedBranch?.name}</span>{" "}
                 filialining xona kategoriyalari
               </p>
-              <Button onClick={openAddCat} size="sm">
-                <Plus className="h-4 w-4 mr-1" /> Kategoriya qo'shish
+              <Button onClick={openAddCat} size="sm" className="gap-1.5">
+                <Plus className="h-4 w-4" /> Kategoriya qo'shish
               </Button>
             </div>
 
-            {/* Mobile room categories */}
+            {/* Mobile categories */}
             <div className="md:hidden space-y-3">
               {catsLoading ? (
                 <div className="text-center py-8"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></div>
               ) : categories.length === 0 ? (
-                <Card className="p-8 text-center text-muted-foreground text-sm">Kategoriyalar mavjud emas</Card>
+                <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
+                  <div className="py-14 flex flex-col items-center gap-3 text-center px-6">
+                    <Store className="h-10 w-10 text-muted-foreground opacity-20" />
+                    <p className="text-sm text-muted-foreground">Kategoriyalar mavjud emas</p>
+                  </div>
+                </Card>
               ) : (
                 categories.map((c) => {
                   const roomCount = roomsList.filter((r) => r.roomCategoryId === c.id).length;
                   return (
-                    <Card key={c.id} className="p-4">
+                    <Card key={c.id} className="p-4 shadow-sm border border-border/60 rounded-2xl">
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <p className="font-medium">{c.name}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="secondary" className="text-xs">{roomCount} ta xona</Badge>
-                            <Badge variant={c.status === "ACTIVE" ? "default" : "secondary"} className="text-xs">{statusLabels[c.status]}</Badge>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">{roomCount} ta xona</span>
+                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${c.status === "ACTIVE" ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>{statusLabels[c.status]}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -678,55 +688,66 @@ export default function ManagerRooms() {
               )}
             </div>
 
-            {/* Desktop room categories table */}
+            {/* Desktop categories table */}
             <div className="hidden md:block">
-            <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nomi</TableHead>
-                    <TableHead>Xonalar</TableHead>
-                    <TableHead>Holat</TableHead>
-                    <TableHead className="text-right">Amallar</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {catsLoading ? (
-                    <TableRow><TableCell colSpan={4} className="text-center py-10"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></TableCell></TableRow>
-                  ) : categories.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-10">Kategoriyalar mavjud emas</TableCell></TableRow>
-                  ) : (
-                    categories.map((c) => {
-                      const roomCount = roomsList.filter((r) => r.roomCategoryId === c.id).length;
-                      return (
-                        <TableRow key={c.id}>
-                          <TableCell className="font-medium">{c.name}</TableCell>
-                          <TableCell><Badge variant="secondary">{roomCount} ta</Badge></TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Switch checked={c.status === "ACTIVE"} onCheckedChange={() => toggleCategoryMutation.mutate(c.id)} disabled={toggleCategoryMutation.isPending} />
-                              <Badge variant={c.status === "ACTIVE" ? "default" : "secondary"} className="text-xs">{statusLabels[c.status]}</Badge>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => openEditCat(c)}><Pencil className="h-4 w-4 mr-2" /> Tahrirlash</DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteCatId(c.id)}><Trash2 className="h-4 w-4 mr-2" /> O'chirish</DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </Card>
+              <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gradient-to-r from-slate-50 to-indigo-50/30 hover:from-slate-50 hover:to-indigo-50/30">
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Nomi</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Xonalar</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Holat</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide">Amallar</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {catsLoading ? (
+                      <TableRow><TableCell colSpan={4} className="text-center py-10"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></TableCell></TableRow>
+                    ) : categories.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4}>
+                          <div className="py-14 flex flex-col items-center gap-3 text-center">
+                            <Store className="h-10 w-10 text-muted-foreground opacity-20" />
+                            <p className="text-sm text-muted-foreground">Kategoriyalar mavjud emas</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      categories.map((c) => {
+                        const roomCount = roomsList.filter((r) => r.roomCategoryId === c.id).length;
+                        return (
+                          <TableRow key={c.id} className="hover:bg-muted/30 transition-colors">
+                            <TableCell className="font-medium">{c.name}</TableCell>
+                            <TableCell>
+                              <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">{roomCount} ta</span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Switch checked={c.status === "ACTIVE"} onCheckedChange={() => toggleCategoryMutation.mutate(c.id)} disabled={toggleCategoryMutation.isPending} />
+                                <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${c.status === "ACTIVE" ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                                  {statusLabels[c.status]}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => openEditCat(c)}><Pencil className="h-4 w-4 mr-2" /> Tahrirlash</DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteCatId(c.id)}><Trash2 className="h-4 w-4 mr-2" /> O'chirish</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>

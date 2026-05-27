@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';
 import { t } from '@/lib/i18n';
@@ -7,9 +7,7 @@ import { getRoleBasePath, UserRole } from '@/lib/auth';
 import {
     LogOut, LayoutDashboard, Building2, Users, User,
     ShoppingCart, Package, Menu, X, Settings,
-    HomeIcon, Wallet,
-    Receipt,
-    Monitor,
+    HomeIcon, Wallet, ArrowLeft, TrendingUp,
 } from 'lucide-react';
 
 interface NavItem {
@@ -30,11 +28,10 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
         { label: "Bosh sahifa", path: "/manager", icon: LayoutDashboard },
         { label: "Xodimlar", path: "/manager/staff", icon: Users },
         { label: "Mahsulotlar", path: "/manager/products", icon: Package },
-        { label: "Buyurtmalar", path: "/manager/orders", icon: ShoppingCart },
-        { label: "Xonalar va zal", path: "/manager/rooms", icon: HomeIcon },
-        { label: "Moliya", path: "/manager/finance", icon: Wallet },
-        { label: "Xarajatlar", path: "/manager/expenses", icon: Receipt },
-        { label: "POS Terminallar", path: "/manager/pos", icon: Monitor },
+        { label: "Umumiy hisobot", path: "/manager/orders", icon: ShoppingCart },
+        { label: "Xona yaratish", path: "/manager/rooms", icon: HomeIcon },
+        { label: "Ofitsiant hisoboti", path: "/manager/finance", icon: Wallet },
+        { label: "Savdo tahlili", path: "/manager/sales", icon: TrendingUp },
         { label: "Profil", path: "/manager/profile", icon: User },
         { label: "Sozlamalar", path: "/manager/settings", icon: Settings },
     ],
@@ -48,7 +45,9 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
     const { user, isAuthenticated, logout } = useAuth();
     const { language } = useSettings();
     const navigate = useNavigate();
+    const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const isRoot = location.pathname === getRoleBasePath(requiredRole);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -73,7 +72,6 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
 
     return (
         <div className="flex h-screen w-full overflow-hidden">
-            {/* Mobile overlay */}
             {sidebarOpen && (
                 <div
                     className="fixed inset-0 bg-black/40 z-40 lg:hidden"
@@ -81,7 +79,6 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                 />
             )}
 
-            {/* Sidebar */}
             <aside className={`
         fixed lg:sticky lg:top-0
         inset-y-0 left-0 z-50
@@ -92,7 +89,6 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
         transform transition-transform duration-200 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-                {/* Logo */}
                 <div className="p-6 border-b border-sidebar-border flex items-center justify-between shrink-0">
                     <div>
                         <h1 className="text-lg font-bold text-sidebar-primary-foreground">Restourant</h1>
@@ -106,8 +102,7 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                     </button>
                 </div>
 
-                {/* Nav */}
-                <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+                <nav className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.path}
@@ -115,19 +110,18 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                             end={item.path === getRoleBasePath(user.role)}
                             onClick={closeSidebar}
                             className={({ isActive }) =>
-                                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${isActive
-                                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                                `flex items-center gap-3 px-4 py-3 rounded-xl text-[13.5px] transition-all duration-200 border-l-[3px] ${isActive
+                                    ? 'border-sidebar-primary bg-sidebar-primary/20 text-white font-semibold'
+                                    : 'border-transparent text-sidebar-foreground/60 hover:border-sidebar-primary/50 hover:bg-sidebar-primary/10 hover:text-white'
                                 }`
                             }
                         >
-                            <item.icon className="h-4 w-4 shrink-0" />
+                            <item.icon className="h-5 w-5 shrink-0" />
                             {t(item.label, language)}
                         </NavLink>
                     ))}
                 </nav>
 
-                {/* User info + logout */}
                 <div className="p-4 border-t border-sidebar-border shrink-0">
                     <div className="mb-3 px-3">
                         <p className="text-sm font-medium text-sidebar-foreground">
@@ -145,16 +139,30 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                 </div>
             </aside>
 
-            {/* Main content */}
             <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
-                {/* Mobile topbar */}
                 <div className="sticky top-0 z-30 lg:hidden bg-background border-b border-border px-4 py-3 flex items-center gap-3 shrink-0">
-                    <button onClick={() => setSidebarOpen(true)} className="text-foreground">
-                        <Menu className="h-5 w-5" />
-                    </button>
+                    {!isRoot ? (
+                        <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                            <ArrowLeft className="h-5 w-5" />
+                            Orqaga
+                        </button>
+                    ) : (
+                        <button onClick={() => setSidebarOpen(true)} className="text-foreground">
+                            <Menu className="h-5 w-5" />
+                        </button>
+                    )}
                     <span className="font-semibold text-foreground">Restourant</span>
                 </div>
                 <div className="flex-1 p-4 sm:p-6 lg:p-8">
+                    {!isRoot && (
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="hidden lg:flex items-center gap-2 px-4 py-2 mb-5 rounded-xl border border-blue-200 bg-blue-50 text-sm font-medium text-blue-600 hover:bg-blue-100 hover:border-blue-300 transition-colors shadow-sm"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Orqaga
+                        </button>
+                    )}
                     <Outlet />
                 </div>
             </main>
