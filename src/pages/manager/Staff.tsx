@@ -36,7 +36,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   userService,
@@ -45,7 +44,7 @@ import {
 } from "@/services/userService";
 import { useBranch } from "@/contexts/BranchContext";
 import { roleLabels, statusLabels, UserRole } from "@/lib/mock-data";
-import { Plus, Loader2, MoreVertical, Eye, Pencil, Trash2 } from "lucide-react";
+import { Plus, Loader2, MoreVertical, Eye, Pencil, Trash2, Users } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
@@ -61,7 +60,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 // ✅ Xodim rollari (SUPER_AFITSANT ham qo'shilgan)
 const STAFF_ROLES: UserRole[] = [
@@ -72,10 +70,11 @@ const STAFF_ROLES: UserRole[] = [
   "KASSA",
 ];
 
+type ApiError = { response?: { data?: { message?: string } } };
+const errMsg = (e: unknown, fallback: string) => (e as ApiError)?.response?.data?.message || fallback;
+
 export default function ManagerStaff() {
-  const { user } = useAuth();
   const queryClient = useQueryClient();
-  const isMobile = useIsMobile();
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
@@ -138,8 +137,9 @@ export default function ManagerStaff() {
 
         console.log("⚠️ Unexpected response structure");
         return [];
-      } catch (err: any) {
-        if (err?.response?.status === 404) return [];
+      } catch (err: unknown) {
+        const e = err as { response?: { status?: number } };
+        if (e?.response?.status === 404) return [];
         console.error("❌ API Error:", err);
         throw err;
       }
@@ -181,9 +181,9 @@ export default function ManagerStaff() {
         branchId: "",
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Create error:", error);
-      toast.error(error?.response?.data?.message || "Xatolik yuz berdi");
+      toast.error(errMsg(error, "Xatolik yuz berdi"));
     },
   });
 
@@ -205,17 +205,16 @@ export default function ManagerStaff() {
         branchId: "",
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Update error:", error);
-      toast.error(error?.response?.data?.message || "Xatolik yuz berdi");
+      toast.error(errMsg(error, "Xatolik yuz berdi"));
     },
   });
 
   // ✅ Status o'zgartirish (PATCH /user/status/{id})
   const toggleStatusMutation = useMutation({
     mutationFn: (id: string) => userService.toggleStatus(id),
-    onSuccess: (response, id) => {
-      // Yangi statusni aniqlash
+    onSuccess: (_response, id) => {
       const user = staffList.find((u) => u.id === id);
       const newStatus = user?.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
 
@@ -224,11 +223,9 @@ export default function ManagerStaff() {
       );
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Toggle status error:", error);
-      toast.error(
-        error?.response?.data?.message || "Status o'zgartirishda xatolik"
-      );
+      toast.error(errMsg(error, "Status o'zgartirishda xatolik"));
     },
   });
 
@@ -240,9 +237,9 @@ export default function ManagerStaff() {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setDeleteId(null);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Delete error:", error);
-      toast.error(error?.response?.data?.message || "Xatolik yuz berdi");
+      toast.error(errMsg(error, "Xatolik yuz berdi"));
     },
   });
 
@@ -298,7 +295,7 @@ export default function ManagerStaff() {
 
     if (editItem) {
       // ✅ Tahrirlash - faqat shaxsiy ma'lumotlar (role va branchId YUBORILMAYDI)
-      const updateData: any = {
+      const updateData: Partial<StaffPayload> = {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         phoneNumer: form.phoneNumer.trim(),
@@ -371,75 +368,103 @@ export default function ManagerStaff() {
     );
   }
 
+  const getRoleBadge = (role: string) => {
+    const map: Record<string, string> = {
+      MANAGER: "bg-purple-100 text-purple-700 border-purple-200",
+      AFITSANT: "bg-blue-100 text-blue-700 border-blue-200",
+      CHEF: "bg-orange-100 text-orange-700 border-orange-200",
+      KASSA: "bg-green-100 text-green-700 border-green-200",
+      SUPER_AFITSANT: "bg-indigo-100 text-indigo-700 border-indigo-200",
+    };
+    return map[role] || "bg-slate-100 text-slate-600 border-slate-200";
+  };
+
   return (
     <div>
+      {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-foreground">Xodimlar</h2>
-        <Button onClick={openAdd} size="sm" disabled={!activeBranchId}>
-          <Plus className="h-4 w-4 mr-1" /> Qo'shish
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <Users className="h-5 w-5 text-blue-600" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-foreground leading-tight">Xodimlar</h2>
+            <p className="text-xs text-muted-foreground">Xodimlarni boshqaring</p>
+          </div>
+        </div>
+        <Button onClick={openAdd} size="sm" disabled={!activeBranchId} className="gap-1.5">
+          <Plus className="h-4 w-4" /> Qo'shish
         </Button>
       </div>
 
-      <div className="flex gap-3 mb-4">
-        {/* Filial tanlash */}
+      {/* ── Filter bar ──────────────────────────────────────────────────────── */}
+      <div className="bg-muted/40 rounded-2xl p-3 mb-4 flex flex-wrap items-center gap-3">
         <Select value={activeBranchId} onValueChange={setSelectedBranchId}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-48 bg-background">
             <SelectValue placeholder="Filialni tanlang" />
           </SelectTrigger>
           <SelectContent>
             {branchList.map((b) => (
-              <SelectItem key={b.id} value={b.id}>
-                {b.name}
-              </SelectItem>
+              <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        {/* Qidiruv */}
         <Input
           placeholder="Qidirish..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs"
+          className="max-w-xs bg-background"
         />
 
-        {/* Rol filtri */}
         <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-44 bg-background">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">Hammasi</SelectItem>
             {STAFF_ROLES.map((r) => (
-              <SelectItem key={r} value={r}>
-                {roleLabels[r]}
-              </SelectItem>
+              <SelectItem key={r} value={r}>{roleLabels[r]}</SelectItem>
             ))}
           </SelectContent>
         </Select>
+
+        {filtered.length > 0 && (
+          <span className="ml-auto text-xs text-muted-foreground">
+            {filtered.length} ta xodim
+          </span>
+        )}
       </div>
 
       {/* ═══ MOBILE CARDS ═══ */}
       <div className="md:hidden space-y-3">
         {filtered.length === 0 ? (
-          <Card className="p-8 text-center text-muted-foreground text-sm">
-            {!activeBranchId ? "Filialni tanlang" : search || roleFilter !== "ALL" ? "Xodim topilmadi" : "Hozircha xodimlar yo'q"}
+          <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
+            <div className="py-16 flex flex-col items-center gap-3 text-center px-6">
+              <Users className="h-12 w-12 text-muted-foreground opacity-20" />
+              <p className="font-medium text-foreground">
+                {!activeBranchId ? "Filialni tanlang" : search || roleFilter !== "ALL" ? "Xodim topilmadi" : "Hozircha xodimlar yo'q"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {!activeBranchId ? "Davom etish uchun filial tanlang" : "Mezonni o'zgartirib ko'ring"}
+              </p>
+            </div>
           </Card>
         ) : (
           filtered.map((u) => {
             const isActive = u.status === "ACTIVE";
             return (
-              <Card key={u.id} className="p-4">
+              <Card key={u.id} className="p-4 shadow-sm border border-border/60 rounded-2xl">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-foreground truncate">{u.firstName} {u.lastName}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" className="text-xs">
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${getRoleBadge(u.role)}`}>
                         {roleLabels[u.role as keyof typeof roleLabels] || u.role}
-                      </Badge>
-                      <Badge variant={isActive ? "default" : "secondary"} className="text-xs">
+                      </span>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${isActive ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
                         {statusLabels[u.status as keyof typeof statusLabels] || u.status}
-                      </Badge>
+                      </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -477,42 +502,60 @@ export default function ManagerStaff() {
 
       {/* ═══ DESKTOP TABLE ═══ */}
       <div className="hidden md:block">
-        <Card>
+        <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Ism familiya</TableHead>
-                <TableHead>Telefon</TableHead>
-                <TableHead>Lavozim</TableHead>
-                <TableHead>Filial</TableHead>
-                <TableHead>Holat</TableHead>
-                <TableHead className="text-right">Amallar</TableHead>
+              <TableRow className="bg-gradient-to-r from-slate-50 to-blue-50/30 hover:from-slate-50 hover:to-blue-50/30">
+                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ism familiya</TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Telefon</TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Lavozim</TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Filial</TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Holat</TableHead>
+                <TableHead className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide">Amallar</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((u) => {
-                const branch = branchList.find((b) => b.id === u.branchId);
-                const isActive = u.status === "ACTIVE";
-                return (
-                  <TableRow key={u.id}>
-                    <TableCell className="font-medium">{u.firstName} {u.lastName}</TableCell>
-                    <TableCell className="text-muted-foreground">{u.phoneNumer || "—"}</TableCell>
-                    <TableCell><Badge variant="outline">{roleLabels[u.role as keyof typeof roleLabels] || u.role}</Badge></TableCell>
-                    <TableCell>{branch?.name || "—"}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={isActive}
-                          onCheckedChange={() => handleToggleStatus(u.id)}
-                          disabled={toggleStatusMutation.isPending}
-                        />
-                        <Badge variant={isActive ? "default" : "secondary"}>
-                          {statusLabels[u.status as keyof typeof statusLabels] || u.status}
-                        </Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6}>
+                    <div className="py-16 flex flex-col items-center gap-3 text-center">
+                      <Users className="h-12 w-12 text-muted-foreground opacity-20" />
+                      <p className="font-medium text-foreground">
+                        {!activeBranchId ? "Filialni tanlang" : search || roleFilter !== "ALL" ? "Xodim topilmadi" : "Hozircha xodimlar yo'q"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {!activeBranchId ? "Davom etish uchun filial tanlang" : "Mezonni o'zgartirib ko'ring"}
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filtered.map((u) => {
+                  const branch = branchList.find((b) => b.id === u.branchId);
+                  const isActive = u.status === "ACTIVE";
+                  return (
+                    <TableRow key={u.id} className="hover:bg-muted/30 transition-colors">
+                      <TableCell className="font-medium">{u.firstName} {u.lastName}</TableCell>
+                      <TableCell className="text-muted-foreground font-mono text-sm">{u.phoneNumer || "—"}</TableCell>
+                      <TableCell>
+                        <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${getRoleBadge(u.role)}`}>
+                          {roleLabels[u.role as keyof typeof roleLabels] || u.role}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{branch?.name || "—"}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={isActive}
+                            onCheckedChange={() => handleToggleStatus(u.id)}
+                            disabled={toggleStatusMutation.isPending}
+                          />
+                          <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${isActive ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                            {statusLabels[u.status as keyof typeof statusLabels] || u.status}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
@@ -524,17 +567,10 @@ export default function ManagerStaff() {
                             <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteId(u.id)}><Trash2 className="h-4 w-4 mr-2" /> O'chirish</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {filtered.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                    {!activeBranchId ? "Filialni tanlang" : search || roleFilter !== "ALL" ? "Xodim topilmadi" : "Hozircha xodimlar yo'q"}
-                  </TableCell>
-                </TableRow>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

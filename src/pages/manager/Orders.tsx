@@ -198,7 +198,7 @@ export default function ManagerOrders() {
     });
 
     const allOrders = toArray<Order>(ordersRaw);
-    const total     = (ordersRaw as any)?.total ?? allOrders.length;
+    const total     = (ordersRaw as Record<string, unknown>)?.total as number ?? allOrders.length;
     const totalPages = Math.max(Math.ceil(total / limit), 1);
     const startItem  = total === 0 ? 0 : (page - 1) * limit + 1;
     const endItem    = Math.min(page * limit, total);
@@ -248,39 +248,54 @@ export default function ManagerOrders() {
 
     // ─── Render ───────────────────────────────────────────────────────────────
     return (
-        <div className="space-y-5">
+        <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-bold text-foreground">Buyurtmalar</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Barcha buyurtmalar tarixi va maxsus hisobot</p>
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">Umumiy hisobot</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">Barcha buyurtmalar tarixi va maxsus hisobotlar</p>
             </div>
 
             <Tabs defaultValue="orders">
-                <TabsList className="mb-4">
-                    <TabsTrigger value="orders">
-                        <UtensilsCrossed className="h-4 w-4 mr-1.5" />
+                <TabsList className="bg-transparent p-0 h-auto rounded-none gap-3 w-full justify-start mb-6">
+                    <TabsTrigger
+                        value="orders"
+                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-blue-200 bg-blue-50 text-blue-600 text-sm font-semibold shadow-none transition-all
+                            data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-md
+                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
+                    >
+                        <UtensilsCrossed className="h-4 w-4 shrink-0" />
                         Buyurtmalar tarixi
                     </TabsTrigger>
-                    <TabsTrigger value="shashlik">
-                        <Flame className="h-4 w-4 mr-1.5" />
+                    <TabsTrigger
+                        value="shashlik"
+                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-green-200 bg-green-50 text-green-600 text-sm font-semibold shadow-none transition-all
+                            data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:border-green-600 data-[state=active]:shadow-md
+                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
+                    >
+                        <Flame className="h-4 w-4 shrink-0" />
                         Shashlik hisobi
                     </TabsTrigger>
-                    <TabsTrigger value="qanot-ordak">
-                        <Bird className="h-4 w-4 mr-1.5" />
+                    <TabsTrigger
+                        value="qanot-ordak"
+                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-amber-200 bg-amber-50 text-amber-600 text-sm font-semibold shadow-none transition-all
+                            data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:border-amber-500 data-[state=active]:shadow-md
+                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
+                    >
+                        <Bird className="h-4 w-4 shrink-0" />
                         Qanot va O'rdak
                     </TabsTrigger>
                 </TabsList>
 
                 {/* ══ BUYURTMALAR TARIXI ══════════════════════════════════════════ */}
                 <TabsContent value="orders">
-                    <Card>
-                        <div className="flex flex-wrap items-center gap-3 p-4 border-b border-border">
+                    <Card className="shadow-none border border-border/60">
+                        <div className="flex flex-wrap items-center gap-2.5 px-4 py-3 border-b border-border/60">
                             <div className="relative flex-1 min-w-[180px] max-w-xs">
-                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                                 <Input placeholder="Xona, afitsant, mahsulot..." value={search}
-                                    onChange={e => setSearch(e.target.value)} className="pl-8 h-9" />
+                                    onChange={e => setSearch(e.target.value)} className="pl-9 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
                             </div>
                             <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger className="w-44 h-9"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="w-40 h-9 bg-muted/40 border-0 focus:ring-1"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="ALL">Barcha holat</SelectItem>
                                     <SelectItem value="PENDING">Kutilmoqda</SelectItem>
@@ -289,7 +304,7 @@ export default function ManagerOrders() {
                                 </SelectContent>
                             </Select>
                             <Input type="date" value={dateFilter}
-                                onChange={e => setDateFilter(e.target.value)} className="w-40 h-9" />
+                                onChange={e => setDateFilter(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
                             <div className="ml-auto flex items-center gap-2">
                                 {isFetching && !ordersLoading && (
                                     <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -297,7 +312,7 @@ export default function ManagerOrders() {
                                     </span>
                                 )}
                                 {!ordersLoading && (
-                                    <span className="text-sm text-muted-foreground">{total} ta buyurtma</span>
+                                    <span className="text-xs font-medium text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-full">{total} ta buyurtma</span>
                                 )}
                             </div>
                         </div>
@@ -333,21 +348,27 @@ export default function ManagerOrders() {
                         <div className="hidden md:block overflow-x-auto">
                             <Table>
                                 <TableHeader>
-                                    <TableRow className="bg-muted/30 hover:bg-muted/30">
-                                        <TableHead className="font-semibold">Xona / Stol</TableHead>
-                                        <TableHead className="font-semibold">
-                                            <span className="flex items-center gap-1"><LogIn className="h-3.5 w-3.5 text-green-500" />O'tirgan</span>
+                                    <TableRow className="hover:bg-muted/40 bg-muted/40 border-border/60">
+                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Xona / Stol</TableHead>
+                                        <TableHead className="text-xs font-bold py-3">
+                                            <span className="flex items-center gap-1.5 text-green-600">
+                                                <LogIn className="h-3.5 w-3.5" />O'tirgan
+                                            </span>
                                         </TableHead>
-                                        <TableHead className="font-semibold">
-                                            <span className="flex items-center gap-1"><LogOut className="h-3.5 w-3.5 text-red-500" />Turgan</span>
+                                        <TableHead className="text-xs font-bold py-3">
+                                            <span className="flex items-center gap-1.5 text-red-500">
+                                                <LogOut className="h-3.5 w-3.5" />Turgan
+                                            </span>
                                         </TableHead>
-                                        <TableHead className="font-semibold">
-                                            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />Davomiyligi</span>
+                                        <TableHead className="text-xs font-bold py-3">
+                                            <span className="flex items-center gap-1.5 text-blue-500">
+                                                <Clock className="h-3.5 w-3.5" />Davomiylik
+                                            </span>
                                         </TableHead>
-                                        <TableHead className="font-semibold">Mahsulotlar</TableHead>
-                                        <TableHead className="font-semibold">Summa</TableHead>
-                                        <TableHead className="font-semibold">Holat</TableHead>
-                                        <TableHead className="text-right font-semibold">Amallar</TableHead>
+                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Mahsulotlar</TableHead>
+                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Summa</TableHead>
+                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Holat</TableHead>
+                                        <TableHead className="text-right text-xs font-bold text-foreground/70 py-3">Amallar</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -359,7 +380,12 @@ export default function ManagerOrders() {
                                             </div>
                                         </TableCell></TableRow>
                                     ) : filtered.length === 0 ? (
-                                        <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-16">Buyurtma topilmadi</TableCell></TableRow>
+                                        <TableRow><TableCell colSpan={8} className="py-20">
+                                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                                <UtensilsCrossed className="h-8 w-8 opacity-30" />
+                                                <span className="text-sm">Buyurtma topilmadi</span>
+                                            </div>
+                                        </TableCell></TableRow>
                                     ) : filtered.map(o => {
                                         const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ×${oi.count}`);
                                         return (
@@ -448,7 +474,7 @@ export default function ManagerOrders() {
                                     <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(1)} disabled={page === 1}><ChevronsLeft className="h-3.5 w-3.5" /></Button>
                                     <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(p => p - 1)} disabled={page === 1}><ChevronLeft className="h-3.5 w-3.5" /></Button>
                                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                                        let p = totalPages <= 5 ? i + 1 : page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i;
+                                        const p = totalPages <= 5 ? i + 1 : page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i;
                                         return (
                                             <Button key={p} variant={p === page ? 'default' : 'outline'} size="icon"
                                                 className={`h-7 w-7 text-xs ${p === page ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}`}
@@ -467,23 +493,18 @@ export default function ManagerOrders() {
                 <TabsContent value="shashlik">
                     <div className="space-y-5">
 
-                        {/* Sana + umumiy kartalar */}
-                        <div className="flex flex-wrap items-center gap-3">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-muted-foreground">Sana:</span>
-                                <Input type="date" value={shashlikDate}
-                                    onChange={e => setShashlikDate(e.target.value)} className="w-40 h-9" />
-                            </div>
-                            {!shLoading && stats.length > 0 && (
-                                <>
-                                    <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-50 border border-orange-200 text-orange-700 text-sm font-bold">
-                                        <Flame className="h-4 w-4" />
-                                        Jami: {grandTotal} ta porsiya
-                                    </div>
-                                    <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-bold">
+                        <div className="flex flex-wrap items-center gap-3 mb-1">
+                            <Input type="date" value={shashlikDate}
+                                onChange={e => setShashlikDate(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
+                            {!shLoading && grandTotal > 0 && (
+                                <div className="flex items-center gap-2 ml-auto">
+                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full">
+                                        <Flame className="h-3.5 w-3.5" />{grandTotal} ta porsiya
+                                    </span>
+                                    <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">
                                         {formatPrice(grandSum)}
-                                    </div>
-                                </>
+                                    </span>
+                                </div>
                             )}
                         </div>
 
@@ -563,23 +584,18 @@ export default function ManagerOrders() {
                 {/* ══ QANOT VA O'RDAK HISOBI ══════════════════════════════════════ */}
                 <TabsContent value="qanot-ordak">
                     <div className="space-y-5">
-                        {/* Sana + umumiy */}
-                        <div className="flex flex-wrap items-center gap-3">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-muted-foreground">Sana:</span>
-                                <Input type="date" value={qanotDate}
-                                    onChange={e => setQanotDate(e.target.value)} className="w-40 h-9" />
-                            </div>
+                        <div className="flex flex-wrap items-center gap-3 mb-1">
+                            <Input type="date" value={qanotDate}
+                                onChange={e => setQanotDate(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
                             {!qoLoading && qoTotal > 0 && (
-                                <>
-                                    <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm font-bold">
-                                        <Bird className="h-4 w-4" />
-                                        Jami: {qoTotal} ta porsiya
-                                    </div>
-                                    <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-bold">
+                                <div className="flex items-center gap-2 ml-auto">
+                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-yellow-600 bg-yellow-50 border border-yellow-200 px-3 py-1.5 rounded-full">
+                                        <Bird className="h-3.5 w-3.5" />{qoTotal} ta porsiya
+                                    </span>
+                                    <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">
                                         {formatPrice(qoSum)}
-                                    </div>
-                                </>
+                                    </span>
+                                </div>
                             )}
                         </div>
 
