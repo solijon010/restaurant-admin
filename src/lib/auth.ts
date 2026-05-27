@@ -1,4 +1,4 @@
-export type UserRole = 'SUPERADMIN' | 'MANAGER' | 'AFITSANT' | 'CHEF' | 'KASSA';
+export type UserRole = 'SUPERADMIN' | 'MANAGER' | 'AFITSANT' | 'SUPER_AFITSANT' | 'CHEF' | 'KASSA';
 
 export interface AuthUser {
   id: string;
@@ -74,6 +74,7 @@ export function getRoleBasePath(role: UserRole): string {
     case 'SUPERADMIN': return '/superadmin';
     case 'MANAGER': return '/manager';
     case 'AFITSANT': return '/waiter';
+    case 'SUPER_AFITSANT': return '/waiter';
     case 'CHEF': return '/kitchen';
     case 'KASSA': return '/cashier';
     default: return '/login';
