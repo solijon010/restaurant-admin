@@ -40,11 +40,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   userService,
   StaffPayload,
+  StaffUpdatePayload,
   UserResponse,
 } from "@/services/userService";
 import { useBranch } from "@/contexts/BranchContext";
 import { roleLabels, statusLabels, UserRole } from "@/lib/mock-data";
-import { Plus, Loader2, MoreVertical, Eye, Pencil, Trash2, Users } from "lucide-react";
+import { Plus, Loader2, MoreVertical, Eye, Pencil, Trash2, Users, KeyRound, Banknote } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
@@ -90,6 +91,8 @@ export default function ManagerStaff() {
     password: "",
     role: "AFITSANT" as UserRole,
     branchId: "",
+    salary: "",
+    pinCode: "",
   });
 
   const activeBranchId = selectedBranchId || branchList[0]?.id || "";
@@ -105,42 +108,26 @@ export default function ManagerStaff() {
     queryFn: async () => {
       try {
         const response = await userService.getStaffByBranch(activeBranchId);
-        console.log("🔍 Full API Response:", response);
 
         // Axios response: response.data.data (double wrapped)
         if (response?.data?.data && Array.isArray(response.data.data)) {
-          console.log(
-            "✅ Found data in response.data.data (Axios + Backend pagination)"
-          );
-          console.log(
-            "📊 Total:",
-            response.data.total,
-            "Offset:",
-            response.data.offcet,
-            "Limit:",
-            response.data.limit
-          );
           return response.data.data;
         }
 
         // Backend paginated: response.data
         if (response?.data && Array.isArray(response.data)) {
-          console.log("✅ Found data in response.data");
           return response.data;
         }
 
         // Direct array
         if (Array.isArray(response)) {
-          console.log("✅ Response is direct array");
           return response;
         }
 
-        console.log("⚠️ Unexpected response structure");
         return [];
       } catch (err: unknown) {
         const e = err as { response?: { status?: number } };
         if (e?.response?.status === 404) return [];
-        console.error("❌ API Error:", err);
         throw err;
       }
     },
@@ -148,9 +135,6 @@ export default function ManagerStaff() {
   });
 
   const staffList: UserResponse[] = Array.isArray(userData) ? userData : [];
-
-  console.log("👥 Staff list:", staffList);
-  console.log("👥 Staff count:", staffList.length);
 
   // Client-side filtering
   const filtered = staffList.filter((u) => {
@@ -162,8 +146,6 @@ export default function ManagerStaff() {
     const matchRole = roleFilter === "ALL" || u.role === roleFilter;
     return matchSearch && matchRole;
   });
-
-  console.log("🔎 Filtered count:", filtered.length);
 
   // ✅ Xodim yaratish
   const createMutation = useMutation({
@@ -179,10 +161,11 @@ export default function ManagerStaff() {
         password: "",
         role: "AFITSANT",
         branchId: "",
+        salary: "",
+        pinCode: "",
       });
     },
     onError: (error: unknown) => {
-      console.error("Create error:", error);
       toast.error(errMsg(error, "Xatolik yuz berdi"));
     },
   });
@@ -203,10 +186,11 @@ export default function ManagerStaff() {
         password: "",
         role: "AFITSANT",
         branchId: "",
+        salary: "",
+        pinCode: "",
       });
     },
     onError: (error: unknown) => {
-      console.error("Update error:", error);
       toast.error(errMsg(error, "Xatolik yuz berdi"));
     },
   });
@@ -224,7 +208,6 @@ export default function ManagerStaff() {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error: unknown) => {
-      console.error("Toggle status error:", error);
       toast.error(errMsg(error, "Status o'zgartirishda xatolik"));
     },
   });
@@ -238,7 +221,6 @@ export default function ManagerStaff() {
       setDeleteId(null);
     },
     onError: (error: unknown) => {
-      console.error("Delete error:", error);
       toast.error(errMsg(error, "Xatolik yuz berdi"));
     },
   });
@@ -253,6 +235,8 @@ export default function ManagerStaff() {
       password: "",
       role: "AFITSANT",
       branchId: activeBranchId,
+      salary: "",
+      pinCode: "",
     });
     setDialogOpen(true);
   };
@@ -266,6 +250,8 @@ export default function ManagerStaff() {
       password: "",
       role: u.role as UserRole,
       branchId: u.branchId || "",
+      salary: u.salary != null ? String(u.salary) : "",
+      pinCode: "",
     });
     setDialogOpen(true);
   };
@@ -293,37 +279,44 @@ export default function ManagerStaff() {
       return;
     }
 
+    // PIN validatsiya (faqat afitsant rollari uchun)
+    const isWaiterRole = ["AFITSANT", "SUPER_AFITSANT"].includes(form.role);
+    if (!editItem && isWaiterRole && form.pinCode && form.pinCode.trim().length !== 4) {
+      toast.error("PIN kod 4 ta raqamdan iborat bo'lishi kerak");
+      return;
+    }
+
     if (editItem) {
-      // ✅ Tahrirlash - faqat shaxsiy ma'lumotlar (role va branchId YUBORILMAYDI)
-      const updateData: Partial<StaffPayload> = {
+      // Tahrirlash — role va branchId YUBORILMAYDI
+      const updateData: StaffUpdatePayload = {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         phoneNumer: form.phoneNumer.trim(),
       };
-
-      // Agar parol kiritilgan bo'lsa (va bo'sh emas), uni ham qo'shamiz
       if (form.password && form.password.trim().length > 0) {
         updateData.password = form.password.trim();
       }
-
-      console.log("📝 Update payload:", updateData);
+      if (form.salary && !isNaN(Number(form.salary))) {
+        updateData.salary = Number(form.salary);
+      }
+      if (form.pinCode && form.pinCode.trim().length === 4) {
+        updateData.pinCode = form.pinCode.trim();
+      }
       updateMutation.mutate({ id: editItem.id, data: updateData });
     } else {
-      // ✅ Yangi xodim yaratish - barcha maydonlar kerak
+      // Yangi xodim yaratish
       const payload: StaffPayload = {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         phoneNumer: form.phoneNumer.trim(),
         password: form.password.trim(),
-        role: form.role as
-          | "MANAGER"
-          | "AFITSANT"
-          | "CHEF"
-          | "KASSA"
-          | "SUPER_AFITSANT",
+        role: form.role as "MANAGER" | "AFITSANT" | "CHEF" | "KASSA" | "SUPER_AFITSANT",
         branchId: form.branchId,
+        salary: Number(form.salary) || 0,
       };
-      console.log("➕ Create payload:", payload);
+      if (form.pinCode && form.pinCode.trim().length === 4) {
+        payload.pinCode = form.pinCode.trim();
+      }
       createMutation.mutate(payload);
     }
   };
@@ -509,7 +502,9 @@ export default function ManagerStaff() {
                 <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ism familiya</TableHead>
                 <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Telefon</TableHead>
                 <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Lavozim</TableHead>
-                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Filial</TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  <span className="flex items-center gap-1"><KeyRound className="h-3.5 w-3.5 text-violet-500" />PIN</span>
+                </TableHead>
                 <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Holat</TableHead>
                 <TableHead className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide">Amallar</TableHead>
               </TableRow>
@@ -517,7 +512,7 @@ export default function ManagerStaff() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6}>
+                  <TableCell colSpan={7}>
                     <div className="py-16 flex flex-col items-center gap-3 text-center">
                       <Users className="h-12 w-12 text-muted-foreground opacity-20" />
                       <p className="font-medium text-foreground">
@@ -542,7 +537,15 @@ export default function ManagerStaff() {
                           {roleLabels[u.role as keyof typeof roleLabels] || u.role}
                         </span>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">{branch?.name || "—"}</TableCell>
+                      <TableCell>
+                        {["AFITSANT", "SUPER_AFITSANT"].includes(u.role) ? (
+                          u.pinCode
+                            ? <span className="font-mono font-bold text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-lg tracking-widest text-sm">{u.pinCode}</span>
+                            : <span className="text-xs text-muted-foreground italic">—</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Switch
@@ -587,6 +590,18 @@ export default function ManagerStaff() {
               <div className="flex justify-between"><span className="text-sm text-muted-foreground">Telefon</span><span className="font-mono text-sm">{detailItem.phoneNumer || "—"}</span></div>
               <div className="flex justify-between"><span className="text-sm text-muted-foreground">Lavozim</span><Badge variant="outline">{roleLabels[detailItem.role as keyof typeof roleLabels] || detailItem.role}</Badge></div>
               <div className="flex justify-between"><span className="text-sm text-muted-foreground">Filial</span><span className="text-sm">{branchList.find(b => b.id === detailItem.branchId)?.name || "—"}</span></div>
+              {detailItem.salary != null && (
+                <div className="flex justify-between"><span className="text-sm text-muted-foreground flex items-center gap-1"><Banknote className="h-3.5 w-3.5 text-emerald-500" />Oylik maosh</span><span className="font-medium text-emerald-600">{Number(detailItem.salary).toLocaleString()} so'm</span></div>
+              )}
+              {["AFITSANT", "SUPER_AFITSANT"].includes(detailItem.role) && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground flex items-center gap-1"><KeyRound className="h-3.5 w-3.5 text-violet-500" />PIN kod</span>
+                  {detailItem.pinCode
+                    ? <span className="font-mono font-bold text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-lg tracking-widest">{detailItem.pinCode}</span>
+                    : <span className="text-xs text-muted-foreground italic">Belgilanmagan</span>
+                  }
+                </div>
+              )}
               <div className="flex justify-between"><span className="text-sm text-muted-foreground">Holat</span><Badge variant={detailItem.status === "ACTIVE" ? "default" : "secondary"}>{statusLabels[detailItem.status as keyof typeof statusLabels] || detailItem.status}</Badge></div>
               <div className="flex gap-2 pt-2">
                 <Button size="icon" variant="outline" onClick={() => { const item = detailItem; setDetailItem(null); openEdit(item); }}><Pencil className="h-4 w-4" /></Button>
@@ -638,15 +653,46 @@ export default function ManagerStaff() {
                 placeholder="+998 XX XXX XX XX"
               />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Parol {!editItem && "*"}</Label>
+                <Input
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  placeholder={editItem ? "Yangi parol (o'zgartirish uchun)" : "Parol"}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1.5">
+                  <KeyRound className="h-3.5 w-3.5 text-violet-500" />
+                  PIN kod {!editItem && ["AFITSANT", "SUPER_AFITSANT"].includes(form.role) ? "*" : ""}
+                </Label>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={form.pinCode}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                    setForm({ ...form, pinCode: val });
+                  }}
+                  placeholder={editItem ? "Yangi PIN (o'zgartirish uchun)" : "4 ta raqam"}
+                  className="tracking-widest font-mono"
+                />
+              </div>
+            </div>
             <div className="space-y-2">
-              <Label>Parol {!editItem && "*"}</Label>
+              <Label className="flex items-center gap-1.5">
+                <Banknote className="h-3.5 w-3.5 text-emerald-500" />
+                Oylik maosh (so'm)
+              </Label>
               <Input
-                type="password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                placeholder={
-                  editItem ? "Yangi parol (o'zgartirish uchun)" : "Parol"
-                }
+                type="number"
+                min={0}
+                value={form.salary}
+                onChange={(e) => setForm({ ...form, salary: e.target.value })}
+                placeholder="Masalan: 3000000"
               />
             </div>
             <div className="space-y-2">

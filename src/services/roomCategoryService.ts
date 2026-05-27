@@ -13,12 +13,12 @@ export const roomCategoryService = {
   getByBranch: (branchId: string) =>
     api.get(`/room-category/all/${branchId}`),
 
-  getAll: () => api.get("/room-category"),
+  getAll: () => api.get("/room-category/all"),
 
   create: (data: RoomCategoryPayload) => api.post("/room-category", data),
 
   update: (id: string, data: RoomCategoryUpdatePayload) =>
-    api.put(`/room-category/${id}`, data),
+    api.patch(`/room-category/${id}`, data),
 
   toggleStatus: (id: string) => api.patch(`/room-category/satus/${id}`),
 
