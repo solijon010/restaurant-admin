@@ -178,6 +178,39 @@ function useDebounce<T>(value: T, delay: number): T {
     return debounced;
 }
 
+// ─── Image Compressor ─────────────────────────────────────────────────────────
+async function compressImage(file: File, maxWidth = 900, quality = 0.78): Promise<File> {
+    return new Promise((resolve) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            const canvas = document.createElement('canvas');
+            let { width, height } = img;
+            if (width > maxWidth) {
+                height = Math.round(height * maxWidth / width);
+                width = maxWidth;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { resolve(file); return; }
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob(
+                (blob) => {
+                    if (!blob) { resolve(file); return; }
+                    const name = file.name.replace(/\.[^.]+$/, '.jpg');
+                    resolve(new File([blob], name, { type: 'image/jpeg' }));
+                },
+                'image/jpeg',
+                quality
+            );
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+        img.src = url;
+    });
+}
+
 // ─── ImageUpload Component ────────────────────────────────────────────────────
 interface ImageUploadProps {
     value: File | null;
@@ -711,7 +744,7 @@ export default function ManagerProducts() {
         setViewProdDialog(true);
     };
 
-    const saveProd = () => {
+    const saveProd = async () => {
         if (!prodForm.name.trim()) return toast.error("Mahsulot nomini kiriting");
         if (!prodForm.price || isNaN(Number(prodForm.price))) return toast.error("Narxni to'g'ri kiriting");
         if (!prodForm.productCategoryId) return toast.error("Kategoriyani tanlang");
@@ -725,7 +758,10 @@ export default function ManagerProducts() {
         fd.append("productCategoryId", prodForm.productCategoryId);
         if (prodForm.kitchenId) fd.append("kitchenId", prodForm.kitchenId);
         prodAdditionalInfo.forEach((item) => fd.append("additionalInfo", item));
-        if (prodPhoto) fd.append("photo", prodPhoto);
+        if (prodPhoto) {
+            const compressed = await compressImage(prodPhoto);
+            fd.append("photo", compressed);
+        }
 
         if (editProd) {
             // PATCH: branchId YUBORILMAYDI
@@ -759,7 +795,7 @@ export default function ManagerProducts() {
         setCatDialog(true);
     };
 
-    const saveCat = () => {
+    const saveCat = async () => {
         if (!catName.trim()) return toast.error("Kategoriya nomini kiriting");
 
         if (editCat) {
@@ -770,7 +806,10 @@ export default function ManagerProducts() {
             const fd = new FormData();
             fd.append("name", catName);
             fd.append("branchId", selectedBranchId);
-            if (catIcon) fd.append("icon", catIcon);
+            if (catIcon) {
+                const compressed = await compressImage(catIcon, 400, 0.8);
+                fd.append("icon", compressed);
+            }
             createCategoryMutation.mutate(fd);
         }
     };
