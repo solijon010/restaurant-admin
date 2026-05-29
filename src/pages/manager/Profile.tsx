@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { companyService } from '@/services/companyService';
 import { companies as mockCompanies, branches, roleLabels, Company } from '@/lib/mock-data';
-import { Pencil, X, Check, Building2, Loader2, User, Phone, MapPin, Briefcase } from 'lucide-react';
+import { Pencil, X, Check, Building2, Loader2, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ManagerProfile() {
@@ -32,8 +34,7 @@ export default function ManagerProfile() {
   });
 
   const updateCompanyMutation = useMutation({
-    mutationFn: (data: { id: string; payload: Record<string, unknown> }) =>
-      companyService.update(data.id, data.payload),
+    mutationFn: (data: { id: string; payload: Record<string, unknown> }) => companyService.update(data.id, data.payload),
     onSuccess: () => { toast.success('Kompaniya yangilandi'); setEditingCompany(false); },
     onError: () => toast.error('Xatolik yuz berdi'),
   });
@@ -41,7 +42,6 @@ export default function ManagerProfile() {
   if (!user) return null;
 
   const branch = branches.find(b => b.id === user.branchId);
-  const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
 
   const startEditProfile = () => {
     setProfileForm({ firstName: user.firstName, lastName: user.lastName, phoneNumber: user.phone || '' });
@@ -62,220 +62,167 @@ export default function ManagerProfile() {
     }
   };
 
+  const initials = `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase();
+
   return (
-    <div style={{ maxWidth: 860 }}>
+    <div className="max-w-4xl">
 
-      {/* ── Hero banner ── */}
+      {/* ── Avatar block — sidebar style ── */}
       <div style={{
-        borderRadius: 16, overflow: 'hidden', marginBottom: 24,
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f2a1a 100%)',
-        padding: '32px 32px 28px',
+        background: 'hsl(var(--sidebar-background))',
+        borderRadius: 18,
+        padding: '28px 28px',
+        marginBottom: 24,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 20,
+        boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
         position: 'relative',
+        overflow: 'hidden',
       }}>
-        {/* decorative blobs */}
-        <div style={{ position: 'absolute', top: -30, right: -30, width: 180, height: 180, borderRadius: '50%', background: 'rgba(16,185,129,0.07)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -20, right: 120, width: 100, height: 100, borderRadius: '50%', background: 'rgba(16,185,129,0.05)', pointerEvents: 'none' }} />
+        {/* Background glow */}
+        <div style={{
+          position: 'absolute', top: -40, right: -40,
+          width: 180, height: 180, borderRadius: '50%',
+          background: 'hsl(var(--sidebar-primary) / 0.08)',
+          pointerEvents: 'none',
+        }} />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20, position: 'relative', zIndex: 1 }}>
-          {/* Avatar */}
-          <div style={{
-            width: 72, height: 72, borderRadius: 18, flexShrink: 0,
-            background: 'linear-gradient(135deg, #059669, #10b981)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 0 3px rgba(16,185,129,0.3)',
-            fontSize: 26, fontWeight: 800, color: '#fff',
-          }}>
-            {initials || <User size={28} color="#fff" />}
-          </div>
+        {/* Avatar */}
+        <div style={{
+          width: 72, height: 72, borderRadius: 18, flexShrink: 0,
+          background: 'hsl(var(--sidebar-primary) / 0.2)',
+          border: '2px solid hsl(var(--sidebar-primary) / 0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <span style={{ fontSize: 26, fontWeight: 800, color: 'hsl(var(--sidebar-primary))' }}>
+            {initials || <User />}
+          </span>
+        </div>
 
-          <div>
-            <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>
-              {user.firstName} {user.lastName}
-            </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' }}>
-              <span style={{
-                fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-                padding: '3px 10px', borderRadius: 6,
-                background: 'rgba(16,185,129,0.2)', color: '#34d399',
-                border: '1px solid rgba(16,185,129,0.3)',
-              }}>
-                {roleLabels[user.role]}
+        {/* Info */}
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <p style={{ fontSize: 22, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.01em' }}>
+            {user.firstName} {user.lastName}
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+            <span style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+              padding: '3px 10px', borderRadius: 6,
+              background: 'hsl(var(--sidebar-primary) / 0.18)',
+              color: 'hsl(var(--sidebar-primary))',
+              border: '1px solid hsl(var(--sidebar-primary) / 0.3)',
+            }}>
+              {roleLabels[user.role]}
+            </span>
+            {branch && (
+              <span style={{ fontSize: 12, color: 'hsl(var(--sidebar-foreground) / 0.5)' }}>
+                · {branch.name}
               </span>
-              {branch && (
-                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <MapPin size={12} /> {branch.name}
-                </span>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ── Cards grid ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }} className="grid-cols-1 lg:grid-cols-2">
-
-        {/* Shaxsiy ma'lumotlar */}
-        <div style={{
-          background: '#fff', borderRadius: 14,
-          border: '1px solid #e5e7eb',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '16px 20px', borderBottom: '1px solid #f3f4f6',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <User size={15} style={{ color: '#059669' }} />
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>Shaxsiy ma'lumotlar</span>
-            </div>
-            <button
-              onClick={editingProfile ? () => setEditingProfile(false) : startEditProfile}
-              style={{
-                width: 30, height: 30, borderRadius: 7, border: '1px solid #e5e7eb',
-                background: '#f9fafb', cursor: 'pointer', display: 'flex',
-                alignItems: 'center', justifyContent: 'center', color: '#6b7280',
-                transition: 'all 0.12s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#059669'; e.currentTarget.style.color = '#059669'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#6b7280'; }}
-            >
-              {editingProfile ? <X size={13} /> : <Pencil size={13} />}
-            </button>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* ── Profile Card ──────────────────────────────────────────────────── */}
+        <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-border/60 flex items-center justify-between">
+            <h3 className="font-semibold text-foreground">Shaxsiy ma'lumotlar</h3>
+            <Button variant="ghost" size="icon" onClick={editingProfile ? () => setEditingProfile(false) : startEditProfile} className="h-8 w-8 text-muted-foreground hover:text-foreground">
+              {editingProfile ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+            </Button>
           </div>
 
-          <div style={{ padding: '16px 20px' }}>
+          <div className="p-5">
             {editingProfile ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                  <div>
-                    <Label style={{ fontSize: 12, color: '#6b7280' }}>Ism</Label>
-                    <Input value={profileForm.firstName} onChange={e => setProfileForm({ ...profileForm, firstName: e.target.value })} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label style={{ fontSize: 12, color: '#6b7280' }}>Familiya</Label>
-                    <Input value={profileForm.lastName} onChange={e => setProfileForm({ ...profileForm, lastName: e.target.value })} className="mt-1" />
-                  </div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div><Label className="text-xs text-muted-foreground uppercase tracking-wide">Ism</Label><Input value={profileForm.firstName} onChange={e => setProfileForm({ ...profileForm, firstName: e.target.value })} className="mt-1.5" /></div>
+                  <div><Label className="text-xs text-muted-foreground uppercase tracking-wide">Familiya</Label><Input value={profileForm.lastName} onChange={e => setProfileForm({ ...profileForm, lastName: e.target.value })} className="mt-1.5" /></div>
                 </div>
-                <div>
-                  <Label style={{ fontSize: 12, color: '#6b7280' }}>Telefon</Label>
-                  <Input value={profileForm.phoneNumber} onChange={e => setProfileForm({ ...profileForm, phoneNumber: e.target.value })} className="mt-1" />
-                </div>
-                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                  <button onClick={() => setEditingProfile(false)} style={{ padding: '7px 14px', borderRadius: 7, border: '1px solid #e5e7eb', background: '#fff', fontSize: 13, cursor: 'pointer', color: '#374151' }}>Bekor</button>
-                  <button onClick={() => setEditingProfile(false)} style={{ padding: '7px 14px', borderRadius: 7, border: 'none', background: '#059669', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <Check size={13} /> Saqlash
-                  </button>
+                <div><Label className="text-xs text-muted-foreground uppercase tracking-wide">Telefon raqam</Label><Input value={profileForm.phoneNumber} onChange={e => setProfileForm({ ...profileForm, phoneNumber: e.target.value })} className="mt-1.5" /></div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" size="sm" onClick={() => setEditingProfile(false)}>Bekor qilish</Button>
+                  <Button size="sm" onClick={() => setEditingProfile(false)}><Check className="h-3.5 w-3.5 mr-1" />Saqlash</Button>
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {[
-                  { label: 'Ism familiya', value: `${user.firstName} ${user.lastName}`, icon: User },
-                  { label: 'Lavozim', value: roleLabels[user.role], icon: Briefcase },
-                  ...(branch ? [{ label: 'Filial', value: branch.name, icon: MapPin }] : []),
-                  ...(user.phone ? [{ label: 'Telefon', value: user.phone, icon: Phone }] : []),
-                ].map(({ label, value, icon: Icon }) => (
-                  <div key={label} style={{
-                    padding: '12px 14px', borderRadius: 9,
-                    background: '#f9fafb', border: '1px solid #f3f4f6',
-                    display: 'flex', alignItems: 'center', gap: 12,
-                  }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Icon size={14} style={{ color: '#059669' }} />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 11, color: '#9ca3af', margin: 0 }}>{label}</p>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: '#111827', margin: 0 }}>{value}</p>
-                    </div>
+              <div className="space-y-3">
+                <div className="p-3 rounded-xl bg-muted/40">
+                  <p className="text-xs text-muted-foreground mb-0.5">Ism familiya</p>
+                  <p className="font-medium text-foreground">{user.firstName} {user.lastName}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-muted/40">
+                  <p className="text-xs text-muted-foreground mb-0.5">Lavozim</p>
+                  <p className="font-medium text-foreground">{roleLabels[user.role]}</p>
+                </div>
+                {branch && (
+                  <div className="p-3 rounded-xl bg-muted/40">
+                    <p className="text-xs text-muted-foreground mb-0.5">Filial</p>
+                    <p className="font-medium text-foreground">{branch.name}</p>
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
-        {/* Kompaniya */}
+        {/* ── Company Card ──────────────────────────────────────────────────── */}
         {company && (
-          <div style={{
-            background: '#fff', borderRadius: 14,
-            border: '1px solid #e5e7eb',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-            overflow: 'hidden',
-          }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '16px 20px', borderBottom: '1px solid #f3f4f6',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Building2 size={15} style={{ color: '#059669' }} />
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>Kompaniya</span>
-              </div>
-              <button
-                onClick={editingCompany ? () => setEditingCompany(false) : startEditCompany}
-                style={{
-                  width: 30, height: 30, borderRadius: 7, border: '1px solid #e5e7eb',
-                  background: '#f9fafb', cursor: 'pointer', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center', color: '#6b7280',
-                  transition: 'all 0.12s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#059669'; e.currentTarget.style.color = '#059669'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#6b7280'; }}
-              >
-                {editingCompany ? <X size={13} /> : <Pencil size={13} />}
-              </button>
+          <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-border/60 flex items-center justify-between">
+              <h3 className="font-semibold text-foreground">Kompaniya</h3>
+              <Button variant="ghost" size="icon" onClick={editingCompany ? () => setEditingCompany(false) : startEditCompany} className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                {editingCompany ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+              </Button>
             </div>
 
-            <div style={{ padding: '16px 20px' }}>
-              {/* Logo */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-                <div style={{
-                  width: 52, height: 52, borderRadius: 12, flexShrink: 0,
-                  background: '#f1f5f9', border: '1px solid #e5e7eb',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-                }}>
-                  {company.logo
-                    ? <img src={company.logo} alt={company.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <Building2 size={22} style={{ color: '#9ca3af' }} />
-                  }
+            <div className="p-5">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="h-14 w-14 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden shrink-0 border border-border/60">
+                  {company.logo ? <img src={company.logo} alt={company.name} className="h-full w-full object-cover" /> : <Building2 className="h-7 w-7 text-muted-foreground" />}
                 </div>
                 {editingCompany && (
-                  <div style={{ flex: 1 }}>
-                    <Label style={{ fontSize: 12, color: '#6b7280' }}>Logo yuklash</Label>
-                    <Input type="file" accept="image/*" onChange={e => setLogoFile(e.target.files?.[0] || null)} className="mt-1 text-sm" />
+                  <div>
+                    <Label className="text-xs text-muted-foreground uppercase tracking-wide">Logo yuklash</Label>
+                    <Input type="file" accept="image/*" onChange={e => setLogoFile(e.target.files?.[0] || null)} className="mt-1.5 text-sm" />
                   </div>
                 )}
               </div>
 
               {editingCompany ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div><Label style={{ fontSize: 12, color: '#6b7280' }}>Nomi</Label><Input value={companyForm.name} onChange={e => setCompanyForm({ ...companyForm, name: e.target.value })} className="mt-1" /></div>
-                  <div><Label style={{ fontSize: 12, color: '#6b7280' }}>Asoschisi</Label><Input value={companyForm.founderName} onChange={e => setCompanyForm({ ...companyForm, founderName: e.target.value })} className="mt-1" /></div>
-                  <div><Label style={{ fontSize: 12, color: '#6b7280' }}>Telefon</Label><Input value={companyForm.phone} onChange={e => setCompanyForm({ ...companyForm, phone: e.target.value })} className="mt-1" /></div>
-                  <div><Label style={{ fontSize: 12, color: '#6b7280' }}>Tavsif</Label><Textarea value={companyForm.bio} onChange={e => setCompanyForm({ ...companyForm, bio: e.target.value })} className="mt-1" rows={3} /></div>
-                  <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                    <button onClick={() => setEditingCompany(false)} style={{ padding: '7px 14px', borderRadius: 7, border: '1px solid #e5e7eb', background: '#fff', fontSize: 13, cursor: 'pointer', color: '#374151' }}>Bekor</button>
-                    <button onClick={saveCompany} disabled={updateCompanyMutation.isPending} style={{ padding: '7px 14px', borderRadius: 7, border: 'none', background: '#059669', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-                      {updateCompanyMutation.isPending ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />} Saqlash
-                    </button>
+                <div className="space-y-4">
+                  <div><Label className="text-xs text-muted-foreground uppercase tracking-wide">Nomi</Label><Input value={companyForm.name} onChange={e => setCompanyForm({ ...companyForm, name: e.target.value })} className="mt-1.5" /></div>
+                  <div><Label className="text-xs text-muted-foreground uppercase tracking-wide">Asoschisi</Label><Input value={companyForm.founderName} onChange={e => setCompanyForm({ ...companyForm, founderName: e.target.value })} className="mt-1.5" /></div>
+                  <div><Label className="text-xs text-muted-foreground uppercase tracking-wide">Telefon</Label><Input value={companyForm.phone} onChange={e => setCompanyForm({ ...companyForm, phone: e.target.value })} className="mt-1.5" /></div>
+                  <div><Label className="text-xs text-muted-foreground uppercase tracking-wide">Tavsif</Label><Textarea value={companyForm.bio} onChange={e => setCompanyForm({ ...companyForm, bio: e.target.value })} className="mt-1.5" rows={3} /></div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button variant="outline" size="sm" onClick={() => setEditingCompany(false)}>Bekor qilish</Button>
+                    <Button size="sm" onClick={saveCompany} disabled={updateCompanyMutation.isPending}>
+                      {updateCompanyMutation.isPending ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1" />}
+                      Saqlash
+                    </Button>
                   </div>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {[
-                    { label: 'Nomi', value: company.name },
-                    { label: 'Asoschisi', value: company.founderName },
-                    { label: 'Telefon', value: company.phone },
-                  ].filter(i => i.value).map(({ label, value }) => (
-                    <div key={label} style={{ padding: '12px 14px', borderRadius: 9, background: '#f9fafb', border: '1px solid #f3f4f6' }}>
-                      <p style={{ fontSize: 11, color: '#9ca3af', margin: 0 }}>{label}</p>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: '#111827', margin: 0 }}>{value}</p>
-                    </div>
-                  ))}
+                <div className="space-y-3">
+                  <div className="p-3 rounded-xl bg-muted/40">
+                    <p className="text-xs text-muted-foreground mb-0.5">Nomi</p>
+                    <p className="font-medium text-foreground">{company.name}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-muted/40">
+                    <p className="text-xs text-muted-foreground mb-0.5">Asoschisi</p>
+                    <p className="font-medium text-foreground">{company.founderName}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-muted/40">
+                    <p className="text-xs text-muted-foreground mb-0.5">Telefon</p>
+                    <p className="font-medium text-foreground">{company.phone}</p>
+                  </div>
                 </div>
               )}
             </div>
-          </div>
+          </Card>
         )}
       </div>
     </div>
