@@ -498,7 +498,7 @@ export default function ManagerStaff() {
         <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-gradient-to-r from-slate-50 to-blue-50/30 hover:from-slate-50 hover:to-blue-50/30">
+              <TableRow className="bg-muted/30 hover:bg-muted/50">
                 <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ism familiya</TableHead>
                 <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Telefon</TableHead>
                 <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Lavozim</TableHead>

@@ -3,14 +3,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
-    Loader2, Search, MoreVertical, Eye,
+    Loader2, Search, MoreVertical, Eye, X,
     ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
     Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart,
 } from 'lucide-react';
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { useBranch } from '@/contexts/BranchContext';
@@ -39,6 +39,24 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 };
 const STATUS_VARIANT: Record<OrderStatus, 'default' | 'secondary' | 'destructive'> = {
     SUCCESS: 'default', PENDING: 'secondary', CANCELED: 'destructive',
+};
+
+const StatusBadge = ({ status }: { status: OrderStatus }) => {
+    if (status === 'SUCCESS') return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+            Yakunlangan
+        </span>
+    );
+    if (status === 'CANCELED') return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+            Bekor qilingan
+        </span>
+    );
+    return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+            Kutilmoqda
+        </span>
+    );
 };
 
 // Shashlik hisobi uchun kategoriyalar
@@ -258,27 +276,27 @@ export default function ManagerOrders() {
                 <TabsList className="bg-transparent p-0 h-auto rounded-none gap-3 w-full justify-start mb-6">
                     <TabsTrigger
                         value="orders"
-                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-600 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 data-[state=active]:shadow-md
-                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
+                        className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
+                            data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm
+                            data-[state=inactive]:bg-background data-[state=inactive]:text-blue-600 data-[state=inactive]:border-blue-200 data-[state=inactive]:hover:bg-blue-50"
                     >
                         <ShoppingCart className="h-4 w-4 shrink-0" />
                         Buyurtmalar tarixi
                     </TabsTrigger>
                     <TabsTrigger
                         value="shashlik"
-                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-green-200 bg-green-50 text-green-600 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:border-green-600 data-[state=active]:shadow-md
-                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
+                        className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
+                            data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 data-[state=active]:shadow-sm
+                            data-[state=inactive]:bg-background data-[state=inactive]:text-emerald-600 data-[state=inactive]:border-emerald-200 data-[state=inactive]:hover:bg-emerald-50"
                     >
                         <Flame className="h-4 w-4 shrink-0" />
                         Shashlik hisobi
                     </TabsTrigger>
                     <TabsTrigger
                         value="qanot-ordak"
-                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-amber-200 bg-amber-50 text-amber-600 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:border-amber-500 data-[state=active]:shadow-md
-                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
+                        className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
+                            data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:border-amber-500 data-[state=active]:shadow-sm
+                            data-[state=inactive]:bg-background data-[state=inactive]:text-amber-600 data-[state=inactive]:border-amber-200 data-[state=inactive]:hover:bg-amber-50"
                     >
                         <Bird className="h-4 w-4 shrink-0" />
                         Qanot va O'rdak
@@ -387,9 +405,9 @@ export default function ManagerOrders() {
                                             </div>
                                         </TableCell></TableRow>
                                     ) : filtered.map(o => {
-                                        const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ×${oi.count}`);
+                                        const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ${oi.count} dona`);
                                         return (
-                                            <TableRow key={o.id} className={`transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
+                                            <TableRow key={o.id} className={`transition-opacity border-b border-border hover:bg-muted/30 ${isFetching ? 'opacity-60' : ''}`} style={{ height: 64 }}>
                                                 <TableCell className="font-semibold">{o.room?.name || '—'}</TableCell>
 
                                                 <TableCell>
@@ -426,22 +444,13 @@ export default function ManagerOrders() {
                                                 <TableCell className="font-semibold">{formatPrice(getOrderTotal(o))}</TableCell>
 
                                                 <TableCell>
-                                                    <Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABELS[o.status]}</Badge>
+                                                    <StatusBadge status={o.status} />
                                                 </TableCell>
 
                                                 <TableCell className="text-right">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                                <MoreVertical className="h-4 w-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem onClick={() => setDetailOrder(o)}>
-                                                                <Eye className="h-4 w-4 mr-2" /> Batafsil
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted" onClick={() => setDetailOrder(o)}>
+                                                        <Eye className="h-4 w-4 text-muted-foreground" />
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         );
@@ -674,87 +683,99 @@ export default function ManagerOrders() {
             </Tabs>
 
             {/* ═══ DETAIL SHEET ═══ */}
-            <Sheet open={!!detailOrder} onOpenChange={() => setDetailOrder(null)}>
-                <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto">
-                    <SheetHeader><SheetTitle>Buyurtma tafsilotlari</SheetTitle></SheetHeader>
+            <Dialog open={!!detailOrder} onOpenChange={() => setDetailOrder(null)}>
+                <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto p-0 gap-0 [&>button]:hidden">
                     {detailOrder && (
-                        <div className="space-y-3 py-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="rounded-lg bg-muted/50 px-3 py-2">
-                                    <p className="text-xs text-muted-foreground mb-0.5">Xona / Stol</p>
-                                    <p className="font-semibold">{detailOrder.room?.name || '—'}</p>
+                        <div>
+                            {/* Header */}
+                            <div className="sticky top-0 bg-card border-b border-border px-6 py-4 z-10">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h2 className="text-lg font-bold tracking-tight">Buyurtma tafsilotlari</h2>
+                                        <p className="text-sm text-muted-foreground mt-0.5">{detailOrder.room?.name || '—'}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <StatusBadge status={detailOrder.status} />
+                                        <button
+                                            onClick={() => setDetailOrder(null)}
+                                            className="w-7 h-7 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors"
+                                        >
+                                            <X className="h-3.5 w-3.5 text-muted-foreground" />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="rounded-lg bg-muted/50 px-3 py-2">
-                                    <p className="text-xs text-muted-foreground mb-0.5">Holat</p>
-                                    <Badge variant={STATUS_VARIANT[detailOrder.status]}>{STATUS_LABELS[detailOrder.status]}</Badge>
+                            </div>
+
+                            <div className="px-6 py-5 space-y-5">
+                                {/* Vaqt va davomiylik */}
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                                        <p className="text-xs text-emerald-600 font-medium mb-1 flex items-center gap-1"><LogIn className="h-3 w-3" /> Kirdi</p>
+                                        <p className="text-base font-bold text-emerald-800">{formatTime(detailOrder.createdAt)}</p>
+                                        <p className="text-xs text-emerald-600 mt-0.5">{formatDate(detailOrder.createdAt)}</p>
+                                    </div>
+                                    <div className="rounded-xl border border-red-200 bg-red-50 p-3">
+                                        <p className="text-xs text-red-600 font-medium mb-1 flex items-center gap-1"><LogOut className="h-3 w-3" /> Chiqdi</p>
+                                        <p className="text-base font-bold text-red-800">{formatTime(detailOrder.endAt)}</p>
+                                        {detailOrder.endAt && <p className="text-xs text-red-600 mt-0.5">{formatDate(detailOrder.endAt)}</p>}
+                                    </div>
+                                    <div className="rounded-xl border border-border bg-muted/40 p-3">
+                                        <p className="text-xs text-muted-foreground font-medium mb-1 flex items-center gap-1"><Clock className="h-3 w-3" /> Davomiylik</p>
+                                        <p className="text-base font-bold">{duration(detailOrder.createdAt, detailOrder.endAt)}</p>
+                                    </div>
                                 </div>
-                                <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2">
-                                    <p className="text-xs text-green-600 mb-0.5 flex items-center gap-1">
-                                        <LogIn className="h-3 w-3" /> O'tirgan vaqti
+
+                                {/* Summa + Afitsant */}
+                                <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between">
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-0.5">Jami summa</p>
+                                        <p className="text-2xl font-black text-emerald-600">{formatPrice(getOrderTotal(detailOrder))}</p>
+                                    </div>
+                                    {detailOrder.user && (
+                                        <div className="text-right">
+                                            <p className="text-xs text-muted-foreground mb-0.5">Afitsant</p>
+                                            <p className="text-sm font-semibold">{detailOrder.user.firstName} {detailOrder.user.lastName}</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Mahsulotlar */}
+                                <div>
+                                    <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                                        Mahsulotlar · {detailOrder.orderItem.length} ta
                                     </p>
-                                    <p className="font-semibold text-green-800">{formatTime(detailOrder.createdAt)}</p>
-                                    <p className="text-xs text-green-600">{formatDate(detailOrder.createdAt)}</p>
-                                </div>
-                                <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2">
-                                    <p className="text-xs text-red-600 mb-0.5 flex items-center gap-1">
-                                        <LogOut className="h-3 w-3" /> Turgan vaqti
-                                    </p>
-                                    <p className="font-semibold text-red-800">{formatTime(detailOrder.endAt)}</p>
-                                    {detailOrder.endAt && <p className="text-xs text-red-600">{formatDate(detailOrder.endAt)}</p>}
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
-                                <span className="text-sm text-muted-foreground flex items-center gap-1">
-                                    <Clock className="h-3.5 w-3.5" /> Davomiylik
-                                </span>
-                                <span className="font-semibold">{duration(detailOrder.createdAt, detailOrder.endAt)}</span>
-                            </div>
-
-                            <div className="flex items-center justify-between rounded-lg bg-primary/5 border border-primary/20 px-3 py-2.5">
-                                <span className="text-sm font-medium">Jami summa</span>
-                                <span className="text-lg font-bold text-primary">{formatPrice(getOrderTotal(detailOrder))}</span>
-                            </div>
-
-                            {detailOrder.user && (
-                                <div className="flex items-center justify-between px-1">
-                                    <span className="text-sm text-muted-foreground">Afitsant</span>
-                                    <span className="font-medium">{detailOrder.user.firstName} {detailOrder.user.lastName}</span>
-                                </div>
-                            )}
-
-                            <div className="pt-1">
-                                <p className="text-sm font-semibold mb-2">
-                                    Buyurtma tarkibi ({detailOrder.orderItem.length} ta mahsulot):
-                                </p>
-                                <div className="space-y-2">
-                                    {detailOrder.orderItem.map((oi, i) => {
-                                        const isSpecial = isSpecialProduct(oi.product?.name || '');
-                                        return (
-                                            <div key={i} className={`flex items-center justify-between rounded-lg px-3 py-2.5 ${isSpecial ? 'bg-orange-50 border border-orange-200' : 'bg-muted/40'}`}>
-                                                <div>
-                                                    <span className={`font-medium text-sm ${isSpecial ? 'text-orange-800' : ''}`}>
-                                                        {oi.product?.name || '?'}
-                                                    </span>
-                                                    {oi.product?.unit && (
-                                                        <span className="text-muted-foreground text-xs ml-1.5">{oi.product.unit}</span>
-                                                    )}
+                                    <div className="rounded-xl border border-border overflow-hidden">
+                                        {detailOrder.orderItem.map((oi, i) => {
+                                            const isSpecial = isSpecialProduct(oi.product?.name || '');
+                                            return (
+                                                <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < detailOrder.orderItem.length - 1 ? 'border-b border-border' : ''} ${isSpecial ? 'bg-amber-50' : i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}`}>
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold shrink-0 ${isSpecial ? 'bg-amber-200 text-amber-800' : 'bg-muted text-muted-foreground'}`}>
+                                                            {i + 1}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className={`text-sm font-medium truncate ${isSpecial ? 'text-amber-800' : ''}`}>{oi.product?.name || '?'}</p>
+                                                            {oi.product?.unit && <p className="text-xs text-muted-foreground">{oi.product.unit}</p>}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-4 shrink-0 ml-3">
+                                                        <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                                                            {oi.count} dona
+                                                        </span>
+                                                        <span className="text-sm font-bold w-28 text-right">
+                                                            {formatPrice(Number(oi.product?.price) * Number(oi.count))}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <span className="text-muted-foreground text-sm">×{oi.count}</span>
-                                                    <span className="ml-2 font-semibold text-sm">
-                                                        {formatPrice(Number(oi.product?.price) * Number(oi.count))}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     )}
-                </SheetContent>
-            </Sheet>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

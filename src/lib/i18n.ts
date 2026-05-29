@@ -67,6 +67,23 @@ const translations: Record<string, Record<string, string>> = {
   "Logo yuklash": { cyrillic: "Лого юклаш" },
   Filial: { cyrillic: "Филиал" },
 
+  // Nav items
+  "Umumiy hisobot": { cyrillic: "Умумий ҳисобот" },
+  "Xona yaratish": { cyrillic: "Хона яратиш" },
+  "Ofitsiant hisoboti": { cyrillic: "Официант ҳисоботи" },
+  "Savdo tahlili": { cyrillic: "Савдо таҳлили" },
+  "Boshqaruv": { cyrillic: "Бошқарув" },
+  "Filial qo'shish": { cyrillic: "Филиал қўшиш" },
+  "Qo'shish": { cyrillic: "Қўшиш" },
+  "Ko'rinish": { cyrillic: "Кўриниш" },
+  "Interfeys tili": { cyrillic: "Интерфейс тили" },
+  "Ilova parametrlari va filiallarni boshqaring": { cyrillic: "Илова параметрлари ва филиалларни бошқаринг" },
+  "Kompaniya filiallari": { cyrillic: "Компания филиаллари" },
+  "Filialni tahrirlash": { cyrillic: "Филиални таҳрирлаш" },
+  "Yangi filial": { cyrillic: "Янги филиал" },
+  "Profil sozlamalari": { cyrillic: "Профил созламалари" },
+  "Shaxsiy ma'lumotlarni ko'rish": { cyrillic: "Шахсий маълумотларни кўриш" },
+
   // Ranges
   "1 hafta": { cyrillic: "1 ҳафта" },
   "1 oy": { cyrillic: "1 ой" },
