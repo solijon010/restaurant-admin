@@ -189,7 +189,6 @@ export default function ManagerOrders() {
         queryFn: async () => {
             const params: Record<string, unknown> = { page, limit };
             if (statusFilter !== 'ALL') params.status = statusFilter;
-            if (dateFilter) params.date = dateFilter;
             const res = await api.get(`/order/branch/${selectedBranchId}`, { params });
             return res.data;
         },
@@ -215,7 +214,7 @@ export default function ManagerOrders() {
         queryKey: ['orders-sh', selectedBranchId, shashlikDate],
         queryFn: async () => {
             const res = await api.get(`/order/branch/${selectedBranchId}`, {
-                params: { date: shashlikDate, limit: 1000 },
+                params: { limit: 1000 },
             });
             return res.data;
         },
@@ -223,7 +222,7 @@ export default function ManagerOrders() {
         staleTime: 2 * 60 * 1000,
     });
 
-    const shOrders   = toArray<Order>(shRaw);
+    const shOrders = toArray<Order>(shRaw).filter(o => (o.createdAt ?? '').slice(0, 10) === shashlikDate);
     const stats      = buildStats(shOrders, PREDEFINED_CATEGORIES);
     const grandTotal = stats.reduce((s, i) => s + i.count, 0);
     const grandSum   = stats.reduce((s, i) => s + i.sum, 0);
@@ -233,7 +232,7 @@ export default function ManagerOrders() {
         queryKey: ['orders-qo', selectedBranchId, qanotDate],
         queryFn: async () => {
             const res = await api.get(`/order/branch/${selectedBranchId}`, {
-                params: { date: qanotDate, limit: 1000 },
+                params: { limit: 1000 },
             });
             return res.data;
         },
@@ -241,7 +240,7 @@ export default function ManagerOrders() {
         staleTime: 2 * 60 * 1000,
     });
 
-    const qoOrders   = toArray<Order>(qoRaw);
+    const qoOrders = toArray<Order>(qoRaw).filter(o => (o.createdAt ?? '').slice(0, 10) === qanotDate);
     const qoStats    = buildStats(qoOrders, QANOT_ORDAK_CATEGORIES);
     const qoTotal    = qoStats.reduce((s, i) => s + i.count, 0);
     const qoSum      = qoStats.reduce((s, i) => s + i.sum, 0);
