@@ -7,12 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { companyService } from '@/services/companyService';
-import { companies as mockCompanies, branches, roleLabels, Company } from '@/lib/mock-data';
+import { userService, StaffUpdatePayload } from '@/services/userService';
+import { useBranch } from '@/contexts/BranchContext';
+import { companies as mockCompanies, roleLabels, Company } from '@/lib/mock-data';
 import { Pencil, X, Check, Building2, Loader2, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ManagerProfile() {
   const { user } = useAuth();
+  const { branches } = useBranch();
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingCompany, setEditingCompany] = useState(false);
   const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', phoneNumber: '' });
@@ -39,6 +42,12 @@ export default function ManagerProfile() {
     onError: () => toast.error('Xatolik yuz berdi'),
   });
 
+  const updateProfileMutation = useMutation({
+    mutationFn: (data: StaffUpdatePayload) => userService.update(user!.id, data),
+    onSuccess: () => { toast.success("Profil yangilandi"); setEditingProfile(false); },
+    onError: () => toast.error('Profilni saqlashda xatolik yuz berdi'),
+  });
+
   if (!user) return null;
 
   const branch = branches.find(b => b.id === user.branchId);
@@ -46,6 +55,19 @@ export default function ManagerProfile() {
   const startEditProfile = () => {
     setProfileForm({ firstName: user.firstName, lastName: user.lastName, phoneNumber: user.phone || '' });
     setEditingProfile(true);
+  };
+
+  const saveProfile = () => {
+    if (!profileForm.firstName.trim()) { toast.error('Ism kiriting'); return; }
+    if (!profileForm.lastName.trim()) { toast.error('Familiya kiriting'); return; }
+    const payload: StaffUpdatePayload = {
+      firstName: profileForm.firstName.trim(),
+      lastName: profileForm.lastName.trim(),
+    };
+    if (profileForm.phoneNumber.trim()) {
+      payload.phoneNumer = profileForm.phoneNumber.trim();
+    }
+    updateProfileMutation.mutate(payload);
   };
 
   const startEditCompany = () => {
@@ -116,8 +138,11 @@ export default function ManagerProfile() {
                 </div>
                 <div><Label className="text-xs text-muted-foreground uppercase tracking-wide">Telefon raqam</Label><Input value={profileForm.phoneNumber} onChange={e => setProfileForm({ ...profileForm, phoneNumber: e.target.value })} className="mt-1.5" /></div>
                 <div className="flex justify-end gap-2 pt-2">
-                  <Button variant="outline" size="sm" onClick={() => setEditingProfile(false)}>Bekor qilish</Button>
-                  <Button size="sm" onClick={() => setEditingProfile(false)}><Check className="h-3.5 w-3.5 mr-1" />Saqlash</Button>
+                  <Button variant="outline" size="sm" onClick={() => setEditingProfile(false)} disabled={updateProfileMutation.isPending}>Bekor qilish</Button>
+                  <Button size="sm" onClick={saveProfile} disabled={updateProfileMutation.isPending}>
+                    {updateProfileMutation.isPending ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1" />}
+                    Saqlash
+                  </Button>
                 </div>
               </div>
             ) : (

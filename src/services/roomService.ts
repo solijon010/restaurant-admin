@@ -20,7 +20,7 @@ export const roomService = {
 
   create: (data: RoomPayload) => api.post("/room", data),
 
-  update: (id: string, data: RoomUpdatePayload) => api.put(`/room/${id}`, data),
+  update: (id: string, data: RoomUpdatePayload) => api.patch(`/room/${id}`, data),
 
   toggleStatus: (id: string) => api.patch(`/room/status/${id}`),
 

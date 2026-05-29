@@ -87,15 +87,12 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
         transform transition-transform duration-200 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-                {/* Brand */}
-                <div className="h-16 px-4 flex items-center justify-between border-b border-sidebar-border shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
-                            <span className="text-[12px] font-black text-white">SC</span>
-                        </div>
+                <div className="p-6 border-b border-sidebar-border flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-2">
+                        <img src="/LOGO.PNJ.png" alt="Logo" style={{ width: 36, height: 36, objectFit: 'contain' }} />
                         <div>
-                            <p className="text-[14px] font-semibold text-white leading-none">Sohil Choyxonasi</p>
-                            <p className="text-[10px] text-sidebar-foreground/40 mt-0.5 uppercase tracking-widest">{t('Boshqaruv tizimi', language)}</p>
+                            <h1 className="text-lg font-bold text-sidebar-primary-foreground">Sohil Choyxonasi</h1>
+                            <p className="text-xs text-sidebar-foreground/60 mt-0.5">{t('Boshqaruv tizimi', language)}</p>
                         </div>
                     </div>
                     <button onClick={closeSidebar} className="lg:hidden p-1 rounded text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors">

@@ -8,6 +8,17 @@ export interface StaffPayload {
     password: string;
     role: "MANAGER" | "AFITSANT" | "CHEF" | "KASSA" | "SUPER_AFITSANT";
     branchId: string;
+    salary: number;
+    pinCode?: string; // 4 xonali PIN kod (afitsant ilovasi uchun)
+}
+
+export interface StaffUpdatePayload {
+    firstName?: string;
+    lastName?: string;
+    phoneNumer?: string;
+    password?: string;
+    salary?: number;
+    pinCode?: string; // 4 xonali PIN kod yangilash
 }
 
 // ========== MANAGER ==========
@@ -38,6 +49,8 @@ export interface UserResponse {
     branchId: string;
     companyId: string;
     status: string;
+    salary?: number;
+    pinCode?: string; // backend qo'shgandan keyin to'ldiriladi
     createdAt: string;
     updatedAt: string;
 }
@@ -66,24 +79,21 @@ export const userService = {
     createStaff: (data: StaffPayload) => api.post("/user", data),
 
     // Xodim tahrirlash
-    update: (id: string, data: Partial<StaffPayload>) =>
+    update: (id: string, data: StaffUpdatePayload) =>
         api.patch(`/user/${id}`, data),
 
     // Xodim o'chirish
     delete: (id: string) => api.delete(`/user/${id}`),
 
-    // Status toggle (agar backend qo'llab-quvvatlasa)
+    // Status toggle
     toggleStatus: (id: string) => api.patch(`/user/status/${id}`),
 
     // ========== MANAGER METHODS ==========
 
-    // Managers olish (search, offset, limit majburiy emas)
+    // Managers olish
     getManagers: (params?: { status?: string }) => {
-        const query: any = { ...params };
-
-        // agar status bo'lmasa, yubormaymiz
+        const query: Record<string, string> = { ...params };
         if (!query.status) delete query.status;
-
         // to'g'ri endpoint – managaer (backend typo)
         return api.get("/user/managaer", { params: query });
     },
