@@ -178,15 +178,15 @@ export default function Settings() {
                   <div key={b.id} style={{
                     background: '#fff',
                     border: `1.5px solid ${isCurrent ? '#6ee7b7' : '#e5e7eb'}`,
-                    borderRadius: 14,
-                    padding: '16px 18px',
+                    borderRadius: 999,
+                    padding: '10px 14px',
                     boxShadow: isCurrent ? '0 0 0 3px rgba(16,185,129,0.08)' : '0 1px 4px rgba(0,0,0,0.04)',
                     display: 'flex', alignItems: 'center', gap: 14,
                     transition: 'all 0.15s',
                   }}>
                     {/* Icon */}
                     <div style={{
-                      width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                      width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
                       background: isCurrent ? '#ecfdf5' : '#f8fafc',
                       border: `1.5px solid ${isCurrent ? '#a7f3d0' : '#e5e7eb'}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -306,27 +306,27 @@ function SettingCard({ icon, title, desc, children }: {
 }) {
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
-      padding: '16px 20px',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      gap: 12, padding: '12px 16px',
       background: '#fff',
-      border: '1.5px solid #f1f5f9',
-      borderRadius: 12,
-      boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-      transition: 'border-color 0.15s',
+      border: '1px solid #f1f5f9',
+      borderRadius: 999,
+      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+      transition: 'all 0.15s',
     }}
-      onMouseEnter={e => (e.currentTarget.style.borderColor = '#d1fae5')}
-      onMouseLeave={e => (e.currentTarget.style.borderColor = '#f1f5f9')}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = '#a7f3d0'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(16,185,129,0.1)'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = '#f1f5f9'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)'; }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
-          width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+          width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
           background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           {icon}
         </div>
         <div>
-          <p style={{ fontSize: 14, fontWeight: 600, color: '#0f172a', margin: 0 }}>{title}</p>
-          <p style={{ fontSize: 12, color: '#94a3b8', margin: 0, marginTop: 2 }}>{desc}</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#0f172a', margin: 0 }}>{title}</p>
+          <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{desc}</p>
         </div>
       </div>
       {children}
@@ -339,9 +339,9 @@ function Chip({ active, onClick, children }: {
 }) {
   return (
     <button type="button" onClick={onClick} style={{
-      display: 'inline-flex', alignItems: 'center', gap: 5,
-      padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
-      fontSize: 13, fontWeight: active ? 600 : 400,
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      padding: '5px 12px', borderRadius: 999, cursor: 'pointer',
+      fontSize: 12, fontWeight: active ? 600 : 400,
       border: `1.5px solid ${active ? '#059669' : '#e5e7eb'}`,
       background: active ? '#059669' : '#fff',
       color: active ? '#fff' : '#374151',
@@ -360,7 +360,7 @@ function ActionBtn({ children, onClick, title, danger, disabled }: {
 }) {
   return (
     <button onClick={onClick} title={title} disabled={disabled} style={{
-      width: 32, height: 32, borderRadius: 8,
+      width: 30, height: 30, borderRadius: '50%',
       border: '1.5px solid #e5e7eb', background: '#f9fafb',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       cursor: disabled ? 'not-allowed' : 'pointer',
