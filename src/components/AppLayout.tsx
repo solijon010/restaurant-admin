@@ -90,7 +90,7 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                 {/* Brand */}
                 <div className="h-16 px-4 flex items-center justify-between border-b border-sidebar-border shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
                             <span className="text-[12px] font-black text-white">SC</span>
                         </div>
                         <div>
@@ -113,15 +113,15 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                             onClick={closeSidebar}
                             className={({ isActive }) =>
                                 `group flex items-center gap-3 px-3 py-2 rounded-lg text-[15px] font-medium transition-all duration-150 ${isActive
-                                    ? 'text-white border-l-2 border-l-blue-400 border-y-0 border-r-0 bg-gradient-to-r from-blue-500/15 to-transparent rounded-l-none'
-                                    : 'text-sidebar-foreground hover:text-white hover:bg-white/5 border border-transparent'
+                                    ? 'bg-emerald-500/15 text-white border border-emerald-500/20'
+                                    : 'text-sidebar-foreground hover:text-white hover:bg-white/6 border border-transparent'
                                 }`
                             }
                         >
                             {({ isActive }) => (<>
-                                <item.icon className={`h-[18px] w-[18px] shrink-0 transition-colors ${isActive ? 'text-blue-400' : 'text-sidebar-foreground/50 group-hover:text-white/70'}`} />
+                                <item.icon className={`h-[18px] w-[18px] shrink-0 transition-colors ${isActive ? 'text-emerald-400' : 'text-sidebar-foreground/50 group-hover:text-white/70'}`} />
                                 <span>{t(item.label, language)}</span>
-                                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />}
+                                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />}
                             </>)}
                         </NavLink>
                     ))}
@@ -134,15 +134,15 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                         onClick={closeSidebar}
                         className={({ isActive }) =>
                             `group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] font-medium transition-all duration-150 w-full ${isActive
-                                ? 'bg-blue-500/15 text-white border border-blue-500/20'
+                                ? 'bg-emerald-500/15 text-white border border-emerald-500/20'
                                 : 'text-sidebar-foreground hover:text-white hover:bg-white/6 border border-transparent'
                             }`
                         }
                     >
                         {({ isActive }) => (<>
-                            <Settings className={`h-4 w-4 shrink-0 transition-colors ${isActive ? 'text-blue-400' : 'text-sidebar-foreground/50 group-hover:text-white/70'}`} />
+                            <Settings className={`h-4 w-4 shrink-0 transition-colors ${isActive ? 'text-emerald-400' : 'text-sidebar-foreground/50 group-hover:text-white/70'}`} />
                             {t('Sozlamalar', language)}
-                            {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500" />}
+                            {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500" />}
                         </>)}
                     </NavLink>
                     <button
