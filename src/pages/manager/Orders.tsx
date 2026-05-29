@@ -255,32 +255,32 @@ export default function ManagerOrders() {
             </div>
 
             <Tabs defaultValue="orders">
-                <TabsList className="bg-transparent p-0 h-auto rounded-none gap-3 w-full justify-start mb-6">
+                <TabsList className="bg-muted/50 p-1 h-auto rounded-lg gap-1 w-auto justify-start mb-5">
                     <TabsTrigger
                         value="orders"
-                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-600 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 data-[state=active]:shadow-md
-                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
+                        className="flex items-center gap-2 px-4 py-2 h-auto rounded-md text-sm font-medium
+                            data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm
+                            data-[state=inactive]:text-muted-foreground"
                     >
-                        <ShoppingCart className="h-4 w-4 shrink-0" />
+                        <ShoppingCart className="h-3.5 w-3.5 shrink-0" />
                         Buyurtmalar tarixi
                     </TabsTrigger>
                     <TabsTrigger
                         value="shashlik"
-                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-green-200 bg-green-50 text-green-600 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:border-green-600 data-[state=active]:shadow-md
-                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
+                        className="flex items-center gap-2 px-4 py-2 h-auto rounded-md text-sm font-medium
+                            data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm
+                            data-[state=inactive]:text-muted-foreground"
                     >
-                        <Flame className="h-4 w-4 shrink-0" />
+                        <Flame className="h-3.5 w-3.5 shrink-0" />
                         Shashlik hisobi
                     </TabsTrigger>
                     <TabsTrigger
                         value="qanot-ordak"
-                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-amber-200 bg-amber-50 text-amber-600 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:border-amber-500 data-[state=active]:shadow-md
-                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
+                        className="flex items-center gap-2 px-4 py-2 h-auto rounded-md text-sm font-medium
+                            data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm
+                            data-[state=inactive]:text-muted-foreground"
                     >
-                        <Bird className="h-4 w-4 shrink-0" />
+                        <Bird className="h-3.5 w-3.5 shrink-0" />
                         Qanot va O'rdak
                     </TabsTrigger>
                 </TabsList>
