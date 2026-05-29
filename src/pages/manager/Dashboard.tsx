@@ -26,10 +26,10 @@ interface DayOrder { orderItem: OrderItem[]; room: OrderRoom; status: string; }
 type FilterType = 'today' | 'yesterday' | 'last7' | 'last30' | 'custom';
 
 const RANGES: { label: string; filter: FilterType; active: string; inactive: string }[] = [
-    { label: 'Bugun',  filter: 'today',     active: 'bg-emerald-500 text-white border-emerald-500', inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
-    { label: 'Kecha',  filter: 'yesterday', active: 'bg-blue-500 text-white border-blue-500',       inactive: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' },
-    { label: '7 kun',  filter: 'last7',     active: 'bg-violet-500 text-white border-violet-500',   inactive: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100' },
-    { label: '30 kun', filter: 'last30',    active: 'bg-orange-500 text-white border-orange-500',   inactive: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' },
+    { label: 'Bugun',  filter: 'today',     active: 'bg-emerald-600 text-white border-emerald-600', inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
+    { label: 'Kecha',  filter: 'yesterday', active: 'bg-emerald-600 text-white border-emerald-600', inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
+    { label: '7 kun',  filter: 'last7',     active: 'bg-emerald-600 text-white border-emerald-600', inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
+    { label: '30 kun', filter: 'last30',    active: 'bg-emerald-600 text-white border-emerald-600', inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
     { label: 'Boshqa', filter: 'custom',    active: 'bg-slate-700 text-white border-slate-700',     inactive: 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100' },
 ];
 
@@ -156,10 +156,10 @@ export default function ManagerDashboard() {
             ) : (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                     {[
-                        { label: t('Jami xodimlar', language), value: status?.totalUsers ?? 0, icon: Users, color: 'text-blue-600', bg: 'bg-blue-500', border: 'border-blue-100', light: 'bg-blue-50' },
-                        { label: t('Filiallar', language), value: status?.totalBranches ?? 0, icon: Building2, color: 'text-violet-600', bg: 'bg-violet-500', border: 'border-violet-100', light: 'bg-violet-50' },
+                        { label: t('Jami xodimlar', language), value: status?.totalUsers ?? 0, icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-500', border: 'border-emerald-100', light: 'bg-emerald-50' },
+                        { label: t('Filiallar', language), value: status?.totalBranches ?? 0, icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-500', border: 'border-emerald-100', light: 'bg-emerald-50' },
                         { label: t('Menejerlar', language), value: status?.totalManagers ?? 0, icon: ShoppingBag, color: 'text-emerald-600', bg: 'bg-emerald-500', border: 'border-emerald-100', light: 'bg-emerald-50' },
-                        { label: t("O'rtacha kunlik daromad", language), value: formatPrice(status?.averageDailyRevenue ?? 0), icon: Banknote, color: 'text-amber-600', bg: 'bg-amber-500', border: 'border-amber-100', light: 'bg-amber-50' },
+                        { label: t("O'rtacha kunlik daromad", language), value: formatPrice(status?.averageDailyRevenue ?? 0), icon: Banknote, color: 'text-emerald-600', bg: 'bg-emerald-500', border: 'border-emerald-100', light: 'bg-emerald-50'' },
                     ].map((s, i) => (
                         <Card key={i} className={`p-4 shadow-sm border ${s.border} rounded-2xl overflow-hidden relative`}>
                             <div className={`absolute top-0 left-0 right-0 h-1 ${s.bg} opacity-60`} />
@@ -177,14 +177,14 @@ export default function ManagerDashboard() {
             <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
                 <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-border/60 bg-muted/20">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-indigo-100 flex items-center justify-center">
-                            <Home className="h-4 w-4 text-indigo-600" />
+                        <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center">
+                            <Home className="h-4 w-4 text-emerald-600" />
                         </div>
                         <div>
                             <p className="text-sm font-bold text-foreground">Kunlik savdo — xona bo'yicha</p>
                             {!dayLoading && dayOrders2 > 0 && (
                                 <p className="text-xs text-muted-foreground">
-                                    <span className="text-blue-600 font-medium">{dayOrders2} ta buyurtma</span>
+                                    <span className="text-emerald-600 font-medium">{dayOrders2} ta buyurtma</span>
                                     {' · '}
                                     <span className="text-emerald-600 font-medium">{formatPrice(dayTotal)}</span>
                                 </p>
@@ -216,7 +216,7 @@ export default function ManagerDashboard() {
                         {roomStats.map((r, i) => (
                             <div key={r.name} className="flex items-center gap-3 p-3.5 rounded-2xl border border-border/60 bg-muted/20 hover:bg-muted/40 transition-colors">
                                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold
-                                    ${i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-slate-100 text-slate-600' : i === 2 ? 'bg-orange-100 text-orange-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                                    ${i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-slate-100 text-slate-600' : i === 2 ? 'bg-orange-100 text-orange-600' : 'bg-emerald-50 text-emerald-600'}`}>
                                     {i + 1}
                                 </div>
                                 <div className="flex-1 min-w-0">

@@ -371,10 +371,10 @@ export default function ManagerStaff() {
   const getRoleBadge = (role: string) => {
     const map: Record<string, string> = {
       MANAGER: "bg-purple-100 text-purple-700 border-purple-200",
-      AFITSANT: "bg-blue-100 text-blue-700 border-blue-200",
+      AFITSANT: "bg-emerald-100 text-emerald-700 border-emerald-200",
       CHEF: "bg-orange-100 text-orange-700 border-orange-200",
       KASSA: "bg-green-100 text-green-700 border-green-200",
-      SUPER_AFITSANT: "bg-indigo-100 text-indigo-700 border-indigo-200",
+      SUPER_AFITSANT: "bg-emerald-100 text-emerald-700 border-emerald-200",
     };
     return map[role] || "bg-slate-100 text-slate-600 border-slate-200";
   };
@@ -384,8 +384,8 @@ export default function ManagerStaff() {
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-            <Users className="h-5 w-5 text-blue-600" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+            <Users className="h-5 w-5 text-emerald-600" />
           </div>
           <div>
             <h2 className="text-xl font-bold text-foreground leading-tight">Xodimlar</h2>

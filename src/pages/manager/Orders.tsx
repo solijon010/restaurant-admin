@@ -258,8 +258,8 @@ export default function ManagerOrders() {
                 <TabsList className="bg-transparent p-0 h-auto rounded-none gap-3 w-full justify-start mb-6">
                     <TabsTrigger
                         value="orders"
-                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-blue-200 bg-blue-50 text-blue-600 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-md
+                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-600 text-sm font-semibold shadow-none transition-all
+                            data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-md
                             data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
                     >
                         <UtensilsCrossed className="h-4 w-4 shrink-0" />
