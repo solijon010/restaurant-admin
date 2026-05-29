@@ -87,20 +87,24 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
         transform transition-transform duration-200 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-                <div className="p-5 border-b border-sidebar-border flex items-center justify-between shrink-0">
-                    <div>
-                        <h1 className="text-base font-bold text-sidebar-primary-foreground">Sohil Choyxonasi</h1>
-                        <p className="text-xs text-sidebar-foreground/60 mt-0.5">{t('Boshqaruv tizimi', language)}</p>
+                {/* Brand */}
+                <div className="h-14 px-4 flex items-center justify-between border-b border-sidebar-border shrink-0">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
+                            <span className="text-[11px] font-black text-white">SC</span>
+                        </div>
+                        <div>
+                            <p className="text-[13px] font-semibold text-white leading-none">Sohil Choyxonasi</p>
+                            <p className="text-[10px] text-sidebar-foreground/40 mt-0.5 uppercase tracking-widest">{t('Boshqaruv tizimi', language)}</p>
+                        </div>
                     </div>
-                    <button
-                        onClick={closeSidebar}
-                        className="lg:hidden text-sidebar-foreground/60 hover:text-sidebar-foreground"
-                    >
-                        <X className="h-5 w-5" />
+                    <button onClick={closeSidebar} className="lg:hidden p-1 rounded text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors">
+                        <X className="h-4 w-4" />
                     </button>
                 </div>
 
-                <nav className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto">
+                {/* Nav */}
+                <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-hidden">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.path}
@@ -108,37 +112,44 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                             end={item.path === getRoleBasePath(user.role)}
                             onClick={closeSidebar}
                             className={({ isActive }) =>
-                                `flex items-center gap-3 px-4 py-3 rounded-xl text-[13.5px] transition-all duration-200 border-l-[3px] ${isActive
-                                    ? 'border-sidebar-primary bg-sidebar-primary/20 text-white font-semibold'
-                                    : 'border-transparent text-sidebar-foreground/60 hover:border-sidebar-primary/50 hover:bg-sidebar-primary/10 hover:text-white'
+                                `group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 ${isActive
+                                    ? 'bg-white/8 text-white'
+                                    : 'text-sidebar-foreground hover:text-white hover:bg-white/5'
                                 }`
                             }
                         >
-                            <item.icon className="h-5 w-5 shrink-0" />
-                            {t(item.label, language)}
+                            {({ isActive }) => (<>
+                                <item.icon className={`h-4 w-4 shrink-0 transition-colors ${isActive ? 'text-emerald-400' : 'text-sidebar-foreground/50 group-hover:text-white/70'}`} />
+                                <span>{t(item.label, language)}</span>
+                                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />}
+                            </>)}
                         </NavLink>
                     ))}
                 </nav>
 
-                <div className="px-3 py-3 border-t border-sidebar-border shrink-0 space-y-1">
+                {/* Footer */}
+                <div className="px-2 py-2 border-t border-sidebar-border shrink-0 space-y-0.5">
                     <NavLink
                         to={user.role === 'MANAGER' ? '/manager/settings' : '/superadmin/settings'}
                         onClick={closeSidebar}
                         className={({ isActive }) =>
-                            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full transition-colors ${isActive
-                                ? 'bg-sidebar-primary/20 text-white font-semibold border-l-[3px] border-sidebar-primary'
-                                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                            `group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 w-full ${isActive
+                                ? 'bg-white/8 text-white'
+                                : 'text-sidebar-foreground hover:text-white hover:bg-white/5'
                             }`
                         }
                     >
-                        <Settings className="h-4 w-4 shrink-0" />
-                        {t('Sozlamalar', language)}
+                        {({ isActive }) => (<>
+                            <Settings className={`h-4 w-4 shrink-0 transition-colors ${isActive ? 'text-emerald-400' : 'text-sidebar-foreground/50 group-hover:text-white/70'}`} />
+                            {t('Sozlamalar', language)}
+                            {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+                        </>)}
                     </NavLink>
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
+                        className="group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium w-full text-sidebar-foreground hover:text-red-400 hover:bg-red-500/8 transition-all duration-150"
                     >
-                        <LogOut className="h-4 w-4" />
+                        <LogOut className="h-4 w-4 shrink-0 text-sidebar-foreground/50 group-hover:text-red-400 transition-colors" />
                         {t('Chiqish', language)}
                     </button>
                 </div>
