@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
     Loader2, Search, MoreVertical, Eye,
     ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-    Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird,
+    Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart,
 } from 'lucide-react';
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -259,10 +259,10 @@ export default function ManagerOrders() {
                     <TabsTrigger
                         value="orders"
                         className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-600 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-md
+                            data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 data-[state=active]:shadow-md
                             data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
                     >
-                        <UtensilsCrossed className="h-4 w-4 shrink-0" />
+                        <ShoppingCart className="h-4 w-4 shrink-0" />
                         Buyurtmalar tarixi
                     </TabsTrigger>
                     <TabsTrigger

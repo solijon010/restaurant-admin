@@ -322,24 +322,6 @@ export default function Settings() {
 
           {/* Branch panel */}
           <RetroCard>
-            <div style={{ height: 130, background: `linear-gradient(135deg, ${R.greenBg} 0%, #D8ECD8 100%)`, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 8, background: R.border }} />
-              {/* Retro trees */}
-              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', paddingBottom: 12 }}>
-                {[{ h: 50, w: 36, c: '#5A8A5A' }, { h: 68, w: 44, c: R.green }, { h: 58, w: 38, c: '#4A7A4A' }, { h: 46, w: 32, c: '#6A9A6A' }].map((tree, i) => (
-                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ width: tree.w, height: tree.h, background: tree.c, clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)', border: `2px solid ${R.border}` }} />
-                    <div style={{ width: 8, height: 14, background: '#8B6914', border: `1px solid ${R.border}` }} />
-                  </div>
-                ))}
-              </div>
-              {/* Clouds */}
-              <div style={{ position: 'absolute', top: 8, right: 14, display: 'flex', gap: 4 }}>
-                {[1, 1].map((_, i) => (
-                  <div key={i} style={{ width: 28, height: 14, background: '#fff', border: `1.5px solid ${R.border}`, borderRadius: 99 }} />
-                ))}
-              </div>
-            </div>
             <div style={{ padding: '14px 16px' }}>
               <p style={{ fontSize: 16, fontWeight: 700, color: R.text, margin: '0 0 6px', fontFamily: R.font }}>Branch management panel</p>
               <p style={{ fontSize: 14, color: R.muted, margin: '0 0 14px', lineHeight: 1.5 }}>Filiallaringizni kuzatish va boshqarish.</p>
