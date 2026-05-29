@@ -47,8 +47,8 @@ const PREDEFINED_CATEGORIES = [
         id: 'qiyma',
         label: 'Qiyma shashlik',
         match: (n: string) => n.includes('qiyma'),
-        dot: 'bg-emerald-50',
-        badge: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+        dot: 'bg-orange-500',
+        badge: 'bg-orange-50 text-orange-700 border-orange-200',
     },
     {
         id: 'gosht-shashlik',
@@ -361,7 +361,7 @@ export default function ManagerOrders() {
                                             </span>
                                         </TableHead>
                                         <TableHead className="text-xs font-bold py-3">
-                                            <span className="flex items-center gap-1.5 text-emerald-600">
+                                            <span className="flex items-center gap-1.5 text-blue-500">
                                                 <Clock className="h-3.5 w-3.5" />Davomiylik
                                             </span>
                                         </TableHead>
@@ -498,7 +498,7 @@ export default function ManagerOrders() {
                                 onChange={e => setShashlikDate(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
                             {!shLoading && grandTotal > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
-                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">
+                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full">
                                         <Flame className="h-3.5 w-3.5" />{grandTotal} ta porsiya
                                     </span>
                                     <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">
@@ -731,9 +731,9 @@ export default function ManagerOrders() {
                                     {detailOrder.orderItem.map((oi, i) => {
                                         const isSpecial = isSpecialProduct(oi.product?.name || '');
                                         return (
-                                            <div key={i} className={`flex items-center justify-between rounded-lg px-3 py-2.5 ${isSpecial ? 'bg-emerald-50 border border-emerald-200' : 'bg-muted/40'}`}>
+                                            <div key={i} className={`flex items-center justify-between rounded-lg px-3 py-2.5 ${isSpecial ? 'bg-orange-50 border border-orange-200' : 'bg-muted/40'}`}>
                                                 <div>
-                                                    <span className={`font-medium text-sm ${isSpecial ? 'text-emerald-600' : ''}`}>
+                                                    <span className={`font-medium text-sm ${isSpecial ? 'text-orange-800' : ''}`}>
                                                         {oi.product?.name || '?'}
                                                     </span>
                                                     {oi.product?.unit && (

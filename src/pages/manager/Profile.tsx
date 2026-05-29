@@ -69,8 +69,8 @@ export default function ManagerProfile() {
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-            <User className="h-5 w-5 text-emerald-600" />
+          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <User className="h-5 w-5 text-blue-600" />
           </div>
           <div>
             <h2 className="text-xl font-bold text-foreground leading-tight">Profil</h2>
@@ -87,7 +87,7 @@ export default function ManagerProfile() {
           </div>
           <div className="text-center sm:text-left">
             <p className="text-xl font-bold text-foreground">{user.firstName} {user.lastName}</p>
-            <span className="inline-block mt-1 text-xs font-medium px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
+            <span className="inline-block mt-1 text-xs font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200">
               {roleLabels[user.role]}
             </span>
             {branch && (
