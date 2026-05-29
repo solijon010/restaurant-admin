@@ -362,8 +362,8 @@ export default function ManagerRooms() {
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-            <BedDouble className="h-5 w-5 text-indigo-600" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+            <BedDouble className="h-5 w-5 text-emerald-600" />
           </div>
           <div>
             <h2 className="text-xl font-bold text-foreground leading-tight">Xonalar</h2>
@@ -393,8 +393,8 @@ export default function ManagerRooms() {
           ) : (
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-50 shrink-0">
-                  <Store className="h-4 w-4 text-indigo-600" />
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 shrink-0">
+                  <Store className="h-4 w-4 text-emerald-600" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground mb-0.5">Faol filial</p>
@@ -415,8 +415,8 @@ export default function ManagerRooms() {
 
               {selectedBranchId && (
                 <div className="flex gap-4 shrink-0">
-                  <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-100 text-center min-w-[60px]">
-                    <p className="text-lg font-bold text-indigo-700">{roomsList.length}</p>
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center min-w-[60px]">
+                    <p className="text-lg font-bold text-emerald-600">{roomsList.length}</p>
                     <p className="text-xs text-muted-foreground">Xona</p>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center min-w-[60px]">
@@ -448,7 +448,7 @@ export default function ManagerRooms() {
           <TabsList className="mb-4 bg-muted/40 rounded-xl p-1 h-auto gap-1">
             <TabsTrigger
               value="rooms"
-              className="rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              className="rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-emerald-50 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
               <BedDouble className="h-3.5 w-3.5 mr-1.5" />
               Xonalar
@@ -530,11 +530,11 @@ export default function ManagerRooms() {
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <BedDouble className="h-4 w-4 text-indigo-500 shrink-0" />
+                            <BedDouble className="h-4 w-4 text-emerald-600 shrink-0" />
                             <p className="font-medium truncate">{r.name}</p>
                           </div>
                           <div className="flex items-center gap-2 mt-1.5">
-                            {cat && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">{cat.name}</span>}
+                            {cat && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">{cat.name}</span>}
                             <span className="text-sm font-semibold text-foreground">{formatPrice(r.price)}</span>
                           </div>
                         </div>
@@ -591,12 +591,12 @@ export default function ManagerRooms() {
                           <TableRow key={r.id} className="hover:bg-muted/30 transition-colors">
                             <TableCell className="font-medium">
                               <div className="flex items-center gap-2">
-                                <BedDouble className="h-4 w-4 text-indigo-400" />{r.name}
+                                <BedDouble className="h-4 w-4 text-emerald-600" />{r.name}
                               </div>
                             </TableCell>
                             <TableCell>
                               {cat ? (
-                                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">{cat.name}</span>
+                                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">{cat.name}</span>
                               ) : (
                                 <span className="text-muted-foreground text-sm">—</span>
                               )}

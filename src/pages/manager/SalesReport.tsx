@@ -25,9 +25,9 @@ interface DayOrder { orderItem: OrderItem[]; room: { name: string }; status: str
 
 const FILTERS: { label: string; filter: FilterType; active: string; inactive: string }[] = [
     { label: 'Bugun',    filter: 'today',     active: 'bg-emerald-500 text-white border-emerald-500', inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
-    { label: 'Kecha',    filter: 'yesterday', active: 'bg-emerald-500 text-white border-blue-500',       inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
-    { label: '7 kun',    filter: 'last7',     active: 'bg-emerald-500 text-white border-violet-500',   inactive: 'bg-emerald-50 text-violet-700 border-violet-200 hover:bg-violet-100' },
-    { label: '30 kun',   filter: 'last30',    active: 'bg-orange-500 text-white border-orange-500',   inactive: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' },
+    { label: 'Kecha',    filter: 'yesterday', active: 'bg-emerald-500 text-white border-emerald-200',       inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
+    { label: '7 kun',    filter: 'last7',     active: 'bg-emerald-500 text-white border-emerald-200',   inactive: 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-50' },
+    { label: '30 kun',   filter: 'last30',    active: 'bg-emerald-50 text-white border-emerald-200',   inactive: 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-50' },
     { label: 'Boshqa',   filter: 'custom',    active: 'bg-slate-700 text-white border-slate-700',     inactive: 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100' },
 ];
 

@@ -793,8 +793,8 @@ export default function ManagerProducts() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
-                        <Package className="h-5 w-5 text-orange-500" />
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                        <Package className="h-5 w-5 text-emerald-600" />
                     </div>
                     <div>
                         <h2 className="text-xl font-bold text-foreground">Mahsulotlar</h2>
@@ -841,7 +841,7 @@ export default function ManagerProducts() {
                             <div className="flex gap-3 shrink-0 flex-wrap">
                                 <div className="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-2 text-center">
                                     <p className="text-base font-bold text-emerald-700">{prodsTotal}</p>
-                                    <p className="text-xs text-blue-500">Mahsulot</p>
+                                    <p className="text-xs text-emerald-600">Mahsulot</p>
                                 </div>
                                 <div className="rounded-xl bg-purple-50 border border-purple-100 px-4 py-2 text-center">
                                     <p className="text-base font-bold text-purple-700">{categories.length}</p>
@@ -871,12 +871,12 @@ export default function ManagerProducts() {
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList className="bg-transparent p-0 h-auto rounded-none gap-3 w-full justify-start mb-6">
                         <TabsTrigger value="products"
-                            className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl text-sm font-semibold shadow-none transition-all border-2 border-orange-200 bg-orange-50 text-orange-600 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100">
+                            className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl text-sm font-semibold shadow-none transition-all border-2 border-emerald-200 bg-emerald-50 text-emerald-600 data-[state=active]:bg-emerald-50 data-[state=active]:text-white data-[state=active]:border-emerald-200 data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100">
                             Mahsulotlar
                             {prodsTotal > 0 && <Badge variant="secondary" className="ml-1.5 px-1.5 text-xs">{prodsTotal}</Badge>}
                         </TabsTrigger>
                         <TabsTrigger value="categories"
-                            className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl text-sm font-semibold shadow-none transition-all border-2 border-emerald-200 bg-emerald-50 text-emerald-600 data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100">
+                            className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl text-sm font-semibold shadow-none transition-all border-2 border-emerald-200 bg-emerald-50 text-emerald-600 data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-200 data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100">
                             Kategoriyalar
                             {categories.length > 0 && <Badge variant="secondary" className="ml-1.5 px-1.5 text-xs">{categories.length}</Badge>}
                         </TabsTrigger>
