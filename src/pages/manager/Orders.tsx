@@ -448,18 +448,9 @@ export default function ManagerOrders() {
                                                 </TableCell>
 
                                                 <TableCell className="text-right">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                                <MoreVertical className="h-4 w-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem onClick={() => setDetailOrder(o)}>
-                                                                <Eye className="h-4 w-4 mr-2" /> Batafsil
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted" onClick={() => setDetailOrder(o)}>
+                                                        <Eye className="h-4 w-4 text-muted-foreground" />
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         );
@@ -703,7 +694,12 @@ export default function ManagerOrders() {
                                         <h2 className="text-lg font-bold tracking-tight">Buyurtma tafsilotlari</h2>
                                         <p className="text-sm text-muted-foreground mt-0.5">{detailOrder.room?.name || '—'}</p>
                                     </div>
-                                    <StatusBadge status={detailOrder.status} />
+                                    <div className="flex items-center gap-3">
+                                        <StatusBadge status={detailOrder.status} />
+                                        <button onClick={() => setDetailOrder(null)} className="w-8 h-8 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors">
+                                            <X className="h-4 w-4 text-muted-foreground" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
