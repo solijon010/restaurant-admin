@@ -88,13 +88,13 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
                 {/* Brand */}
-                <div className="h-14 px-4 flex items-center justify-between border-b border-sidebar-border shrink-0">
-                    <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
-                            <span className="text-[11px] font-black text-white">SC</span>
+                <div className="h-16 px-4 flex items-center justify-between border-b border-sidebar-border shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
+                            <span className="text-[12px] font-black text-white">SC</span>
                         </div>
                         <div>
-                            <p className="text-[13px] font-semibold text-white leading-none">Sohil Choyxonasi</p>
+                            <p className="text-[14px] font-semibold text-white leading-none">Sohil Choyxonasi</p>
                             <p className="text-[10px] text-sidebar-foreground/40 mt-0.5 uppercase tracking-widest">{t('Boshqaruv tizimi', language)}</p>
                         </div>
                     </div>
@@ -104,7 +104,7 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                 </div>
 
                 {/* Nav */}
-                <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-hidden">
+                <nav className="flex-1 px-2 py-3 space-y-1 overflow-hidden">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.path}
@@ -112,16 +112,16 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                             end={item.path === getRoleBasePath(user.role)}
                             onClick={closeSidebar}
                             className={({ isActive }) =>
-                                `group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 ${isActive
-                                    ? 'bg-white/8 text-white'
-                                    : 'text-sidebar-foreground hover:text-white hover:bg-white/5'
+                                `group flex items-center gap-3 px-3 py-2 rounded-lg text-[15px] font-medium transition-all duration-150 ${isActive
+                                    ? 'bg-emerald-500/15 text-white border border-emerald-500/20'
+                                    : 'text-sidebar-foreground hover:text-white hover:bg-white/6 border border-transparent'
                                 }`
                             }
                         >
                             {({ isActive }) => (<>
-                                <item.icon className={`h-4 w-4 shrink-0 transition-colors ${isActive ? 'text-emerald-400' : 'text-sidebar-foreground/50 group-hover:text-white/70'}`} />
+                                <item.icon className={`h-[18px] w-[18px] shrink-0 transition-colors ${isActive ? 'text-emerald-400' : 'text-sidebar-foreground/50 group-hover:text-white/70'}`} />
                                 <span>{t(item.label, language)}</span>
-                                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />}
+                                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />}
                             </>)}
                         </NavLink>
                     ))}
@@ -133,9 +133,9 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                         to={user.role === 'MANAGER' ? '/manager/settings' : '/superadmin/settings'}
                         onClick={closeSidebar}
                         className={({ isActive }) =>
-                            `group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 w-full ${isActive
-                                ? 'bg-white/8 text-white'
-                                : 'text-sidebar-foreground hover:text-white hover:bg-white/5'
+                            `group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] font-medium transition-all duration-150 w-full ${isActive
+                                ? 'bg-emerald-500/15 text-white border border-emerald-500/20'
+                                : 'text-sidebar-foreground hover:text-white hover:bg-white/6 border border-transparent'
                             }`
                         }
                     >
@@ -147,7 +147,7 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                     </NavLink>
                     <button
                         onClick={handleLogout}
-                        className="group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium w-full text-sidebar-foreground hover:text-red-400 hover:bg-red-500/8 transition-all duration-150"
+                        className="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] font-medium w-full text-sidebar-foreground hover:text-red-400 hover:bg-red-500/8 border border-transparent transition-all duration-150"
                     >
                         <LogOut className="h-4 w-4 shrink-0 text-sidebar-foreground/50 group-hover:text-red-400 transition-colors" />
                         {t('Chiqish', language)}
