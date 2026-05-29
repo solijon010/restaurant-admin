@@ -405,7 +405,7 @@ export default function ManagerOrders() {
                                             </div>
                                         </TableCell></TableRow>
                                     ) : filtered.map(o => {
-                                        const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ×${oi.count}`);
+                                        const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ${oi.count} dona`);
                                         return (
                                             <TableRow key={o.id} className={`transition-opacity border-b border-border hover:bg-muted/30 ${isFetching ? 'opacity-60' : ''}`} style={{ height: 64 }}>
                                                 <TableCell className="font-semibold">{o.room?.name || '—'}</TableCell>
@@ -693,80 +693,84 @@ export default function ManagerOrders() {
 
             {/* ═══ DETAIL SHEET ═══ */}
             <Sheet open={!!detailOrder} onOpenChange={() => setDetailOrder(null)}>
-                <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto">
-                    <SheetHeader><SheetTitle>Buyurtma tafsilotlari</SheetTitle></SheetHeader>
+                <SheetContent side="bottom" className="rounded-t-3xl max-h-[90vh] overflow-y-auto p-0">
                     {detailOrder && (
-                        <div className="space-y-3 py-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="rounded-lg bg-muted/50 px-3 py-2">
-                                    <p className="text-xs text-muted-foreground mb-0.5">Xona / Stol</p>
-                                    <p className="font-semibold">{detailOrder.room?.name || '—'}</p>
+                        <div>
+                            {/* Header */}
+                            <div className="sticky top-0 bg-card border-b border-border px-6 py-4 z-10">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h2 className="text-lg font-bold tracking-tight">Buyurtma tafsilotlari</h2>
+                                        <p className="text-sm text-muted-foreground mt-0.5">{detailOrder.room?.name || '—'}</p>
+                                    </div>
+                                    <StatusBadge status={detailOrder.status} />
                                 </div>
-                                <div className="rounded-lg bg-muted/50 px-3 py-2">
-                                    <p className="text-xs text-muted-foreground mb-0.5">Holat</p>
-                                    <Badge variant={STATUS_VARIANT[detailOrder.status]}>{STATUS_LABELS[detailOrder.status]}</Badge>
+                            </div>
+
+                            <div className="px-6 py-5 space-y-5">
+                                {/* Vaqt va davomiylik */}
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                                        <p className="text-xs text-emerald-600 font-medium mb-1 flex items-center gap-1"><LogIn className="h-3 w-3" /> Kirdi</p>
+                                        <p className="text-base font-bold text-emerald-800">{formatTime(detailOrder.createdAt)}</p>
+                                        <p className="text-xs text-emerald-600 mt-0.5">{formatDate(detailOrder.createdAt)}</p>
+                                    </div>
+                                    <div className="rounded-xl border border-red-200 bg-red-50 p-3">
+                                        <p className="text-xs text-red-600 font-medium mb-1 flex items-center gap-1"><LogOut className="h-3 w-3" /> Chiqdi</p>
+                                        <p className="text-base font-bold text-red-800">{formatTime(detailOrder.endAt)}</p>
+                                        {detailOrder.endAt && <p className="text-xs text-red-600 mt-0.5">{formatDate(detailOrder.endAt)}</p>}
+                                    </div>
+                                    <div className="rounded-xl border border-border bg-muted/40 p-3">
+                                        <p className="text-xs text-muted-foreground font-medium mb-1 flex items-center gap-1"><Clock className="h-3 w-3" /> Davomiylik</p>
+                                        <p className="text-base font-bold">{duration(detailOrder.createdAt, detailOrder.endAt)}</p>
+                                    </div>
                                 </div>
-                                <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2">
-                                    <p className="text-xs text-green-600 mb-0.5 flex items-center gap-1">
-                                        <LogIn className="h-3 w-3" /> O'tirgan vaqti
+
+                                {/* Summa + Afitsant */}
+                                <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between">
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-0.5">Jami summa</p>
+                                        <p className="text-2xl font-black text-emerald-600">{formatPrice(getOrderTotal(detailOrder))}</p>
+                                    </div>
+                                    {detailOrder.user && (
+                                        <div className="text-right">
+                                            <p className="text-xs text-muted-foreground mb-0.5">Afitsant</p>
+                                            <p className="text-sm font-semibold">{detailOrder.user.firstName} {detailOrder.user.lastName}</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Mahsulotlar */}
+                                <div>
+                                    <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                                        Mahsulotlar · {detailOrder.orderItem.length} ta
                                     </p>
-                                    <p className="font-semibold text-green-800">{formatTime(detailOrder.createdAt)}</p>
-                                    <p className="text-xs text-green-600">{formatDate(detailOrder.createdAt)}</p>
-                                </div>
-                                <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2">
-                                    <p className="text-xs text-red-600 mb-0.5 flex items-center gap-1">
-                                        <LogOut className="h-3 w-3" /> Turgan vaqti
-                                    </p>
-                                    <p className="font-semibold text-red-800">{formatTime(detailOrder.endAt)}</p>
-                                    {detailOrder.endAt && <p className="text-xs text-red-600">{formatDate(detailOrder.endAt)}</p>}
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
-                                <span className="text-sm text-muted-foreground flex items-center gap-1">
-                                    <Clock className="h-3.5 w-3.5" /> Davomiylik
-                                </span>
-                                <span className="font-semibold">{duration(detailOrder.createdAt, detailOrder.endAt)}</span>
-                            </div>
-
-                            <div className="flex items-center justify-between rounded-lg bg-primary/5 border border-primary/20 px-3 py-2.5">
-                                <span className="text-sm font-medium">Jami summa</span>
-                                <span className="text-lg font-bold text-primary">{formatPrice(getOrderTotal(detailOrder))}</span>
-                            </div>
-
-                            {detailOrder.user && (
-                                <div className="flex items-center justify-between px-1">
-                                    <span className="text-sm text-muted-foreground">Afitsant</span>
-                                    <span className="font-medium">{detailOrder.user.firstName} {detailOrder.user.lastName}</span>
-                                </div>
-                            )}
-
-                            <div className="pt-1">
-                                <p className="text-sm font-semibold mb-2">
-                                    Buyurtma tarkibi ({detailOrder.orderItem.length} ta mahsulot):
-                                </p>
-                                <div className="space-y-2">
-                                    {detailOrder.orderItem.map((oi, i) => {
-                                        const isSpecial = isSpecialProduct(oi.product?.name || '');
-                                        return (
-                                            <div key={i} className={`flex items-center justify-between rounded-lg px-3 py-2.5 ${isSpecial ? 'bg-orange-50 border border-orange-200' : 'bg-muted/40'}`}>
-                                                <div>
-                                                    <span className={`font-medium text-sm ${isSpecial ? 'text-orange-800' : ''}`}>
-                                                        {oi.product?.name || '?'}
-                                                    </span>
-                                                    {oi.product?.unit && (
-                                                        <span className="text-muted-foreground text-xs ml-1.5">{oi.product.unit}</span>
-                                                    )}
+                                    <div className="rounded-xl border border-border overflow-hidden">
+                                        {detailOrder.orderItem.map((oi, i) => {
+                                            const isSpecial = isSpecialProduct(oi.product?.name || '');
+                                            return (
+                                                <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < detailOrder.orderItem.length - 1 ? 'border-b border-border' : ''} ${isSpecial ? 'bg-amber-50' : i % 2 === 0 ? 'bg-white' : 'bg-muted/20'}`}>
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold shrink-0 ${isSpecial ? 'bg-amber-200 text-amber-800' : 'bg-muted text-muted-foreground'}`}>
+                                                            {i + 1}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className={`text-sm font-medium truncate ${isSpecial ? 'text-amber-800' : ''}`}>{oi.product?.name || '?'}</p>
+                                                            {oi.product?.unit && <p className="text-xs text-muted-foreground">{oi.product.unit}</p>}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-4 shrink-0 ml-3">
+                                                        <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                                                            {oi.count} dona
+                                                        </span>
+                                                        <span className="text-sm font-bold w-28 text-right">
+                                                            {formatPrice(Number(oi.product?.price) * Number(oi.count))}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <span className="text-muted-foreground text-sm">×{oi.count}</span>
-                                                    <span className="ml-2 font-semibold text-sm">
-                                                        {formatPrice(Number(oi.product?.price) * Number(oi.count))}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
                         </div>
