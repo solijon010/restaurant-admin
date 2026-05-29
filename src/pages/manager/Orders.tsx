@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
-    Loader2, Search, MoreVertical, Eye,
+    Loader2, Search, MoreVertical, Eye, X,
     ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
     Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart,
 } from 'lucide-react';
