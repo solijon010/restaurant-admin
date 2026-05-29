@@ -88,41 +88,23 @@ export function AppLayout({ requiredRole }: { requiredRole: UserRole }) {
                 />
             )}
 
-            {/* ── RETRO SIDEBAR ── */}
-            <aside className={`fixed lg:sticky lg:top-0 inset-y-0 left-0 z-50 h-screen flex flex-col transform transition-transform duration-200 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
-                style={{ width: 220, background: RETRO.bg, borderRight: `2px solid ${RETRO.border}` }}>
-
-                {/* Brand */}
-                <div style={{
-                    padding: '18px 16px 16px',
-                    borderBottom: `2px solid ${RETRO.border}`,
-                    background: '#0f1923',
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            {/* Avatar */}
-                            <div style={{
-                                width: 36, height: 36, flexShrink: 0,
-                                background: '#1e3a5f',
-                                border: '2px solid #2d5a8e',
-                                borderRadius: 8,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            }}>
-                                <User size={18} color='#60a5fa' />
-                            </div>
-                            <div>
-                                <p style={{ fontSize: 13, fontWeight: 700, color: RETRO.white, margin: 0, fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '0.01em' }}>
-                                    Sohil Choyxonasi
-                                </p>
-                                <p style={{ fontSize: 10, color: RETRO.cream, margin: 0, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'Courier Prime, monospace' }}>
-                                    {t('Boshqaruv tizimi', language)}
-                                </p>
-                            </div>
+            <aside className={`
+        fixed lg:sticky lg:top-0
+        inset-y-0 left-0 z-50
+        h-screen
+        w-64 shrink-0
+        bg-sidebar text-sidebar-foreground
+        flex flex-col
+        transform transition-transform duration-200 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+                <div className="p-6 border-b border-sidebar-border flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-2">
+                        <img src="/LOGO.PNJ.png" alt="Logo" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                        <div>
+                            <h1 className="text-lg font-bold text-sidebar-primary-foreground">Sohil Choyxonasi</h1>
+                            <p className="text-xs text-sidebar-foreground/60 mt-0.5">{t('Boshqaruv tizimi', language)}</p>
                         </div>
-                        <button className="lg:hidden" onClick={() => setSidebarOpen(false)}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: RETRO.cream }}>
-                            <X size={16} />
-                        </button>
                     </div>
                 </div>
 
@@ -300,9 +282,7 @@ export function AppLayout({ requiredRole }: { requiredRole: UserRole }) {
                             <Menu size={18} />
                         </button>
                     )}
-                    <span style={{ fontSize: 13, fontWeight: 700, color: RETRO.white, fontFamily: 'Courier Prime, monospace' }}>
-                        Sohil Choyxonasi
-                    </span>
+                    <img src="/LOGO.PNJ.png" alt="Logo" style={{ width: 28, height: 28, objectFit: 'contain' }} />
                 </div>
 
                 {/* Content */}

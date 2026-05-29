@@ -172,7 +172,7 @@ export default function ManagerStaff() {
 
   // ✅ Xodim tahrirlash
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<StaffPayload> }) =>
+    mutationFn: ({ id, data }: { id: string; data: StaffUpdatePayload }) =>
       userService.update(id, data),
     onSuccess: () => {
       toast.success("Xodim yangilandi");
