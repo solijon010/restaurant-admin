@@ -195,7 +195,12 @@ export default function ManagerDashboard() {
                         className="w-40 h-8 text-sm bg-background border-border/60 focus-visible:ring-1 rounded-xl" />
                 </div>
 
-                {dayLoading ? (
+                {!selectedBranchId ? (
+                    <div className="flex flex-col items-center gap-2 py-10 text-muted-foreground">
+                        <Home className="h-8 w-8 opacity-20" />
+                        <p className="text-sm">Filial tanlanmagan. Sozlamalarda filial tanlang.</p>
+                    </div>
+                ) : dayLoading ? (
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                     </div>

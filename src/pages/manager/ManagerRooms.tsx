@@ -134,6 +134,7 @@ export default function ManagerRooms() {
     }
   }, [selectedBranchId]);
 
+
   // ─── Room Categories ───────────────────────────────────────────────────────
   const {
     data: catsRaw,
@@ -280,28 +281,18 @@ export default function ManagerRooms() {
   // ─── Room handlers ────────────────────────────────────────────────────────
   const openAddRoom = () => {
     setEditRoom(null);
-    setRoomForm({
-      name: "",
-      price: "",
-      roomCategoryId: activeCats[0]?.id || "",
-    });
+    setRoomForm({ name: "", price: "", roomCategoryId: activeCats[0]?.id || "" });
     setRoomDialog(true);
   };
 
   const openEditRoom = (r: Room) => {
     setEditRoom(r);
-    setRoomForm({
-      name: r.name,
-      price: String(r.price),
-      roomCategoryId: r.roomCategoryId,
-    });
+    setRoomForm({ name: r.name, price: String(r.price), roomCategoryId: r.roomCategoryId });
     setRoomDialog(true);
   };
 
   const saveRoom = () => {
     if (!roomForm.name.trim()) return toast.error("Xona nomini kiriting");
-    if (!roomForm.price || isNaN(Number(roomForm.price)))
-      return toast.error("Narxni to'g'ri kiriting");
     if (!roomForm.roomCategoryId) return toast.error("Kategoriyani tanlang");
 
     if (editRoom) {
@@ -309,18 +300,57 @@ export default function ManagerRooms() {
         id: editRoom.id,
         data: {
           name: roomForm.name,
-          price: Number(roomForm.price),
+          price: 0,
           roomCategoryId: roomForm.roomCategoryId,
         },
       });
     } else {
       createRoomMutation.mutate({
         name: roomForm.name,
-        price: Number(roomForm.price),
+        price: 0,
         branchId: selectedBranchId,
         roomCategoryId: roomForm.roomCategoryId,
       });
     }
+  };
+
+  const [deleteAllDialog, setDeleteAllDialog] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
+
+  const deleteAllRooms = async () => {
+    setDeletingAll(true);
+    let deleted = 0;
+    for (const r of roomsList) {
+      try {
+        await roomService.delete(r.id);
+        deleted++;
+      } catch {}
+    }
+    setDeletingAll(false);
+    setDeleteAllDialog(false);
+    toast.success(`${deleted} ta xona o'chirildi`);
+    queryClient.invalidateQueries({ queryKey: ["rooms", selectedBranchId] });
+  };
+
+  const [bulkCreating, setBulkCreating] = useState(false);
+  const bulkCreateSoris = async () => {
+    if (!activeCats[0]) return toast.error("Avval kategoriya yarating");
+    setBulkCreating(true);
+    let created = 0;
+    for (let i = 1; i <= 12; i++) {
+      try {
+        await roomService.create({
+          name: `Sori ${i}`,
+          price: 0,
+          branchId: selectedBranchId,
+          roomCategoryId: activeCats[0].id,
+        });
+        created++;
+      } catch {}
+    }
+    setBulkCreating(false);
+    toast.success(`${created} ta Sori yaratildi`);
+    queryClient.invalidateQueries({ queryKey: ["rooms", selectedBranchId] });
   };
 
   // ─── Category handlers ────────────────────────────────────────────────────
@@ -763,54 +793,31 @@ export default function ManagerRooms() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>
-                Nomi <span className="text-destructive">*</span>
-              </Label>
+              <Label>Nomi <span className="text-destructive">*</span></Label>
               <Input
-                placeholder="Xona nomini kiriting"
+                placeholder="Xona nomi"
                 value={roomForm.name}
-                onChange={(e) =>
-                  setRoomForm({ ...roomForm, name: e.target.value })
-                }
+                onChange={(e) => setRoomForm({ ...roomForm, name: e.target.value })}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>
-                  Narx (so'm) <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  min={0}
-                  value={roomForm.price}
-                  onChange={(e) =>
-                    setRoomForm({ ...roomForm, price: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>
-                  Kategoriya <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                  value={roomForm.roomCategoryId}
-                  onValueChange={(v) =>
-                    setRoomForm({ ...roomForm, roomCategoryId: v })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Tanlang" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activeCats.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="space-y-1.5">
+              <Label>Kategoriya <span className="text-destructive">*</span></Label>
+              <div className="flex flex-wrap gap-2">
+                {activeCats.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setRoomForm({ ...roomForm, roomCategoryId: c.id })}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
+                      roomForm.roomCategoryId === c.id
+                        ? "bg-indigo-500 text-white border-indigo-500 shadow-sm"
+                        : "bg-muted/40 text-foreground border-border hover:border-indigo-300 hover:bg-indigo-50"
+                    }`}
+                  >
+                    {c.name}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -917,6 +924,29 @@ export default function ManagerRooms() {
                 <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
               )}
               O'chirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ══ Delete All Rooms ══════════════════════════════════════════════════ */}
+      <AlertDialog open={deleteAllDialog} onOpenChange={setDeleteAllDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Barcha xonalarni o'chirish</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{roomsList.length} ta xona</strong> butunlay o'chiriladi. Bu amalni qaytarib bo'lmaydi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingAll}>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={deleteAllRooms}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deletingAll}
+            >
+              {deletingAll && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
+              Hammasini o'chirish
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
