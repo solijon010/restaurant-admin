@@ -41,6 +41,7 @@ const NAV_BY_ROLE: Record<string, NavEntry[]> = {
                 { label: 'Profil',        path: '/manager/profile',  icon: User },
             ],
         },
+        { label: 'Sozlamalar', path: '/manager/settings', icon: Settings },
     ],
 };
 
@@ -221,52 +222,8 @@ export function AppLayout({ requiredRole }: { requiredRole: UserRole }) {
                     })}
                 </nav>
 
-                {/* User + Sozlamalar + Logout */}
-                <div style={{ borderTop: `2px solid ${RETRO.border}`, padding: '14px 8px 12px' }}>
-                    <div style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        padding: '10px 12px', marginBottom: 8,
-                        background: 'linear-gradient(135deg, #1a1f35 0%, #0f1923 100%)',
-                        border: '1px solid #2d3a55',
-                        borderRadius: 10,
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                    }}>
-                        <div style={{
-                            width: 32, height: 32, flexShrink: 0, borderRadius: 8,
-                            background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            boxShadow: '0 2px 6px rgba(124,58,237,0.4)',
-                        }}>
-                            <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>
-                                {user.firstName?.[0]?.toUpperCase()}{user.lastName?.[0]?.toUpperCase()}
-                            </span>
-                        </div>
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                            <p style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {user.firstName} {user.lastName}
-                            </p>
-                            <p style={{ fontSize: 10, color: '#64748b', margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                                {user.role}
-                            </p>
-                        </div>
-                        <NavLink to={user.role === 'MANAGER' ? '/manager/settings' : '/superadmin/settings'} onClick={() => setSidebarOpen(false)}>
-                            {({ isActive }) => (
-                                <div style={{
-                                    width: 28, height: 28, flexShrink: 0,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    borderRadius: 4, border: `1px solid ${isActive ? RETRO.green : 'rgba(255,255,255,0.1)'}`,
-                                    background: isActive ? RETRO.greenBg : 'transparent',
-                                    cursor: 'pointer', transition: 'all 0.12s',
-                                }}
-                                    onMouseEnter={e => { e.currentTarget.style.borderColor = RETRO.green; e.currentTarget.style.background = RETRO.greenBg; }}
-                                    onMouseLeave={e => { if (!isActive) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'transparent'; } }}
-                                >
-                                    <Settings size={13} color={isActive ? RETRO.green : RETRO.creamDim} />
-                                </div>
-                            )}
-                        </NavLink>
-                    </div>
-
+                {/* Logout */}
+                <div style={{ borderTop: `2px solid ${RETRO.border}`, padding: '10px 8px' }}>
                     <button onClick={handleLogout}
                         style={{
                             display: 'flex', alignItems: 'center', gap: 8,
