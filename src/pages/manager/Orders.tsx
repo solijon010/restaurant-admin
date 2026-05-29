@@ -10,7 +10,7 @@ import {
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { useBranch } from '@/contexts/BranchContext';
@@ -692,8 +692,8 @@ export default function ManagerOrders() {
             </Tabs>
 
             {/* ═══ DETAIL SHEET ═══ */}
-            <Sheet open={!!detailOrder} onOpenChange={() => setDetailOrder(null)}>
-                <SheetContent side="bottom" className="rounded-t-3xl max-h-[90vh] overflow-y-auto p-0">
+            <Dialog open={!!detailOrder} onOpenChange={() => setDetailOrder(null)}>
+                <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto p-0 gap-0">
                     {detailOrder && (
                         <div>
                             {/* Header */}
@@ -775,8 +775,8 @@ export default function ManagerOrders() {
                             </div>
                         </div>
                     )}
-                </SheetContent>
-            </Sheet>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
