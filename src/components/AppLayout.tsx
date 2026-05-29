@@ -104,7 +104,7 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                 </div>
 
                 {/* Nav */}
-                <nav className="flex-1 px-2 py-3 space-y-1 overflow-hidden">
+                <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-hidden">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.path}
@@ -112,16 +112,16 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                             end={item.path === getRoleBasePath(user.role)}
                             onClick={closeSidebar}
                             className={({ isActive }) =>
-                                `group flex items-center gap-3 px-3 py-2 rounded-lg text-[15px] font-medium transition-all duration-150 ${isActive
-                                    ? 'bg-emerald-500/15 text-white border border-emerald-500/20'
-                                    : 'text-sidebar-foreground hover:text-white hover:bg-white/6 border border-transparent'
+                                `group flex items-center gap-3 px-3 py-2 rounded-md text-[13.5px] font-medium transition-all duration-150 ${isActive
+                                    ? 'bg-sidebar-accent text-white'
+                                    : 'text-sidebar-foreground hover:text-white hover:bg-sidebar-accent/70'
                                 }`
                             }
                         >
                             {({ isActive }) => (<>
-                                <item.icon className={`h-[18px] w-[18px] shrink-0 transition-colors ${isActive ? 'text-emerald-400' : 'text-sidebar-foreground/50 group-hover:text-white/70'}`} />
+                                <item.icon className={`h-4 w-4 shrink-0 transition-colors ${isActive ? 'text-emerald-400' : 'opacity-60 group-hover:opacity-90'}`} />
                                 <span>{t(item.label, language)}</span>
-                                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />}
+                                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />}
                             </>)}
                         </NavLink>
                     ))}
@@ -133,14 +133,14 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                         to={user.role === 'MANAGER' ? '/manager/settings' : '/superadmin/settings'}
                         onClick={closeSidebar}
                         className={({ isActive }) =>
-                            `group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] font-medium transition-all duration-150 w-full ${isActive
-                                ? 'bg-emerald-500/15 text-white border border-emerald-500/20'
-                                : 'text-sidebar-foreground hover:text-white hover:bg-white/6 border border-transparent'
+                            `group flex items-center gap-3 px-3 py-2 rounded-md text-[13.5px] font-medium transition-all duration-150 w-full ${isActive
+                                ? 'bg-sidebar-accent text-white'
+                                : 'text-sidebar-foreground hover:text-white hover:bg-sidebar-accent/70'
                             }`
                         }
                     >
                         {({ isActive }) => (<>
-                            <Settings className={`h-4 w-4 shrink-0 transition-colors ${isActive ? 'text-emerald-400' : 'text-sidebar-foreground/50 group-hover:text-white/70'}`} />
+                            <Settings className={`h-4 w-4 shrink-0 transition-colors ${isActive ? 'text-emerald-400' : 'opacity-60 group-hover:opacity-90'}`} />
                             {t('Sozlamalar', language)}
                             {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500" />}
                         </>)}
