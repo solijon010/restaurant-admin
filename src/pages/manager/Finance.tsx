@@ -85,8 +85,8 @@ export default function Finance() {
             {/* ── Header ────────────────────────────────────────────────────────── */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
-                        <Wallet className="h-5 w-5 text-green-600" />
+                    <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center shrink-0">
+                        <Wallet className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
                         <h2 className="text-xl font-bold text-foreground leading-tight">Ofitsiant hisoboti</h2>
@@ -99,22 +99,22 @@ export default function Finance() {
             {/* ── Summary mini-cards ────────────────────────────────────────────── */}
             {!waitersLoading && waitersList.length > 0 && (
                 <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
-                            <ShoppingBag className="h-4 w-4 text-emerald-600" />
+                    <div className="p-3 rounded-xl bg-muted/50 border border-border flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                            <ShoppingBag className="h-4 w-4 text-blue-600" />
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground">Jami buyurtma</p>
-                            <p className="text-lg font-bold text-emerald-700">{totalOrders}</p>
+                            <p className="text-lg font-bold text-blue-700">{totalOrders}</p>
                         </div>
                     </div>
-                    <div className="p-3 rounded-xl bg-green-50 border border-green-100 flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
-                            <TrendingUp className="h-4 w-4 text-green-600" />
+                    <div className="p-3 rounded-xl bg-muted/50 border border-border flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                            <TrendingUp className="h-4 w-4 text-blue-600" />
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground">Jami summa</p>
-                            <p className="text-lg font-bold text-green-700">{formatPrice(totalSum)}</p>
+                            <p className="text-lg font-bold text-blue-700">{formatPrice(totalSum)}</p>
                         </div>
                     </div>
                 </div>
@@ -215,11 +215,11 @@ export default function Finance() {
                                     <TableCell className="text-muted-foreground text-sm w-10">{idx + 1}</TableCell>
                                     <TableCell className="font-medium">{w.firstName} {w.lastName}</TableCell>
                                     <TableCell>
-                                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-blue-700 border border-blue-200">
                                             {w.totalOrders} ta
                                         </span>
                                     </TableCell>
-                                    <TableCell className="font-semibold text-green-700">{formatPrice(w.totalSum)}</TableCell>
+                                    <TableCell className="font-semibold text-blue-700">{formatPrice(w.totalSum)}</TableCell>
                                 </TableRow>
                             ))
                         )}

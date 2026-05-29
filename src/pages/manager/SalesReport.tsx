@@ -24,11 +24,11 @@ interface OrderItem { count: string | number; product: { price: string | number 
 interface DayOrder { orderItem: OrderItem[]; room: { name: string }; status: string; }
 
 const FILTERS: { label: string; filter: FilterType; active: string; inactive: string }[] = [
-    { label: 'Bugun',    filter: 'today',     active: 'bg-emerald-500 text-white border-emerald-500', inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
-    { label: 'Kecha',    filter: 'yesterday', active: 'bg-emerald-500 text-white border-blue-500',       inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
-    { label: '7 kun',    filter: 'last7',     active: 'bg-emerald-500 text-white border-violet-500',   inactive: 'bg-emerald-50 text-violet-700 border-violet-200 hover:bg-violet-100' },
-    { label: '30 kun',   filter: 'last30',    active: 'bg-orange-500 text-white border-orange-500',   inactive: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' },
-    { label: 'Boshqa',   filter: 'custom',    active: 'bg-slate-700 text-white border-slate-700',     inactive: 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100' },
+    { label: 'Bugun',    filter: 'today',     active: 'bg-blue-600 text-white border-blue-600', inactive: 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
+    { label: 'Kecha',    filter: 'yesterday', active: 'bg-blue-600 text-white border-blue-600', inactive: 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
+    { label: '7 kun',    filter: 'last7',     active: 'bg-blue-600 text-white border-blue-600', inactive: 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
+    { label: '30 kun',   filter: 'last30',    active: 'bg-blue-600 text-white border-blue-600', inactive: 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
+    { label: 'Boshqa',   filter: 'custom',    active: 'bg-blue-600 text-white border-blue-600', inactive: 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
 ];
 
 function todayStr() { return new Date().toISOString().slice(0, 10); }
@@ -117,8 +117,8 @@ export default function SalesReport() {
         <div className="space-y-6">
             {/* ── Header ─────────────────────────────────────────── */}
             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                    <TrendingUp className="h-5 w-5 text-emerald-600" />
+                <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center shrink-0">
+                    <TrendingUp className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
                     <h2 className="text-xl font-bold text-foreground">{t('Savdo tahlili', language)}</h2>
@@ -162,9 +162,9 @@ export default function SalesReport() {
             {!isLoading && (activeFilter !== 'custom' || isCustomReady) && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {[
-                        { label: 'Jami daromad', value: formatPrice(isSingleDay ? dayTotal : totalRevenue), icon: Banknote, bg: 'bg-emerald-50', iconColor: 'text-emerald-600', valueColor: 'text-emerald-600' },
-                        { label: 'Buyurtmalar', value: isSingleDay ? `${dayOrderCount} ta` : `${revenueData.length} kun`, icon: ShoppingCart, bg: 'bg-emerald-50', iconColor: 'text-emerald-600', valueColor: 'text-emerald-600' },
-                        { label: "O'rtacha buyurtma", value: formatPrice(isSingleDay && dayOrderCount > 0 ? dayTotal / dayOrderCount : avgOrder), icon: ArrowUpRight, bg: 'bg-emerald-50', iconColor: 'text-emerald-600', valueColor: 'text-emerald-600' },
+                        { label: 'Jami daromad', value: formatPrice(isSingleDay ? dayTotal : totalRevenue), icon: Banknote, bg: 'bg-muted/50', iconColor: 'text-blue-600', valueColor: 'text-blue-600' },
+                        { label: 'Buyurtmalar', value: isSingleDay ? `${dayOrderCount} ta` : `${revenueData.length} kun`, icon: ShoppingCart, bg: 'bg-muted/50', iconColor: 'text-blue-600', valueColor: 'text-blue-600' },
+                        { label: "O'rtacha buyurtma", value: formatPrice(isSingleDay && dayOrderCount > 0 ? dayTotal / dayOrderCount : avgOrder), icon: ArrowUpRight, bg: 'bg-muted/50', iconColor: 'text-blue-600', valueColor: 'text-blue-600' },
                     ].map((s, i) => (
                         <Card key={i} className="p-4 shadow-sm border border-border/60 rounded-2xl flex items-center gap-4">
                             <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center shrink-0`}>
@@ -220,8 +220,8 @@ export default function SalesReport() {
             {isSingleDay && (
                 <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
                     <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60">
-                        <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-                            <Home className="h-3.5 w-3.5 text-emerald-600" />
+                        <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center">
+                            <Home className="h-3.5 w-3.5 text-blue-600" />
                         </div>
                         <div>
                             <p className="text-sm font-semibold text-foreground">Xonalar bo'yicha savdo</p>
@@ -251,14 +251,14 @@ export default function SalesReport() {
                                 {roomStats.map((r, i) => (
                                     <div key={r.name} className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/40 transition-colors">
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold
-                                            ${i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-slate-100 text-slate-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                                            ${i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-slate-100 text-slate-600' : 'bg-muted/50 text-blue-600'}`}>
                                             {i + 1}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-semibold text-foreground truncate">{r.name}</p>
                                             <div className="flex items-center gap-2 mt-0.5">
                                                 <span className="text-xs text-muted-foreground">{r.orders} ta buyurtma</span>
-                                                <span className="text-xs text-emerald-600 font-medium">{r.completed} yakunlangan</span>
+                                                <span className="text-xs text-blue-600 font-medium">{r.completed} yakunlangan</span>
                                             </div>
                                         </div>
                                         <p className="text-sm font-bold text-foreground shrink-0">{formatPrice(r.sum)}</p>

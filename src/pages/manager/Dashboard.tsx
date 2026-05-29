@@ -26,11 +26,11 @@ interface DayOrder { orderItem: OrderItem[]; room: OrderRoom; status: string; }
 type FilterType = 'today' | 'yesterday' | 'last7' | 'last30' | 'custom';
 
 const RANGES: { label: string; filter: FilterType; active: string; inactive: string }[] = [
-    { label: 'Bugun',  filter: 'today',     active: 'bg-emerald-500 text-white border-emerald-500', inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
-    { label: 'Kecha',  filter: 'yesterday', active: 'bg-blue-500 text-white border-blue-500',       inactive: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' },
-    { label: '7 kun',  filter: 'last7',     active: 'bg-violet-500 text-white border-violet-500',   inactive: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100' },
-    { label: '30 kun', filter: 'last30',    active: 'bg-orange-500 text-white border-orange-500',   inactive: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' },
-    { label: 'Boshqa', filter: 'custom',    active: 'bg-slate-700 text-white border-slate-700',     inactive: 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100' },
+    { label: 'Bugun',  filter: 'today',     active: 'bg-blue-600 text-white border-blue-600', inactive: 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
+    { label: 'Kecha',  filter: 'yesterday', active: 'bg-blue-600 text-white border-blue-600', inactive: 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
+    { label: '7 kun',  filter: 'last7',     active: 'bg-blue-600 text-white border-blue-600', inactive: 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
+    { label: '30 kun', filter: 'last30',    active: 'bg-blue-600 text-white border-blue-600', inactive: 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
+    { label: 'Boshqa', filter: 'custom',    active: 'bg-blue-600 text-white border-blue-600', inactive: 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
 ];
 
 function todayStr() { return new Date().toISOString().slice(0, 10); }
@@ -206,7 +206,7 @@ export default function ManagerDashboard() {
                     <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {roomStats.map((r, i) => (
                             <div key={r.name} className="flex items-center gap-3 p-3.5 rounded-lg border border-border hover:bg-muted/30 transition-colors group">
-                                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 text-xs font-bold text-muted-foreground group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
+                                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 text-xs font-bold text-muted-foreground group-hover:bg-muted/50 group-hover:text-emerald-600 transition-colors">
                                     {i + 1}
                                 </div>
                                 <div className="flex-1 min-w-0">

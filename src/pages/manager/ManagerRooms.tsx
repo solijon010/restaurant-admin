@@ -423,8 +423,8 @@ export default function ManagerRooms() {
                     <p className="text-lg font-bold text-slate-700">{categories.length}</p>
                     <p className="text-xs text-muted-foreground">Kategoriya</p>
                   </div>
-                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-center min-w-[60px]">
-                    <p className="text-lg font-bold text-emerald-700">{roomsList.filter((r) => r.status === "ACTIVE").length}</p>
+                  <div className="p-3 rounded-xl bg-muted/50 border border-border text-center min-w-[60px]">
+                    <p className="text-lg font-bold text-blue-700">{roomsList.filter((r) => r.status === "ACTIVE").length}</p>
                     <p className="text-xs text-muted-foreground">Faol</p>
                   </div>
                 </div>
@@ -605,7 +605,7 @@ export default function ManagerRooms() {
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <Switch checked={r.status === "ACTIVE"} onCheckedChange={() => toggleRoomMutation.mutate(r.id)} disabled={toggleRoomMutation.isPending} />
-                                <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${r.status === "ACTIVE" ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                                <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${r.status === "ACTIVE" ? "bg-muted text-blue-700 border-blue-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
                                   {statusLabels[r.status]}
                                 </span>
                               </div>
@@ -665,7 +665,7 @@ export default function ManagerRooms() {
                           <p className="font-medium">{c.name}</p>
                           <div className="flex items-center gap-2 mt-1.5">
                             <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">{roomCount} ta xona</span>
-                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${c.status === "ACTIVE" ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>{statusLabels[c.status]}</span>
+                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${c.status === "ACTIVE" ? "bg-muted text-blue-700 border-blue-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>{statusLabels[c.status]}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -724,7 +724,7 @@ export default function ManagerRooms() {
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <Switch checked={c.status === "ACTIVE"} onCheckedChange={() => toggleCategoryMutation.mutate(c.id)} disabled={toggleCategoryMutation.isPending} />
-                                <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${c.status === "ACTIVE" ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                                <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${c.status === "ACTIVE" ? "bg-muted text-blue-700 border-blue-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
                                   {statusLabels[c.status]}
                                 </span>
                               </div>

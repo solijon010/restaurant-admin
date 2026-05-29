@@ -371,10 +371,10 @@ export default function ManagerStaff() {
   const getRoleBadge = (role: string) => {
     const map: Record<string, string> = {
       MANAGER: "bg-purple-100 text-purple-700 border-purple-200",
-      AFITSANT: "bg-emerald-100 text-emerald-700 border-emerald-200",
+      AFITSANT: "bg-muted text-blue-700 border-blue-200",
       CHEF: "bg-orange-100 text-orange-700 border-orange-200",
-      KASSA: "bg-green-100 text-green-700 border-green-200",
-      SUPER_AFITSANT: "bg-emerald-100 text-emerald-700 border-emerald-200",
+      KASSA: "bg-muted text-blue-700 border-green-200",
+      SUPER_AFITSANT: "bg-muted text-blue-700 border-blue-200",
     };
     return map[role] || "bg-slate-100 text-slate-600 border-slate-200";
   };
@@ -384,8 +384,8 @@ export default function ManagerStaff() {
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-            <Users className="h-5 w-5 text-emerald-600" />
+          <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center shrink-0">
+            <Users className="h-5 w-5 text-blue-600" />
           </div>
           <div>
             <h2 className="text-xl font-bold text-foreground leading-tight">Xodimlar</h2>
@@ -462,7 +462,7 @@ export default function ManagerStaff() {
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${getRoleBadge(u.role)}`}>
                         {roleLabels[u.role as keyof typeof roleLabels] || u.role}
                       </span>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${isActive ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${isActive ? "bg-muted text-blue-700 border-blue-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
                         {statusLabels[u.status as keyof typeof statusLabels] || u.status}
                       </span>
                     </div>
@@ -550,7 +550,7 @@ export default function ManagerStaff() {
                             onCheckedChange={() => handleToggleStatus(u.id)}
                             disabled={toggleStatusMutation.isPending}
                           />
-                          <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${isActive ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                          <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${isActive ? "bg-muted text-blue-700 border-blue-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
                             {statusLabels[u.status as keyof typeof statusLabels] || u.status}
                           </span>
                         </div>
