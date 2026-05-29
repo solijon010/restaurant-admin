@@ -684,7 +684,7 @@ export default function ManagerOrders() {
 
             {/* ═══ DETAIL SHEET ═══ */}
             <Dialog open={!!detailOrder} onOpenChange={() => setDetailOrder(null)}>
-                <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto p-0 gap-0">
+                <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto p-0 gap-0 [&>button]:hidden">
                     {detailOrder && (
                         <div>
                             {/* Header */}
@@ -694,7 +694,12 @@ export default function ManagerOrders() {
                                         <h2 className="text-lg font-bold tracking-tight">Buyurtma tafsilotlari</h2>
                                         <p className="text-sm text-muted-foreground mt-0.5">{detailOrder.room?.name || '—'}</p>
                                     </div>
-                                    <StatusBadge status={detailOrder.status} />
+                                    <div className="flex items-center gap-2">
+                                        <StatusBadge status={detailOrder.status} />
+                                        <button onClick={() => setDetailOrder(null)} className="w-7 h-7 rounded-full bg-muted hover:bg-muted-foreground/20 flex items-center justify-center transition-colors shrink-0">
+                                            <X className="h-3.5 w-3.5 text-muted-foreground" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
