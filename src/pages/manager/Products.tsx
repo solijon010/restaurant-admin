@@ -830,24 +830,19 @@ export default function ManagerProducts() {
     return (
         <div className="space-y-5">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
-                        <Package className="h-5 w-5 text-orange-500" />
-                    </div>
-                    <div>
-                        <h2 className="text-xl font-bold text-foreground">Mahsulotlar</h2>
-                        <p className="text-sm text-muted-foreground">Filial bo'yicha mahsulot va kategoriyalarni boshqaring</p>
-                    </div>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Mahsulotlar</h1>
+                    <p className="text-sm text-muted-foreground mt-1">Filial bo'yicha mahsulot va kategoriyalarni boshqaring</p>
                 </div>
-                <Button variant="outline" size="sm" className="gap-1.5" disabled={!selectedBranchId}
+                <Button variant="outline" size="sm" className="gap-1.5 h-8" disabled={!selectedBranchId}
                     onClick={() => { refetchCats(); refetchProds(); refetchPopular(); }}>
                     <RefreshCw className="h-3.5 w-3.5" /> Yangilash
                 </Button>
             </div>
 
             {/* Branch selector */}
-            <div className="rounded-2xl border border-border/60 shadow-sm p-4">
+            <div className="rounded-xl border border-border bg-card p-4">
                 {branchesLoading ? (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Loader2 className="h-4 w-4 animate-spin" /> Filiallar yuklanmoqda...
@@ -857,8 +852,8 @@ export default function ManagerProducts() {
                 ) : (
                     <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 shrink-0">
-                                <Store className="h-4 w-4 text-primary" />
+                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted shrink-0">
+                                <Store className="h-4 w-4 text-muted-foreground" />
                             </div>
                             <div className="min-w-0">
                                 <p className="text-xs text-muted-foreground mb-0.5">Faol filial</p>
@@ -877,25 +872,18 @@ export default function ManagerProducts() {
                             </div>
                         </div>
                         {selectedBranchId && (
-                            <div className="flex gap-3 shrink-0 flex-wrap">
-                                <div className="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-2 text-center">
-                                    <p className="text-base font-bold text-emerald-700">{prodsTotal}</p>
-                                    <p className="text-xs text-blue-500">Mahsulot</p>
-                                </div>
-                                <div className="rounded-xl bg-purple-50 border border-purple-100 px-4 py-2 text-center">
-                                    <p className="text-base font-bold text-purple-700">{categories.length}</p>
-                                    <p className="text-xs text-purple-500">Kategoriya</p>
-                                </div>
-                                <div className="rounded-xl bg-green-50 border border-green-100 px-4 py-2 text-center">
-                                    <p className="text-base font-bold text-green-700">
-                                        {allProducts.filter((p) => p.status === "ACTIVE").length}
-                                    </p>
-                                    <p className="text-xs text-green-500">Faol</p>
-                                </div>
-                                <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-2 text-center">
-                                    <p className="text-base font-bold text-amber-700">{popularList.length}</p>
-                                    <p className="text-xs text-amber-500">Tezkor</p>
-                                </div>
+                            <div className="flex gap-2 shrink-0 flex-wrap">
+                                {[
+                                    { val: prodsTotal, label: 'Mahsulot', color: '#10b981' },
+                                    { val: categories.length, label: 'Kategoriya', color: '#6366f1' },
+                                    { val: allProducts.filter(p => p.status === 'ACTIVE').length, label: 'Faol', color: '#10b981' },
+                                    { val: popularList.length, label: 'Tezkor', color: '#f59e0b' },
+                                ].map(s => (
+                                    <div key={s.label} className="rounded-lg border border-border px-3 py-1.5 text-center min-w-[60px]">
+                                        <p className="text-base font-bold" style={{ color: s.color }}>{s.val}</p>
+                                        <p className="text-[11px] text-muted-foreground">{s.label}</p>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>
@@ -908,22 +896,22 @@ export default function ManagerProducts() {
                 </div>
             ) : (
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="bg-transparent p-0 h-auto rounded-none gap-3 w-full justify-start mb-6">
+                    <TabsList className="bg-muted/50 p-1 h-auto rounded-lg gap-1 w-auto justify-start mb-5">
                         <TabsTrigger value="products"
-                            className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl text-sm font-semibold shadow-none transition-all border-2 border-orange-200 bg-orange-50 text-orange-600 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100">
+                            className="px-4 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground">
                             Mahsulotlar
-                            {prodsTotal > 0 && <Badge variant="secondary" className="ml-1.5 px-1.5 text-xs">{prodsTotal}</Badge>}
+                            {prodsTotal > 0 && <span className="ml-1.5 text-xs bg-muted text-muted-foreground rounded-full px-1.5 py-0.5 data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-700">{prodsTotal}</span>}
                         </TabsTrigger>
                         <TabsTrigger value="categories"
-                            className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl text-sm font-semibold shadow-none transition-all border-2 border-emerald-200 bg-emerald-50 text-emerald-600 data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100">
+                            className="px-4 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground">
                             Kategoriyalar
-                            {categories.length > 0 && <Badge variant="secondary" className="ml-1.5 px-1.5 text-xs">{categories.length}</Badge>}
+                            {categories.length > 0 && <span className="ml-1.5 text-xs bg-muted text-muted-foreground rounded-full px-1.5 py-0.5">{categories.length}</span>}
                         </TabsTrigger>
                         <TabsTrigger value="popular"
-                            className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl text-sm font-semibold shadow-none transition-all border-2 border-amber-200 bg-amber-50 text-amber-600 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:border-amber-500 data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100">
-                            <Star className="h-3.5 w-3.5" />
-                            Tezkor Mahsulotlar
-                            {popularList.length > 0 && <Badge variant="secondary" className="ml-1.5 px-1.5 text-xs">{popularList.length}</Badge>}
+                            className="px-4 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground">
+                            <Star className="h-3.5 w-3.5 mr-1.5" />
+                            Tezkor
+                            {popularList.length > 0 && <span className="ml-1.5 text-xs bg-muted text-muted-foreground rounded-full px-1.5 py-0.5">{popularList.length}</span>}
                         </TabsTrigger>
                     </TabsList>
 

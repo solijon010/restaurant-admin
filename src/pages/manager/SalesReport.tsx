@@ -207,7 +207,7 @@ export default function SalesReport() {
                                     <YAxis tick={{ fontSize: 11, fill: 'hsl(222,10%,50%)' }} tickLine={false} axisLine={false}
                                         tickFormatter={v => v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v / 1_000).toFixed(0)}K` : String(v)} />
                                     <Tooltip formatter={(v: number) => formatPrice(v)}
-                                        contentStyle={{ background: '#fff', border: '1px solid hsl(222,12%,90%)', borderRadius: '10px', fontSize: '12px' }} />
+                                        contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(222,12%,90%)', borderRadius: '10px', fontSize: '12px' }} />
                                     <Bar dataKey="revenue" fill="hsl(32,95%,52%)" name="Daromad" radius={[5, 5, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>

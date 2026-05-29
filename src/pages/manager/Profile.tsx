@@ -88,63 +88,36 @@ export default function ManagerProfile() {
 
   return (
     <div className="max-w-4xl">
-
-      {/* ── Avatar block — sidebar style ── */}
-      <div style={{
-        background: 'hsl(var(--sidebar-background))',
-        borderRadius: 18,
-        padding: '28px 28px',
-        marginBottom: 24,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 20,
-        boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        {/* Background glow */}
-        <div style={{
-          position: 'absolute', top: -40, right: -40,
-          width: 180, height: 180, borderRadius: '50%',
-          background: 'hsl(var(--sidebar-primary) / 0.08)',
-          pointerEvents: 'none',
-        }} />
-
-        {/* Avatar */}
-        <div style={{
-          width: 72, height: 72, borderRadius: 18, flexShrink: 0,
-          background: 'hsl(var(--sidebar-primary) / 0.2)',
-          border: '2px solid hsl(var(--sidebar-primary) / 0.4)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <span style={{ fontSize: 26, fontWeight: 800, color: 'hsl(var(--sidebar-primary))' }}>
-            {initials || <User />}
-          </span>
-        </div>
-
-        {/* Info */}
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <p style={{ fontSize: 22, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.01em' }}>
-            {user.firstName} {user.lastName}
-          </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-            <span style={{
-              fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-              padding: '3px 10px', borderRadius: 6,
-              background: 'hsl(var(--sidebar-primary) / 0.18)',
-              color: 'hsl(var(--sidebar-primary))',
-              border: '1px solid hsl(var(--sidebar-primary) / 0.3)',
-            }}>
-              {roleLabels[user.role]}
-            </span>
-            {branch && (
-              <span style={{ fontSize: 12, color: 'hsl(var(--sidebar-foreground) / 0.5)' }}>
-                · {branch.name}
-              </span>
-            )}
+      {/* ── Header ──────────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <User className="h-5 w-5 text-blue-600" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-foreground leading-tight">Profil</h2>
+            <p className="text-xs text-muted-foreground">Shaxsiy ma'lumotlaringiz</p>
           </div>
         </div>
       </div>
+
+      {/* ── Avatar block ────────────────────────────────────────────────────── */}
+      <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden mb-6">
+        <div className="px-6 py-8 flex flex-col sm:flex-row items-center sm:items-end gap-5 bg-muted/40">
+          <div className="w-20 h-20 rounded-2xl bg-emerald-600 flex items-center justify-center shrink-0 shadow-lg">
+            <span className="text-2xl font-bold text-white">{initials || <User className="h-8 w-8 text-white" />}</span>
+          </div>
+          <div className="text-center sm:text-left">
+            <p className="text-xl font-bold text-foreground">{user.firstName} {user.lastName}</p>
+            <span className="inline-block mt-1 text-xs font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+              {roleLabels[user.role]}
+            </span>
+            {branch && (
+              <p className="text-sm text-muted-foreground mt-1">{branch.name}</p>
+            )}
+          </div>
+        </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* ── Profile Card ──────────────────────────────────────────────────── */}

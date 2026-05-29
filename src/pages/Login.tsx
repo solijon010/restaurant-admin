@@ -40,17 +40,10 @@ export default function Login() {
     }
   };
 
-  const fillDemo = (d: typeof DEMO_ACCOUNTS[0]) => {
-    setPhone(d.phone); setPassword(d.password); setError('');
-  };
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '12px 14px',
-    border: '1px solid #e5e7eb', borderRadius: 8,
-    fontSize: 15, color: '#111827',
-    background: '#fff', outline: 'none',
-    transition: 'border-color 0.15s, box-shadow 0.15s',
-    boxSizing: 'border-box',
+  const fillDemo = (demo: typeof DEMO_ACCOUNTS[0]) => {
+    setPhone(demo.phone);
+    setPassword(demo.password);
+    setError('');
   };
 
   return (
@@ -310,4 +303,3 @@ export default function Login() {
     </div>
   );
 }
-
