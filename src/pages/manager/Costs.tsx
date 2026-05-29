@@ -20,7 +20,7 @@ import api from "@/lib/api";
 import { formatPrice } from "@/lib/mock-data";
 import {
     Loader2, Plus, Search, GitBranch, Tag, Layers,
-    ChevronLeft, ChevronRight, Calendar, MoreVertical, Pencil,
+    ChevronLeft, ChevronRight, Calendar, MoreVertical, Pencil, Eye, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -370,6 +370,7 @@ export default function Xarajatlar() {
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem><Eye className="h-4 w-4 mr-2" /> Batafsil</DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => openEditCost(c)}><Pencil className="h-4 w-4 mr-2" /> Tahrirlash</DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -417,7 +418,8 @@ export default function Xarajatlar() {
                                                         <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => openEditCost(c)}><Pencil className="h-4 w-4 mr-2" /> Tahrirlash</DropdownMenuItem>
+                                                        <DropdownMenuItem><Eye className="h-4 w-4 mr-2" /> Batafsil</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => openEditCost(c)}><Pencil className="h-4 w-4 mr-2" /> Tahrirlash</DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
@@ -492,6 +494,7 @@ export default function Xarajatlar() {
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"><MoreVertical className="h-4 w-4" /></Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem><Eye className="h-4 w-4 mr-2" /> Batafsil</DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => openEditCat(c)}><Pencil className="h-4 w-4 mr-2" /> Tahrirlash</DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -533,7 +536,8 @@ export default function Xarajatlar() {
                                                         <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => openEditCat(c)}><Pencil className="h-4 w-4 mr-2" /> Tahrirlash</DropdownMenuItem>
+                                                        <DropdownMenuItem><Eye className="h-4 w-4 mr-2" /> Batafsil</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => openEditCat(c)}><Pencil className="h-4 w-4 mr-2" /> Tahrirlash</DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>

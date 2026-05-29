@@ -646,6 +646,7 @@ export default function ManagerRooms() {
                                   <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => setDetailRoom(r)}><Eye className="h-4 w-4 mr-2" /> Batafsil</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => openEditRoom(r)}><Pencil className="h-4 w-4 mr-2" /> Tahrirlash</DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteRoomId(r.id)}><Trash2 className="h-4 w-4 mr-2" /> O'chirish</DropdownMenuItem>
