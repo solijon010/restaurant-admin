@@ -17,68 +17,14 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { branchService, BranchPayload } from '@/services/branchService';
 import { t } from '@/lib/i18n';
 import {
-  Sun, Moon, Building2, MapPin, Star,
-  Loader2, Plus, Pencil, Trash2,
-  ToggleLeft, ToggleRight, Check, Eye, TrendingUp,
+  Sun, Moon, Languages, Type, Building2, MapPin, Star,
+  Loader2, Plus, Pencil, Trash2, ToggleLeft, ToggleRight,
+  Check, Eye, ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface BranchForm { name: string; addres: string; kpi: string; }
 const emptyForm: BranchForm = { name: '', addres: '', kpi: '0' };
-
-const R = {
-  bg:      'hsl(var(--sidebar-background))',
-  card:    'hsl(var(--card))',
-  cardHdr: 'hsl(var(--muted))',
-  border:  'hsl(var(--border))',
-  green:   'hsl(var(--accent))',
-  greenHi: 'hsl(161 84% 55%)',
-  greenBg: 'hsl(var(--accent) / 0.08)',
-  cream:   'hsl(var(--secondary))',
-  text:    'hsl(var(--foreground))',
-  muted:   'hsl(var(--muted-foreground))',
-  font:    "'Inter', system-ui, sans-serif",
-};
-
-const RetroCard = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
-  <div style={{
-    background: 'hsl(var(--card))',
-    border: '2px solid hsl(var(--border))',
-    boxShadow: '4px 4px 0 hsl(var(--border))',
-    borderRadius: 2, overflow: 'hidden', ...style,
-  }}>
-    {children}
-  </div>
-);
-
-const RetroSectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ marginBottom: 10 }}>
-    <h3 style={{ fontSize: 22, fontWeight: 700, color: R.text, margin: 0, fontFamily: R.font }}>{children}</h3>
-    <div style={{ height: 2, background: R.green, marginTop: 4, width: '100%' }} />
-  </div>
-);
-
-const RetroChip = ({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    style={{
-      display: 'inline-flex', alignItems: 'center', gap: 5,
-      padding: '8px 18px', cursor: 'pointer',
-      fontFamily: R.font, fontSize: 15, fontWeight: 700,
-      border: '2px solid hsl(var(--border))',
-      background: active ? 'hsl(var(--accent))' : 'hsl(var(--card))',
-      color: active ? '#fff' : 'hsl(var(--foreground))',
-      boxShadow: active ? 'none' : '2px 2px 0 hsl(var(--border))',
-      transform: active ? 'translate(2px,2px)' : 'none',
-      borderRadius: 2, transition: 'all 0.08s ease',
-      outline: 'none',
-    }}
-  >
-    {active && <Check size={12} />}
-    {children}
-  </button>
-);
 
 export default function Settings() {
   const { theme, setTheme, language, setLanguage, fontSize, setFontSize } = useSettings();
@@ -128,225 +74,188 @@ export default function Settings() {
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div style={{ fontFamily: R.font, position: 'relative' }}>
+    <div style={{ maxWidth: 680 }}>
 
-      {/* Page header */}
+      {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 30, fontWeight: 700, color: R.text, margin: 0, fontFamily: R.font }}>
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#0f172a', margin: 0, letterSpacing: '-0.02em' }}>
           {t('Sozlamalar', language)}
         </h1>
-        <p style={{ fontSize: 16, color: R.muted, marginTop: 4 }}>Ilova parametrlari va filiallar</p>
+        <p style={{ fontSize: 13, color: '#94a3b8', marginTop: 5 }}>
+          Ilova parametrlari va filiallarni boshqaring
+        </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row" style={{ gap: 24, alignItems: 'flex-start' }}>
+      {/* ── Appearance ── */}
+      <SectionTitle>{t("Ko'rinish", language)}</SectionTitle>
 
-        {/* ── LEFT ── */}
-        <div style={{ flex: '1 1 0', minWidth: 0 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
 
-          {/* Appearance */}
-          <RetroSectionTitle>Appearance</RetroSectionTitle>
-          <RetroCard style={{ marginBottom: 28 }}>
+        {/* Theme */}
+        <SettingCard
+          icon={<Sun size={16} color="#059669" />}
+          title={t('Mavzu', language)}
+          desc="Yorug' yoki qorong'u rejim"
+        >
+          <div style={{ display: 'flex', gap: 6 }}>
+            <Chip active={theme === 'light'} onClick={() => setTheme('light')}>
+              <Sun size={12} /> {t("Yorug'", language)}
+            </Chip>
+            <Chip active={theme === 'dark'} onClick={() => setTheme('dark')}>
+              <Moon size={12} /> {t("Qorong'u", language)}
+            </Chip>
+          </div>
+        </SettingCard>
 
-            {/* Mavzu */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
-              <div>
-                <p style={{ fontSize: 18, fontWeight: 700, color: R.text, margin: 0 }}>{t('Mavzu', language)}</p>
-                <p style={{ fontSize: 15, color: R.muted, marginTop: 3 }}>Yorug' yoki qorong'u rejim</p>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <RetroChip active={theme === 'light'} onClick={() => setTheme('light')}><Sun size={13} /> {t("Yorug'", language)}</RetroChip>
-                <RetroChip active={theme === 'dark'} onClick={() => setTheme('dark')}><Moon size={13} /> {t("Qorong'u", language)}</RetroChip>
-              </div>
-            </div>
-            <hr className="retro-divider" />
+        {/* Language */}
+        <SettingCard
+          icon={<Languages size={16} color="#059669" />}
+          title={t('Til', language)}
+          desc="Interfeys tili"
+        >
+          <div style={{ display: 'flex', gap: 6 }}>
+            <Chip active={language === 'latin'} onClick={() => setLanguage('latin')}>
+              {t('Lotin', language)}
+            </Chip>
+            <Chip active={language === 'cyrillic'} onClick={() => setLanguage('cyrillic')}>
+              {t('Kiril', language)}
+            </Chip>
+          </div>
+        </SettingCard>
 
-            {/* Til */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
-              <div>
-                <p style={{ fontSize: 18, fontWeight: 700, color: R.text, margin: 0 }}>{t('Til', language)}</p>
-                <p style={{ fontSize: 15, color: R.muted, marginTop: 3 }}>Interfeys tili</p>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <RetroChip active={language === 'latin'} onClick={() => setLanguage('latin')}>{t('Lotin', language)}</RetroChip>
-                <RetroChip active={language === 'cyrillic'} onClick={() => setLanguage('cyrillic')}>{t('Kiril', language)}</RetroChip>
-              </div>
-            </div>
-            <hr className="retro-divider" />
+        {/* Font size */}
+        <SettingCard
+          icon={<Type size={16} color="#059669" />}
+          title={t("Yozuv o'lchami", language)}
+          desc="Kichik, o'rta yoki katta"
+        >
+          <div style={{ display: 'flex', gap: 6 }}>
+            <Chip active={fontSize === 'sm'} onClick={() => setFontSize('sm')}>{t('Kichik', language)}</Chip>
+            <Chip active={fontSize === 'md'} onClick={() => setFontSize('md')}>{t("O'rta", language)}</Chip>
+            <Chip active={fontSize === 'lg'} onClick={() => setFontSize('lg')}>{t('Katta', language)}</Chip>
+          </div>
+        </SettingCard>
+      </div>
 
-            {/* Yozuv o'lchami */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
-              <div>
-                <p style={{ fontSize: 18, fontWeight: 700, color: R.text, margin: 0 }}>{t("Yozuv o'lchami", language)}</p>
-                <p style={{ fontSize: 15, color: R.muted, marginTop: 3 }}>Kichik, o'rta yoki katta</p>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <RetroChip active={fontSize === 'sm'} onClick={() => setFontSize('sm')}>{t('Kichik', language)}</RetroChip>
-                <RetroChip active={fontSize === 'md'} onClick={() => setFontSize('md')}>{t("O'rta", language)}</RetroChip>
-                <RetroChip active={fontSize === 'lg'} onClick={() => setFontSize('lg')}>{t('Katta', language)}</RetroChip>
-              </div>
-            </div>
-
-          </RetroCard>
-
-          {/* Branches */}
-          {isManagerCtx && (
-            <>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div>
-                  <RetroSectionTitle>Branches</RetroSectionTitle>
-                  <p style={{ fontSize: 15, color: R.muted, marginTop: -4 }}>Kompaniyangizga tegishli barcha filiallar</p>
-                </div>
-                <button onClick={openCreate} style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '8px 16px', marginTop: 2,
-                  background: R.green, color: '#fff',
-                  border: `2px solid ${R.border}`,
-                  boxShadow: `3px 3px 0 ${R.border}`,
-                  fontFamily: R.font, fontSize: 15, fontWeight: 700,
-                  cursor: 'pointer', borderRadius: 2, transition: 'all 0.08s',
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'translate(3px,3px)'; e.currentTarget.style.boxShadow = 'none'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = `3px 3px 0 ${R.border}`; }}
-                >
-                  <Plus size={14} /> + {t("Filial qo'shish", language)}
-                </button>
-              </div>
-
-              <RetroCard>
-                {branchesLoading ? (
-                  <div style={{ padding: 20, display: 'flex', gap: 8, alignItems: 'center', color: R.muted }}>
-                    <Loader2 size={14} className="animate-spin" /><span style={{ fontSize: 14 }}>Yuklanmoqda...</span>
-                  </div>
-                ) : branches.length === 0 ? (
-                  <div style={{ padding: 32, textAlign: 'center', color: R.muted }}>
-                    <Building2 size={24} style={{ margin: '0 auto 8px', opacity: 0.3 }} />
-                    <p style={{ fontSize: 14 }}>Hali filial yo'q</p>
-                  </div>
-                ) : branches.map((b, i) => {
-                  const isActive = b.status === 'ACTIVE';
-                  const isCurrent = b.id === selectedBranchId;
-                  return (
-                    <div key={b.id}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px' }}>
-                        {/* Icon */}
-                        <div style={{
-                          width: 44, height: 44, flexShrink: 0,
-                          background: R.cardHdr, border: `2px solid ${R.border}`,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>
-                          {i === 0 ? <Star size={18} style={{ color: '#D4A020', fill: '#D4A020' }} /> : <Building2 size={16} style={{ color: R.muted }} />}
-                        </div>
-                        {/* Info */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontSize: 17, fontWeight: 700, color: R.text }}>{b.name}</span>
-                            <span style={{
-                              fontSize: 12, fontWeight: 700, padding: '2px 6px',
-                              border: `1.5px solid ${R.green}`, background: R.greenBg,
-                              color: R.green, letterSpacing: '0.06em', textTransform: 'uppercase',
-                              borderRadius: 2,
-                            }}>
-                              {isActive ? 'AKTIV' : 'NOFAOL'}
-                            </span>
-                          </div>
-                          {b.addres && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                              <MapPin size={11} style={{ color: R.muted }} />
-                              <span style={{ fontSize: 15, color: R.muted }}>{b.addres}</span>
-                            </div>
-                          )}
-                        </div>
-                        {/* Status dot */}
-                        <div style={{
-                          display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
-                          border: `1.5px solid ${R.border}`, background: R.cream,
-                          fontSize: 14, fontWeight: 700, color: isActive ? R.green : R.muted,
-                          borderRadius: 2,
-                        }}>
-                          <span style={{ width: 7, height: 7, borderRadius: 1, background: isActive ? R.greenHi : R.muted }} />
-                          {isCurrent ? 'Bosh' : isActive ? 'Faol' : 'Nofaol'}
-                        </div>
-                        {/* Actions */}
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          {[
-                            { icon: Pencil, onClick: () => openEdit(b), danger: false },
-                            { icon: Eye, onClick: () => {}, danger: false },
-                            { icon: Trash2, onClick: () => setDeleteId(b.id), danger: true },
-                          ].map(({ icon: Icon, onClick, danger }, idx) => (
-                            <button key={idx} onClick={onClick} style={{
-                              width: 32, height: 32, border: `2px solid ${R.border}`,
-                              background: R.cream, cursor: 'pointer',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              color: danger ? '#c0392b' : R.muted, borderRadius: 2,
-                              boxShadow: `2px 2px 0 ${R.border}`, transition: 'all 0.08s',
-                            }}
-                              onMouseEnter={e => { e.currentTarget.style.transform = 'translate(2px,2px)'; e.currentTarget.style.boxShadow = 'none'; }}
-                              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = `2px 2px 0 ${R.border}`; }}
-                            >
-                              <Icon size={13} />
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      {i < branches.length - 1 && <hr className="retro-divider" />}
-                    </div>
-                  );
-                })}
-              </RetroCard>
-            </>
-          )}
-        </div>
-
-        {/* ── RIGHT ── */}
-        <div className="w-full lg:w-64 lg:flex-shrink-0">
-          <p style={{ fontSize: 18, fontWeight: 700, color: R.text, marginBottom: 10, fontFamily: R.font }}>Metric cards</p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
-            {[
-              { label: 'Filiallar', value: branches.length, sub: 'ta jami', icon: Building2, prog: 65, col: R.green },
-              { label: 'Faollar', value: branches.filter(b => b.status === 'ACTIVE').length, sub: 'ta faol', icon: TrendingUp, prog: 45, col: '#5B6ABF' },
-            ].map(({ label, value, sub, icon: Icon, prog, col }) => (
-              <RetroCard key={label} style={{ padding: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 14, color: R.muted, fontWeight: 700 }}>{label}</span>
-                  <Icon size={14} style={{ color: col }} />
-                </div>
-                <p style={{ fontSize: 30, fontWeight: 700, color: R.text, margin: '4px 0 2px' }}>{value}</p>
-                <p style={{ fontSize: 13, color: R.muted, margin: '0 0 8px' }}>{sub}</p>
-                <div style={{ height: 4, background: '#D8D0A8', borderRadius: 0, border: `1px solid ${R.border}` }}>
-                  <div style={{ width: `${prog}%`, height: '100%', background: col }} />
-                </div>
-              </RetroCard>
-            ))}
+      {/* ── Branches ── */}
+      {isManagerCtx && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <SectionTitle>Filiallar</SectionTitle>
+            <button onClick={openCreate} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 16px', borderRadius: 9,
+              background: '#059669', color: '#fff', border: 'none',
+              fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              transition: 'background 0.15s',
+            }}
+              onMouseEnter={e => e.currentTarget.style.background = '#047857'}
+              onMouseLeave={e => e.currentTarget.style.background = '#059669'}
+            >
+              <Plus size={14} /> {t("Filial qo'shish", language)}
+            </button>
           </div>
 
-          {/* Branch panel */}
-          <RetroCard>
-            <div style={{ padding: '14px 16px' }}>
-              <p style={{ fontSize: 16, fontWeight: 700, color: R.text, margin: '0 0 6px', fontFamily: R.font }}>Branch management panel</p>
-              <p style={{ fontSize: 14, color: R.muted, margin: '0 0 14px', lineHeight: 1.5 }}>Filiallaringizni kuzatish va boshqarish.</p>
-              <button onClick={openCreate} style={{
-                width: '100%', padding: '9px', cursor: 'pointer',
-                background: R.green, color: '#fff', fontFamily: R.font,
-                border: `2px solid ${R.border}`, boxShadow: `3px 3px 0 ${R.border}`,
-                fontSize: 15, fontWeight: 700, borderRadius: 2,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-                transition: 'all 0.08s',
-              }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translate(3px,3px)'; e.currentTarget.style.boxShadow = 'none'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = `3px 3px 0 ${R.border}`; }}
-              >
-                <Plus size={14} /> + Add branch
-              </button>
+          {branchesLoading ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '20px 0', color: '#94a3b8' }}>
+              <Loader2 size={15} className="animate-spin" />
+              <span style={{ fontSize: 14 }}>Yuklanmoqda...</span>
             </div>
-          </RetroCard>
-        </div>
-      </div>
+          ) : branches.length === 0 ? (
+            <div style={{
+              padding: '40px 24px', textAlign: 'center',
+              border: '2px dashed #e5e7eb', borderRadius: 14, color: '#94a3b8',
+            }}>
+              <Building2 size={28} style={{ margin: '0 auto 10px', opacity: 0.3 }} />
+              <p style={{ fontSize: 14, fontWeight: 600 }}>Hali filial yo'q</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {branches.map((b, i) => {
+                const isActive = b.status === 'ACTIVE';
+                const isCurrent = b.id === selectedBranchId;
+                return (
+                  <div key={b.id} style={{
+                    background: '#fff',
+                    border: `1.5px solid ${isCurrent ? '#6ee7b7' : '#e5e7eb'}`,
+                    borderRadius: 14,
+                    padding: '16px 18px',
+                    boxShadow: isCurrent ? '0 0 0 3px rgba(16,185,129,0.08)' : '0 1px 4px rgba(0,0,0,0.04)',
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    transition: 'all 0.15s',
+                  }}>
+                    {/* Icon */}
+                    <div style={{
+                      width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                      background: isCurrent ? '#ecfdf5' : '#f8fafc',
+                      border: `1.5px solid ${isCurrent ? '#a7f3d0' : '#e5e7eb'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {i === 0
+                        ? <Star size={18} style={{ color: '#f59e0b', fill: '#f59e0b' }} />
+                        : <Building2 size={16} style={{ color: '#94a3b8' }} />
+                      }
+                    </div>
+
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>{b.name}</span>
+                        {isCurrent && (
+                          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#dcfce7', color: '#15803d', letterSpacing: '0.04em' }}>
+                            JORIY
+                          </span>
+                        )}
+                        <span style={{
+                          fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99,
+                          background: isActive ? '#f0fdf4' : '#f8fafc',
+                          color: isActive ? '#16a34a' : '#94a3b8',
+                          border: `1px solid ${isActive ? '#bbf7d0' : '#e2e8f0'}`,
+                          display: 'flex', alignItems: 'center', gap: 4,
+                        }}>
+                          <span style={{ width: 5, height: 5, borderRadius: '50%', background: isActive ? '#22c55e' : '#cbd5e1', display: 'inline-block' }} />
+                          {isActive ? 'Faol' : 'Nofaol'}
+                        </span>
+                      </div>
+                      {b.addres && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 5 }}>
+                          <MapPin size={11} style={{ color: '#94a3b8', flexShrink: 0 }} />
+                          <span style={{ fontSize: 13, color: '#64748b' }}>{b.addres}</span>
+                        </div>
+                      )}
+                      {b.kpi > 0 && (
+                        <span style={{ fontSize: 12, color: '#94a3b8', marginTop: 3, display: 'block' }}>
+                          KPI: <strong style={{ color: '#0f172a' }}>{b.kpi}%</strong>
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                      <ActionBtn onClick={() => openEdit(b)} title="Tahrirlash"><Pencil size={13} /></ActionBtn>
+                      <ActionBtn onClick={() => toggleMutation.mutate(b.id)} title="Holat" disabled={toggleMutation.isPending}>
+                        {isActive
+                          ? <ToggleRight size={15} style={{ color: '#059669' }} />
+                          : <ToggleLeft size={15} />}
+                      </ActionBtn>
+                      <ActionBtn onClick={() => setDeleteId(b.id)} title="O'chirish" danger>
+                        <Trash2 size={13} />
+                      </ActionBtn>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
 
       {/* Dialogs */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle style={{ fontFamily: R.font }}>{editingId ? 'Tahrirlash' : "Yangi filial"}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{editingId ? 'Filialni tahrirlash' : "Yangi filial"}</DialogTitle>
+          </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5"><Label>Nomi *</Label><Input placeholder="Filial nomi" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
             <div className="space-y-1.5"><Label>Manzil</Label><Input placeholder="Shahar, ko'cha" value={form.addres} onChange={e => setForm(f => ({ ...f, addres: e.target.value }))} /></div>
@@ -378,5 +287,98 @@ export default function Settings() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+/* ── Sub-components ── */
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', margin: 0 }}>{children}</h3>
+      <div style={{ width: 32, height: 2, background: '#059669', borderRadius: 99, marginTop: 5 }} />
+    </div>
+  );
+}
+
+function SettingCard({ icon, title, desc, children }: {
+  icon: React.ReactNode; title: string; desc: string; children: React.ReactNode;
+}) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+      padding: '16px 20px',
+      background: '#fff',
+      border: '1.5px solid #f1f5f9',
+      borderRadius: 12,
+      boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+      transition: 'border-color 0.15s',
+    }}
+      onMouseEnter={e => (e.currentTarget.style.borderColor = '#d1fae5')}
+      onMouseLeave={e => (e.currentTarget.style.borderColor = '#f1f5f9')}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+          background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          {icon}
+        </div>
+        <div>
+          <p style={{ fontSize: 14, fontWeight: 600, color: '#0f172a', margin: 0 }}>{title}</p>
+          <p style={{ fontSize: 12, color: '#94a3b8', margin: 0, marginTop: 2 }}>{desc}</p>
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Chip({ active, onClick, children }: {
+  active: boolean; onClick: () => void; children: React.ReactNode;
+}) {
+  return (
+    <button type="button" onClick={onClick} style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
+      fontSize: 13, fontWeight: active ? 600 : 400,
+      border: `1.5px solid ${active ? '#059669' : '#e5e7eb'}`,
+      background: active ? '#059669' : '#fff',
+      color: active ? '#fff' : '#374151',
+      transition: 'all 0.12s',
+      outline: 'none',
+    }}>
+      {active && <Check size={11} />}
+      {children}
+    </button>
+  );
+}
+
+function ActionBtn({ children, onClick, title, danger, disabled }: {
+  children: React.ReactNode; onClick: () => void; title?: string;
+  danger?: boolean; disabled?: boolean;
+}) {
+  return (
+    <button onClick={onClick} title={title} disabled={disabled} style={{
+      width: 32, height: 32, borderRadius: 8,
+      border: '1.5px solid #e5e7eb', background: '#f9fafb',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      color: '#94a3b8', opacity: disabled ? 0.5 : 1,
+      transition: 'all 0.12s',
+    }}
+      onMouseEnter={e => {
+        e.currentTarget.style.background = danger ? '#fef2f2' : '#f0fdf4';
+        e.currentTarget.style.borderColor = danger ? '#fecaca' : '#a7f3d0';
+        e.currentTarget.style.color = danger ? '#ef4444' : '#059669';
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.background = '#f9fafb';
+        e.currentTarget.style.borderColor = '#e5e7eb';
+        e.currentTarget.style.color = '#94a3b8';
+      }}
+    >
+      {children}
+    </button>
   );
 }
