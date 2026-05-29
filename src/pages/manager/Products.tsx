@@ -861,7 +861,7 @@ export default function ManagerProducts() {
                         <TabsTrigger value="products"
                             className="px-4 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground">
                             Mahsulotlar
-                            {prodsTotal > 0 && <span className="ml-1.5 text-xs bg-muted text-muted-foreground rounded-full px-1.5 py-0.5 data-[state=active]:bg-muted data-[state=active]:text-emerald-700">{prodsTotal}</span>}
+                            {prodsTotal > 0 && <span className="ml-1.5 text-xs bg-muted text-muted-foreground rounded-full px-1.5 py-0.5 data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-700">{prodsTotal}</span>}
                         </TabsTrigger>
                         <TabsTrigger value="categories"
                             className="px-4 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground">
