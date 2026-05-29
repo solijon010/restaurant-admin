@@ -113,7 +113,7 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                             onClick={closeSidebar}
                             className={({ isActive }) =>
                                 `group flex items-center gap-3 px-3 py-2 rounded-lg text-[15px] font-medium transition-all duration-150 ${isActive
-                                    ? 'bg-emerald-500/15 text-white border border-emerald-500/20'
+                                    ? 'bg-white/10 text-white border border-white/15'
                                     : 'text-sidebar-foreground hover:text-white hover:bg-white/6 border border-transparent'
                                 }`
                             }
