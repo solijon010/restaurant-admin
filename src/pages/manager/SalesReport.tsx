@@ -25,8 +25,8 @@ interface DayOrder { orderItem: OrderItem[]; room: { name: string }; status: str
 
 const FILTERS: { label: string; filter: FilterType; active: string; inactive: string }[] = [
     { label: 'Bugun',    filter: 'today',     active: 'bg-emerald-500 text-white border-emerald-500', inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
-    { label: 'Kecha',    filter: 'yesterday', active: 'bg-blue-500 text-white border-blue-500',       inactive: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' },
-    { label: '7 kun',    filter: 'last7',     active: 'bg-violet-500 text-white border-violet-500',   inactive: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100' },
+    { label: 'Kecha',    filter: 'yesterday', active: 'bg-emerald-500 text-white border-blue-500',       inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
+    { label: '7 kun',    filter: 'last7',     active: 'bg-emerald-500 text-white border-violet-500',   inactive: 'bg-emerald-50 text-violet-700 border-violet-200 hover:bg-violet-100' },
     { label: '30 kun',   filter: 'last30',    active: 'bg-orange-500 text-white border-orange-500',   inactive: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' },
     { label: 'Boshqa',   filter: 'custom',    active: 'bg-slate-700 text-white border-slate-700',     inactive: 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100' },
 ];
@@ -163,8 +163,8 @@ export default function SalesReport() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {[
                         { label: 'Jami daromad', value: formatPrice(isSingleDay ? dayTotal : totalRevenue), icon: Banknote, bg: 'bg-emerald-50', iconColor: 'text-emerald-600', valueColor: 'text-emerald-600' },
-                        { label: 'Buyurtmalar', value: isSingleDay ? `${dayOrderCount} ta` : `${revenueData.length} kun`, icon: ShoppingCart, bg: 'bg-blue-50', iconColor: 'text-blue-600', valueColor: 'text-blue-600' },
-                        { label: "O'rtacha buyurtma", value: formatPrice(isSingleDay && dayOrderCount > 0 ? dayTotal / dayOrderCount : avgOrder), icon: ArrowUpRight, bg: 'bg-violet-50', iconColor: 'text-violet-600', valueColor: 'text-violet-600' },
+                        { label: 'Buyurtmalar', value: isSingleDay ? `${dayOrderCount} ta` : `${revenueData.length} kun`, icon: ShoppingCart, bg: 'bg-emerald-50', iconColor: 'text-emerald-600', valueColor: 'text-emerald-600' },
+                        { label: "O'rtacha buyurtma", value: formatPrice(isSingleDay && dayOrderCount > 0 ? dayTotal / dayOrderCount : avgOrder), icon: ArrowUpRight, bg: 'bg-emerald-50', iconColor: 'text-emerald-600', valueColor: 'text-emerald-600' },
                     ].map((s, i) => (
                         <Card key={i} className="p-4 shadow-sm border border-border/60 rounded-2xl flex items-center gap-4">
                             <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center shrink-0`}>
@@ -220,8 +220,8 @@ export default function SalesReport() {
             {isSingleDay && (
                 <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
                     <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60">
-                        <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
-                            <Home className="h-3.5 w-3.5 text-indigo-600" />
+                        <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                            <Home className="h-3.5 w-3.5 text-emerald-600" />
                         </div>
                         <div>
                             <p className="text-sm font-semibold text-foreground">Xonalar bo'yicha savdo</p>
@@ -251,7 +251,7 @@ export default function SalesReport() {
                                 {roomStats.map((r, i) => (
                                     <div key={r.name} className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/40 transition-colors">
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold
-                                            ${i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-slate-100 text-slate-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                                            ${i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-slate-100 text-slate-600' : 'bg-emerald-50 text-emerald-600'}`}>
                                             {i + 1}
                                         </div>
                                         <div className="flex-1 min-w-0">

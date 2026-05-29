@@ -878,8 +878,8 @@ export default function ManagerProducts() {
                         </div>
                         {selectedBranchId && (
                             <div className="flex gap-3 shrink-0 flex-wrap">
-                                <div className="rounded-xl bg-blue-50 border border-blue-100 px-4 py-2 text-center">
-                                    <p className="text-base font-bold text-blue-700">{prodsTotal}</p>
+                                <div className="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-2 text-center">
+                                    <p className="text-base font-bold text-emerald-700">{prodsTotal}</p>
                                     <p className="text-xs text-blue-500">Mahsulot</p>
                                 </div>
                                 <div className="rounded-xl bg-purple-50 border border-purple-100 px-4 py-2 text-center">
@@ -915,7 +915,7 @@ export default function ManagerProducts() {
                             {prodsTotal > 0 && <Badge variant="secondary" className="ml-1.5 px-1.5 text-xs">{prodsTotal}</Badge>}
                         </TabsTrigger>
                         <TabsTrigger value="categories"
-                            className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl text-sm font-semibold shadow-none transition-all border-2 border-blue-200 bg-blue-50 text-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100">
+                            className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl text-sm font-semibold shadow-none transition-all border-2 border-emerald-200 bg-emerald-50 text-emerald-600 data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100">
                             Kategoriyalar
                             {categories.length > 0 && <Badge variant="secondary" className="ml-1.5 px-1.5 text-xs">{categories.length}</Badge>}
                         </TabsTrigger>

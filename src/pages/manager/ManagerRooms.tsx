@@ -134,6 +134,7 @@ export default function ManagerRooms() {
     }
   }, [selectedBranchId]);
 
+
   // ─── Room Categories ───────────────────────────────────────────────────────
   const {
     data: catsRaw,
@@ -280,28 +281,18 @@ export default function ManagerRooms() {
   // ─── Room handlers ────────────────────────────────────────────────────────
   const openAddRoom = () => {
     setEditRoom(null);
-    setRoomForm({
-      name: "",
-      price: "",
-      roomCategoryId: activeCats[0]?.id || "",
-    });
+    setRoomForm({ name: "", price: "", roomCategoryId: activeCats[0]?.id || "" });
     setRoomDialog(true);
   };
 
   const openEditRoom = (r: Room) => {
     setEditRoom(r);
-    setRoomForm({
-      name: r.name,
-      price: String(r.price),
-      roomCategoryId: r.roomCategoryId,
-    });
+    setRoomForm({ name: r.name, price: String(r.price), roomCategoryId: r.roomCategoryId });
     setRoomDialog(true);
   };
 
   const saveRoom = () => {
     if (!roomForm.name.trim()) return toast.error("Xona nomini kiriting");
-    if (!roomForm.price || isNaN(Number(roomForm.price)))
-      return toast.error("Narxni to'g'ri kiriting");
     if (!roomForm.roomCategoryId) return toast.error("Kategoriyani tanlang");
 
     if (editRoom) {
@@ -309,18 +300,57 @@ export default function ManagerRooms() {
         id: editRoom.id,
         data: {
           name: roomForm.name,
-          price: Number(roomForm.price),
+          price: 0,
           roomCategoryId: roomForm.roomCategoryId,
         },
       });
     } else {
       createRoomMutation.mutate({
         name: roomForm.name,
-        price: Number(roomForm.price),
+        price: 0,
         branchId: selectedBranchId,
         roomCategoryId: roomForm.roomCategoryId,
       });
     }
+  };
+
+  const [deleteAllDialog, setDeleteAllDialog] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
+
+  const deleteAllRooms = async () => {
+    setDeletingAll(true);
+    let deleted = 0;
+    for (const r of roomsList) {
+      try {
+        await roomService.delete(r.id);
+        deleted++;
+      } catch {}
+    }
+    setDeletingAll(false);
+    setDeleteAllDialog(false);
+    toast.success(`${deleted} ta xona o'chirildi`);
+    queryClient.invalidateQueries({ queryKey: ["rooms", selectedBranchId] });
+  };
+
+  const [bulkCreating, setBulkCreating] = useState(false);
+  const bulkCreateSoris = async () => {
+    if (!activeCats[0]) return toast.error("Avval kategoriya yarating");
+    setBulkCreating(true);
+    let created = 0;
+    for (let i = 1; i <= 12; i++) {
+      try {
+        await roomService.create({
+          name: `Sori ${i}`,
+          price: 0,
+          branchId: selectedBranchId,
+          roomCategoryId: activeCats[0].id,
+        });
+        created++;
+      } catch {}
+    }
+    setBulkCreating(false);
+    toast.success(`${created} ta Sori yaratildi`);
+    queryClient.invalidateQueries({ queryKey: ["rooms", selectedBranchId] });
   };
 
   // ─── Category handlers ────────────────────────────────────────────────────
@@ -362,8 +392,8 @@ export default function ManagerRooms() {
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-            <BedDouble className="h-5 w-5 text-indigo-600" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+            <BedDouble className="h-5 w-5 text-emerald-600" />
           </div>
           <div>
             <h2 className="text-xl font-bold text-foreground leading-tight">Xonalar</h2>
@@ -393,8 +423,8 @@ export default function ManagerRooms() {
           ) : (
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-50 shrink-0">
-                  <Store className="h-4 w-4 text-indigo-600" />
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 shrink-0">
+                  <Store className="h-4 w-4 text-emerald-600" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground mb-0.5">Faol filial</p>
@@ -415,8 +445,8 @@ export default function ManagerRooms() {
 
               {selectedBranchId && (
                 <div className="flex gap-4 shrink-0">
-                  <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-100 text-center min-w-[60px]">
-                    <p className="text-lg font-bold text-indigo-700">{roomsList.length}</p>
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-center min-w-[60px]">
+                    <p className="text-lg font-bold text-emerald-700">{roomsList.length}</p>
                     <p className="text-xs text-muted-foreground">Xona</p>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center min-w-[60px]">
@@ -448,7 +478,7 @@ export default function ManagerRooms() {
           <TabsList className="mb-4 bg-muted/40 rounded-xl p-1 h-auto gap-1">
             <TabsTrigger
               value="rooms"
-              className="rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              className="rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
               <BedDouble className="h-3.5 w-3.5 mr-1.5" />
               Xonalar
@@ -534,7 +564,7 @@ export default function ManagerRooms() {
                             <p className="font-medium truncate">{r.name}</p>
                           </div>
                           <div className="flex items-center gap-2 mt-1.5">
-                            {cat && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">{cat.name}</span>}
+                            {cat && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">{cat.name}</span>}
                             <span className="text-sm font-semibold text-foreground">{formatPrice(r.price)}</span>
                           </div>
                         </div>
@@ -591,12 +621,12 @@ export default function ManagerRooms() {
                           <TableRow key={r.id} className="hover:bg-muted/30 transition-colors">
                             <TableCell className="font-medium">
                               <div className="flex items-center gap-2">
-                                <BedDouble className="h-4 w-4 text-indigo-400" />{r.name}
+                                <BedDouble className="h-4 w-4 text-emerald-400" />{r.name}
                               </div>
                             </TableCell>
                             <TableCell>
                               {cat ? (
-                                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">{cat.name}</span>
+                                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">{cat.name}</span>
                               ) : (
                                 <span className="text-muted-foreground text-sm">—</span>
                               )}
@@ -616,6 +646,7 @@ export default function ManagerRooms() {
                                   <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => setDetailRoom(r)}><Eye className="h-4 w-4 mr-2" /> Batafsil</DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => openEditRoom(r)}><Pencil className="h-4 w-4 mr-2" /> Tahrirlash</DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteRoomId(r.id)}><Trash2 className="h-4 w-4 mr-2" /> O'chirish</DropdownMenuItem>
@@ -763,54 +794,31 @@ export default function ManagerRooms() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>
-                Nomi <span className="text-destructive">*</span>
-              </Label>
+              <Label>Nomi <span className="text-destructive">*</span></Label>
               <Input
-                placeholder="Xona nomini kiriting"
+                placeholder="Xona nomi"
                 value={roomForm.name}
-                onChange={(e) =>
-                  setRoomForm({ ...roomForm, name: e.target.value })
-                }
+                onChange={(e) => setRoomForm({ ...roomForm, name: e.target.value })}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>
-                  Narx (so'm) <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  min={0}
-                  value={roomForm.price}
-                  onChange={(e) =>
-                    setRoomForm({ ...roomForm, price: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>
-                  Kategoriya <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                  value={roomForm.roomCategoryId}
-                  onValueChange={(v) =>
-                    setRoomForm({ ...roomForm, roomCategoryId: v })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Tanlang" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activeCats.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="space-y-1.5">
+              <Label>Kategoriya <span className="text-destructive">*</span></Label>
+              <div className="flex flex-wrap gap-2">
+                {activeCats.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setRoomForm({ ...roomForm, roomCategoryId: c.id })}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
+                      roomForm.roomCategoryId === c.id
+                        ? "bg-emerald-500 text-white border-indigo-500 shadow-sm"
+                        : "bg-muted/40 text-foreground border-border hover:border-indigo-300 hover:bg-emerald-50"
+                    }`}
+                  >
+                    {c.name}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -917,6 +925,29 @@ export default function ManagerRooms() {
                 <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
               )}
               O'chirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ══ Delete All Rooms ══════════════════════════════════════════════════ */}
+      <AlertDialog open={deleteAllDialog} onOpenChange={setDeleteAllDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Barcha xonalarni o'chirish</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{roomsList.length} ta xona</strong> butunlay o'chiriladi. Bu amalni qaytarib bo'lmaydi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingAll}>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={deleteAllRooms}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deletingAll}
+            >
+              {deletingAll && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
+              Hammasini o'chirish
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
