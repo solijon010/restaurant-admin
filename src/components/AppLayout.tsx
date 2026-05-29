@@ -89,13 +89,10 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
         transform transition-transform duration-200 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-                <div className="p-6 border-b border-sidebar-border flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-2">
-                        <img src="/LOGO.PNJ.png" alt="Logo" style={{ width: 36, height: 36, objectFit: 'contain' }} />
-                        <div>
-                            <h1 className="text-lg font-bold text-sidebar-primary-foreground">Sohil Choyxonasi</h1>
-                            <p className="text-xs text-sidebar-foreground/60 mt-0.5">{t('Boshqaruv tizimi', language)}</p>
-                        </div>
+                <div className="p-5 border-b border-sidebar-border flex items-center justify-between shrink-0">
+                    <div>
+                        <h1 className="text-base font-bold text-sidebar-primary-foreground">Sohil Choyxonasi</h1>
+                        <p className="text-xs text-sidebar-foreground/60 mt-0.5">{t('Boshqaruv tizimi', language)}</p>
                     </div>
                     <button
                         onClick={closeSidebar}
@@ -126,12 +123,6 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                 </nav>
 
                 <div className="p-4 border-t border-sidebar-border shrink-0">
-                    <div className="mb-3 px-3">
-                        <p className="text-sm font-medium text-sidebar-foreground">
-                            {user.firstName} {user.lastName}
-                        </p>
-                        <p className="text-xs text-sidebar-foreground/50">{user.role}</p>
-                    </div>
                     <button
                         onClick={handleLogout}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
