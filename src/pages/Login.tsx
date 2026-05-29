@@ -4,15 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';
 import { t } from '@/lib/i18n';
 import { getRoleBasePath } from '@/lib/auth';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 const DEMO_ACCOUNTS = [
-  { label: "Super Admin", phone: "+998335242981", password: "password" },
-  { label: "Menejer", phone: "+998991234569", password: "12345678" },
+  { label: 'Super Admin', phone: '+998335242981', password: 'password' },
+  { label: 'Menejer',     phone: '+998991234569', password: '12345678' },
 ];
 
 export default function Login() {
@@ -44,82 +40,145 @@ export default function Login() {
     }
   };
 
-  const fillDemo = (demo: typeof DEMO_ACCOUNTS[0]) => {
-    setPhone(demo.phone);
-    setPassword(demo.password);
-    setError('');
+  const fillDemo = (d: typeof DEMO_ACCOUNTS[0]) => {
+    setPhone(d.phone); setPassword(d.password); setError('');
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '12px 14px',
+    border: '1px solid #e5e7eb', borderRadius: 8,
+    fontSize: 15, color: '#111827',
+    background: '#fff', outline: 'none',
+    transition: 'border-color 0.15s, box-shadow 0.15s',
+    boxSizing: 'border-box',
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-sm p-6 sm:p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-foreground">Restourant</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t('Tizimga kirish', language)}</p>
-        </div>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: '#f9fafb',
+      fontFamily: "'Inter', system-ui, sans-serif",
+      padding: 20,
+    }}>
+      <div style={{
+        width: '100%', maxWidth: 380,
+        background: '#fff',
+        borderRadius: 16,
+        boxShadow: '0 4px 24px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04)',
+        padding: '36px 32px 32px',
+      }}>
+        <div style={{ width: '100%' }}>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="phone">{t('Telefon raqam', language)}</Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="+998901234567"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-            />
+          {/* Logo */}
+          <div style={{ marginBottom: 32 }}>
+            <span style={{ fontSize: 17, fontWeight: 700, color: '#111827' }}>Sohil Choyxonasi</span>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">{t('Parol', language)}</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="pr-10"
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#111827', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+            Xush kelibsiz
+          </h1>
+          <p style={{ fontSize: 14, color: '#6b7280', margin: '0 0 32px' }}>
+            Davom etish uchun tizimga kiring
+          </p>
+
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+                {t('Telefon raqam', language)}
+              </label>
+              <input
+                type="tel" placeholder="+998 90 123 45 67"
+                value={phone} required
+                onChange={e => setPhone(e.target.value)}
+                style={inputStyle}
+                onFocus={e => { e.target.style.borderColor = '#059669'; e.target.style.boxShadow = '0 0 0 3px rgba(5,150,105,0.1)'; }}
+                onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = 'none'; }}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+                {t('Parol', language)}
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={password} required
+                  onChange={e => setPassword(e.target.value)}
+                  style={{ ...inputStyle, paddingRight: 44 }}
+                  onFocus={e => { e.target.style.borderColor = '#059669'; e.target.style.boxShadow = '0 0 0 3px rgba(5,150,105,0.1)'; }}
+                  onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = 'none'; }}
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{
+                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0,
+                }}>
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div style={{
+                padding: '10px 12px', borderRadius: 8,
+                background: '#fef2f2', border: '1px solid #fecaca',
+                color: '#dc2626', fontSize: 13,
+              }}>
+                {error}
+              </div>
+            )}
+
+            <button type="submit" disabled={loading} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              padding: '12px', borderRadius: 8, border: 'none',
+              background: loading ? '#d1fae5' : '#059669',
+              color: loading ? '#6b7280' : '#fff',
+              fontSize: 14, fontWeight: 600,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.15s',
+              marginTop: 4,
+            }}
+              onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#047857'; }}
+              onMouseLeave={e => { if (!loading) e.currentTarget.style.background = '#059669'; }}
+            >
+              {loading ? 'Kirmoqda...' : <>{t('Kirish', language)} <ArrowRight size={16} /></>}
+            </button>
+          </form>
+
+          {/* Demo */}
+          <div style={{ marginTop: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <div style={{ flex: 1, height: 1, background: '#f3f4f6' }} />
+              <span style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500 }}>Demo hisoblar</span>
+              <div style={{ flex: 1, height: 1, background: '#f3f4f6' }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {DEMO_ACCOUNTS.map(demo => (
+                <button key={demo.phone} type="button" onClick={() => fillDemo(demo)} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '11px 14px', borderRadius: 8,
+                  border: '1px solid #f3f4f6', background: '#f9fafb',
+                  cursor: 'pointer', transition: 'all 0.12s',
+                  textAlign: 'left',
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#d1fae5'; e.currentTarget.style.background = '#f0fdf4'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#f3f4f6'; e.currentTarget.style.background = '#f9fafb'; }}
+                >
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>{t(demo.label, language)}</p>
+                    <p style={{ fontSize: 12, color: '#9ca3af', margin: 0, fontFamily: 'monospace', marginTop: 2 }}>{demo.phone}</p>
+                  </div>
+                  <ArrowRight size={14} color="#9ca3af" />
+                </button>
+              ))}
             </div>
           </div>
-
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
-
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? t('Kirish...', language) : t('Kirish', language)}
-          </Button>
-        </form>
-
-        <div className="mt-6 pt-6 border-t border-border">
-          <p className="text-xs text-muted-foreground mb-3 text-center">{t('Demo foydalanuvchilar', language)}</p>
-          <div className="space-y-2">
-            {DEMO_ACCOUNTS.map(demo => (
-              <button
-                key={demo.phone}
-                type="button"
-                onClick={() => fillDemo(demo)}
-                className="flex justify-between items-center w-full bg-muted hover:bg-muted/70 rounded-md px-3 py-2.5 text-xs transition-colors cursor-pointer"
-              >
-                <span className="font-medium text-foreground">{t(demo.label, language)}</span>
-                <span className="text-muted-foreground">{demo.phone}</span>
-              </button>
-            ))}
-          </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
+
