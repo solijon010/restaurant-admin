@@ -32,7 +32,6 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
         { label: "Xona yaratish", path: "/manager/rooms", icon: HomeIcon },
         { label: "Ofitsiant hisoboti", path: "/manager/finance", icon: Wallet },
         { label: "Savdo tahlili", path: "/manager/sales", icon: TrendingUp },
-        { label: "Sozlamalar", path: "/manager/settings", icon: Settings },
     ],
 };
 
@@ -121,7 +120,20 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-sidebar-border shrink-0">
+                <div className="px-3 py-3 border-t border-sidebar-border shrink-0 space-y-1">
+                    <NavLink
+                        to={user.role === 'MANAGER' ? '/manager/settings' : '/superadmin/settings'}
+                        onClick={closeSidebar}
+                        className={({ isActive }) =>
+                            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full transition-colors ${isActive
+                                ? 'bg-sidebar-primary/20 text-white font-semibold border-l-[3px] border-sidebar-primary'
+                                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                            }`
+                        }
+                    >
+                        <Settings className="h-4 w-4 shrink-0" />
+                        {t('Sozlamalar', language)}
+                    </NavLink>
                     <button
                         onClick={handleLogout}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
