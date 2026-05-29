@@ -41,6 +41,24 @@ const STATUS_VARIANT: Record<OrderStatus, 'default' | 'secondary' | 'destructive
     SUCCESS: 'default', PENDING: 'secondary', CANCELED: 'destructive',
 };
 
+const StatusBadge = ({ status }: { status: OrderStatus }) => {
+    if (status === 'SUCCESS') return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+            Yakunlangan
+        </span>
+    );
+    if (status === 'CANCELED') return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+            Bekor qilingan
+        </span>
+    );
+    return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+            Kutilmoqda
+        </span>
+    );
+};
+
 // Shashlik hisobi uchun kategoriyalar
 const PREDEFINED_CATEGORIES = [
     {
@@ -258,27 +276,27 @@ export default function ManagerOrders() {
                 <TabsList className="bg-transparent p-0 h-auto rounded-none gap-3 w-full justify-start mb-6">
                     <TabsTrigger
                         value="orders"
-                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-600 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 data-[state=active]:shadow-md
-                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
+                        className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
+                            data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm
+                            data-[state=inactive]:bg-white data-[state=inactive]:text-blue-600 data-[state=inactive]:border-blue-200 data-[state=inactive]:hover:bg-blue-50"
                     >
                         <ShoppingCart className="h-4 w-4 shrink-0" />
                         Buyurtmalar tarixi
                     </TabsTrigger>
                     <TabsTrigger
                         value="shashlik"
-                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-green-200 bg-green-50 text-green-600 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:border-green-600 data-[state=active]:shadow-md
-                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
+                        className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
+                            data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 data-[state=active]:shadow-sm
+                            data-[state=inactive]:bg-white data-[state=inactive]:text-emerald-600 data-[state=inactive]:border-emerald-200 data-[state=inactive]:hover:bg-emerald-50"
                     >
                         <Flame className="h-4 w-4 shrink-0" />
                         Shashlik hisobi
                     </TabsTrigger>
                     <TabsTrigger
                         value="qanot-ordak"
-                        className="flex items-center gap-2 px-5 py-3 h-auto rounded-xl border-2 border-amber-200 bg-amber-50 text-amber-600 text-sm font-semibold shadow-none transition-all
-                            data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:border-amber-500 data-[state=active]:shadow-md
-                            data-[state=inactive]:opacity-70 data-[state=inactive]:hover:opacity-100"
+                        className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
+                            data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:border-amber-500 data-[state=active]:shadow-sm
+                            data-[state=inactive]:bg-white data-[state=inactive]:text-amber-600 data-[state=inactive]:border-amber-200 data-[state=inactive]:hover:bg-amber-50"
                     >
                         <Bird className="h-4 w-4 shrink-0" />
                         Qanot va O'rdak
@@ -389,7 +407,7 @@ export default function ManagerOrders() {
                                     ) : filtered.map(o => {
                                         const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ×${oi.count}`);
                                         return (
-                                            <TableRow key={o.id} className={`transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
+                                            <TableRow key={o.id} className={`transition-opacity border-b border-border hover:bg-muted/30 ${isFetching ? 'opacity-60' : ''}`} style={{ height: 64 }}>
                                                 <TableCell className="font-semibold">{o.room?.name || '—'}</TableCell>
 
                                                 <TableCell>
@@ -426,7 +444,7 @@ export default function ManagerOrders() {
                                                 <TableCell className="font-semibold">{formatPrice(getOrderTotal(o))}</TableCell>
 
                                                 <TableCell>
-                                                    <Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABELS[o.status]}</Badge>
+                                                    <StatusBadge status={o.status} />
                                                 </TableCell>
 
                                                 <TableCell className="text-right">
