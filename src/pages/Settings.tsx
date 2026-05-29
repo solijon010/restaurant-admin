@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +30,7 @@ import { branchService, BranchPayload } from '@/services/branchService';
 import { t } from '@/lib/i18n';
 import {
   Sun, Moon, Type, Languages, GitBranch, MapPin,
-  Star, Loader2, Plus, Pencil, Trash2, ToggleLeft, ToggleRight,
+  Star, Loader2, Plus, Pencil, Trash2, ToggleLeft, ToggleRight, User, ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -45,6 +46,7 @@ export default function Settings() {
   const { theme, setTheme, language, setLanguage, fontSize, setFontSize } = useSettings();
   const { branches, branchesLoading, selectedBranchId } = useBranch();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const isManagerCtx = branches.length > 0 || branchesLoading;
@@ -117,6 +119,23 @@ export default function Settings() {
   return (
     <div>
       <h2 className="text-2xl font-bold text-foreground mb-6">{t('Sozlamalar', language)}</h2>
+
+      {/* Profil kartasi */}
+      <button
+        onClick={() => navigate(user?.role === 'MANAGER' ? '/manager/profile' : '/superadmin/profile')}
+        className="w-full flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:bg-muted/50 transition-colors text-left mb-6 shadow-sm"
+      >
+        <div className="w-11 h-11 rounded-xl bg-sidebar flex items-center justify-center shrink-0">
+          <span className="text-sm font-bold text-sidebar-primary-foreground">
+            {user?.firstName?.[0]}{user?.lastName?.[0]}
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-foreground text-sm">{user?.firstName} {user?.lastName}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{user?.role} · {t('Profil sozlamalari', language)}</p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+      </button>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Theme */}

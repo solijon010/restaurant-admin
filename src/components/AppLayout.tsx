@@ -32,7 +32,6 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
         { label: "Xona yaratish", path: "/manager/rooms", icon: HomeIcon },
         { label: "Ofitsiant hisoboti", path: "/manager/finance", icon: Wallet },
         { label: "Savdo tahlili", path: "/manager/sales", icon: TrendingUp },
-        { label: "Profil", path: "/manager/profile", icon: User },
         { label: "Sozlamalar", path: "/manager/settings", icon: Settings },
     ],
 };
