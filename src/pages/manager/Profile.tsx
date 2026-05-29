@@ -81,8 +81,8 @@ export default function ManagerProfile() {
 
       {/* ── Avatar block ────────────────────────────────────────────────────── */}
       <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden mb-6">
-        <div className="px-6 py-8 flex flex-col sm:flex-row items-center sm:items-end gap-5 bg-gradient-to-br from-blue-50 to-indigo-50/40">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shrink-0 shadow-lg">
+        <div className="px-6 py-8 flex flex-col sm:flex-row items-center sm:items-end gap-5 bg-muted/40">
+          <div className="w-20 h-20 rounded-2xl bg-emerald-600 flex items-center justify-center shrink-0 shadow-lg">
             <span className="text-2xl font-bold text-white">{initials || <User className="h-8 w-8 text-white" />}</span>
           </div>
           <div className="text-center sm:text-left">

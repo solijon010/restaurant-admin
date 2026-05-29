@@ -278,7 +278,7 @@ export default function ManagerOrders() {
                         value="orders"
                         className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
                             data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm
-                            data-[state=inactive]:bg-white data-[state=inactive]:text-blue-600 data-[state=inactive]:border-blue-200 data-[state=inactive]:hover:bg-blue-50"
+                            data-[state=inactive]:bg-background data-[state=inactive]:text-blue-600 data-[state=inactive]:border-blue-200 data-[state=inactive]:hover:bg-blue-50"
                     >
                         <ShoppingCart className="h-4 w-4 shrink-0" />
                         Buyurtmalar tarixi
@@ -287,7 +287,7 @@ export default function ManagerOrders() {
                         value="shashlik"
                         className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
                             data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 data-[state=active]:shadow-sm
-                            data-[state=inactive]:bg-white data-[state=inactive]:text-emerald-600 data-[state=inactive]:border-emerald-200 data-[state=inactive]:hover:bg-emerald-50"
+                            data-[state=inactive]:bg-background data-[state=inactive]:text-emerald-600 data-[state=inactive]:border-emerald-200 data-[state=inactive]:hover:bg-emerald-50"
                     >
                         <Flame className="h-4 w-4 shrink-0" />
                         Shashlik hisobi
@@ -296,7 +296,7 @@ export default function ManagerOrders() {
                         value="qanot-ordak"
                         className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
                             data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:border-amber-500 data-[state=active]:shadow-sm
-                            data-[state=inactive]:bg-white data-[state=inactive]:text-amber-600 data-[state=inactive]:border-amber-200 data-[state=inactive]:hover:bg-amber-50"
+                            data-[state=inactive]:bg-background data-[state=inactive]:text-amber-600 data-[state=inactive]:border-amber-200 data-[state=inactive]:hover:bg-amber-50"
                     >
                         <Bird className="h-4 w-4 shrink-0" />
                         Qanot va O'rdak
@@ -748,7 +748,7 @@ export default function ManagerOrders() {
                                         {detailOrder.orderItem.map((oi, i) => {
                                             const isSpecial = isSpecialProduct(oi.product?.name || '');
                                             return (
-                                                <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < detailOrder.orderItem.length - 1 ? 'border-b border-border' : ''} ${isSpecial ? 'bg-amber-50' : i % 2 === 0 ? 'bg-white' : 'bg-muted/20'}`}>
+                                                <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < detailOrder.orderItem.length - 1 ? 'border-b border-border' : ''} ${isSpecial ? 'bg-amber-50' : i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}`}>
                                                     <div className="flex items-center gap-3 min-w-0">
                                                         <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold shrink-0 ${isSpecial ? 'bg-amber-200 text-amber-800' : 'bg-muted text-muted-foreground'}`}>
                                                             {i + 1}

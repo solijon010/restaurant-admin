@@ -177,7 +177,7 @@ export default function Finance() {
                 {/* ── Table ──────────────────────────────────────────────────── */}
                 <Table>
                     <TableHeader>
-                        <TableRow className="bg-gradient-to-r from-slate-50 to-green-50/30 hover:from-slate-50 hover:to-green-50/30">
+                        <TableRow className="bg-muted/30 hover:bg-muted/50">
                             <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">#</TableHead>
                             <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ism</TableHead>
                             <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Buyurtmalar</TableHead>
@@ -211,7 +211,7 @@ export default function Finance() {
                             </TableRow>
                         ) : (
                             waitersList.map((w, idx) => (
-                                <TableRow key={w.id} className={idx % 2 === 0 ? "bg-white" : "bg-muted/20"}>
+                                <TableRow key={w.id} className={idx % 2 === 0 ? "bg-background" : "bg-muted/20"}>
                                     <TableCell className="text-muted-foreground text-sm w-10">{idx + 1}</TableCell>
                                     <TableCell className="font-medium">{w.firstName} {w.lastName}</TableCell>
                                     <TableCell>

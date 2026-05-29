@@ -564,7 +564,7 @@ export default function ManagerRooms() {
               <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gradient-to-r from-slate-50 to-indigo-50/30 hover:from-slate-50 hover:to-indigo-50/30">
+                    <TableRow className="bg-muted/30 hover:bg-muted/50">
                       <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Nomi</TableHead>
                       <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Kategoriya</TableHead>
                       <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Narx</TableHead>
@@ -693,7 +693,7 @@ export default function ManagerRooms() {
               <Card className="shadow-sm border border-border/60 rounded-2xl overflow-hidden">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gradient-to-r from-slate-50 to-indigo-50/30 hover:from-slate-50 hover:to-indigo-50/30">
+                    <TableRow className="bg-muted/30 hover:bg-muted/50">
                       <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Nomi</TableHead>
                       <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Xonalar</TableHead>
                       <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Holat</TableHead>
