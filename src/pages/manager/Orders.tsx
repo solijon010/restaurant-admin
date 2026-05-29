@@ -694,12 +694,7 @@ export default function ManagerOrders() {
                                         <h2 className="text-lg font-bold tracking-tight">Buyurtma tafsilotlari</h2>
                                         <p className="text-sm text-muted-foreground mt-0.5">{detailOrder.room?.name || '—'}</p>
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        <StatusBadge status={detailOrder.status} />
-                                        <button onClick={() => setDetailOrder(null)} className="w-8 h-8 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors">
-                                            <X className="h-4 w-4 text-muted-foreground" />
-                                        </button>
-                                    </div>
+                                    <StatusBadge status={detailOrder.status} />
                                 </div>
                             </div>
 
