@@ -1,15 +1,26 @@
 import { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription,
-  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useBranch } from '@/contexts/BranchContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,76 +28,28 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { branchService, BranchPayload } from '@/services/branchService';
 import { t } from '@/lib/i18n';
 import {
-  Sun, Moon, Building2, MapPin, Star,
-  Loader2, Plus, Pencil, Trash2,
-  ToggleLeft, ToggleRight, Check, Eye, TrendingUp,
+  Sun, Moon, Type, Languages, GitBranch, MapPin,
+  Star, Loader2, Plus, Pencil, Trash2, ToggleLeft, ToggleRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface BranchForm { name: string; addres: string; kpi: string; }
+interface BranchForm {
+  name: string;
+  addres: string;
+  kpi: string;
+}
+
 const emptyForm: BranchForm = { name: '', addres: '', kpi: '0' };
-
-const R = {
-  bg:      'hsl(var(--sidebar-background))',
-  card:    'hsl(var(--card))',
-  cardHdr: 'hsl(var(--muted))',
-  border:  'hsl(var(--border))',
-  green:   'hsl(var(--accent))',
-  greenHi: 'hsl(161 84% 55%)',
-  greenBg: 'hsl(var(--accent) / 0.08)',
-  cream:   'hsl(var(--secondary))',
-  text:    'hsl(var(--foreground))',
-  muted:   'hsl(var(--muted-foreground))',
-  font:    "'Inter', system-ui, sans-serif",
-};
-
-const RetroCard = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
-  <div style={{
-    background: 'hsl(var(--card))',
-    border: '2px solid hsl(var(--border))',
-    boxShadow: '4px 4px 0 hsl(var(--border))',
-    borderRadius: 2, overflow: 'hidden', ...style,
-  }}>
-    {children}
-  </div>
-);
-
-const RetroSectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ marginBottom: 10 }}>
-    <h3 style={{ fontSize: 22, fontWeight: 700, color: R.text, margin: 0, fontFamily: R.font }}>{children}</h3>
-    <div style={{ height: 2, background: R.green, marginTop: 4, width: '100%' }} />
-  </div>
-);
-
-const RetroChip = ({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    style={{
-      display: 'inline-flex', alignItems: 'center', gap: 5,
-      padding: '8px 18px', cursor: 'pointer',
-      fontFamily: R.font, fontSize: 15, fontWeight: 700,
-      border: '2px solid hsl(var(--border))',
-      background: active ? 'hsl(var(--accent))' : 'hsl(var(--card))',
-      color: active ? '#fff' : 'hsl(var(--foreground))',
-      boxShadow: active ? 'none' : '2px 2px 0 hsl(var(--border))',
-      transform: active ? 'translate(2px,2px)' : 'none',
-      borderRadius: 2, transition: 'all 0.08s ease',
-      outline: 'none',
-    }}
-  >
-    {active && <Check size={12} />}
-    {children}
-  </button>
-);
 
 export default function Settings() {
   const { theme, setTheme, language, setLanguage, fontSize, setFontSize } = useSettings();
   const { branches, branchesLoading, selectedBranchId } = useBranch();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+
   const isManagerCtx = branches.length > 0 || branchesLoading;
 
+  // Modal state
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<BranchForm>(emptyForm);
@@ -94,284 +57,260 @@ export default function Settings() {
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['branches-my'] });
 
+  // Create
   const createMutation = useMutation({
-    mutationFn: (d: BranchPayload) => branchService.create(d),
+    mutationFn: (data: BranchPayload) => branchService.create(data),
     onSuccess: () => { toast.success("Filial qo'shildi"); invalidate(); setFormOpen(false); },
-    onError: () => toast.error('Xatolik'),
-  });
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: BranchPayload }) => branchService.update(id, data),
-    onSuccess: () => { toast.success('Yangilandi'); invalidate(); setFormOpen(false); },
-    onError: () => toast.error('Xatolik'),
-  });
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => branchService.delete(id),
-    onSuccess: () => { toast.success("O'chirildi"); invalidate(); setDeleteId(null); },
-    onError: () => toast.error('Xatolik'),
-  });
-  const toggleMutation = useMutation({
-    mutationFn: (id: string) => branchService.toggleStatus(id),
-    onSuccess: () => invalidate(),
-    onError: () => toast.error('Xatolik'),
+    onError: () => toast.error('Xatolik yuz berdi'),
   });
 
-  const openCreate = () => { setEditingId(null); setForm(emptyForm); setFormOpen(true); };
+  // Update
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: BranchPayload }) => branchService.update(id, data),
+    onSuccess: () => { toast.success('Filial yangilandi'); invalidate(); setFormOpen(false); },
+    onError: () => toast.error('Xatolik yuz berdi'),
+  });
+
+  // Delete
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => branchService.delete(id),
+    onSuccess: () => { toast.success("Filial o'chirildi"); invalidate(); setDeleteId(null); },
+    onError: () => toast.error('Xatolik yuz berdi'),
+  });
+
+  // Toggle status
+  const toggleMutation = useMutation({
+    mutationFn: (id: string) => branchService.toggleStatus(id),
+    onSuccess: () => { invalidate(); },
+    onError: () => toast.error('Xatolik yuz berdi'),
+  });
+
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setFormOpen(true);
+  };
+
   const openEdit = (b: typeof branches[0]) => {
-    setEditingId(b.id); setForm({ name: b.name, addres: b.addres ?? '', kpi: String(b.kpi ?? 0) }); setFormOpen(true);
+    setEditingId(b.id);
+    setForm({ name: b.name, addres: b.addres ?? '', kpi: String(b.kpi ?? 0) });
+    setFormOpen(true);
   };
+
   const handleSubmit = () => {
-    if (!form.name.trim()) { toast.error('Nomi kiritilsin'); return; }
-    const p: BranchPayload = { name: form.name.trim(), addres: form.addres.trim(), kpi: Number(form.kpi) || 0, companyId: user?.companyId ?? undefined };
-    if (editingId) updateMutation.mutate({ id: editingId, data: p });
-    else createMutation.mutate(p);
+    if (!form.name.trim()) { toast.error('Filial nomi kiritilishi shart'); return; }
+    const payload: BranchPayload = {
+      name: form.name.trim(),
+      addres: form.addres.trim(),
+      kpi: Number(form.kpi) || 0,
+      companyId: user?.companyId ?? undefined,
+    };
+    if (editingId) {
+      updateMutation.mutate({ id: editingId, data: payload });
+    } else {
+      createMutation.mutate(payload);
+    }
   };
+
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div style={{ fontFamily: R.font, position: 'relative' }}>
+    <div>
+      <h2 className="text-2xl font-bold text-foreground mb-6">{t('Sozlamalar', language)}</h2>
 
-      {/* Page header */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 30, fontWeight: 700, color: R.text, margin: 0, fontFamily: R.font }}>
-          {t('Sozlamalar', language)}
-        </h1>
-        <p style={{ fontSize: 16, color: R.muted, marginTop: 4 }}>Ilova parametrlari va filiallar</p>
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* Theme */}
+        <Card className="p-5 sm:p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Sun className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-base font-semibold text-foreground">{t('Mavzu', language)}</h3>
+          </div>
+          <div className="flex gap-2">
+            <Button variant={theme === 'light' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setTheme('light')}>
+              <Sun className="h-3.5 w-3.5 mr-1.5" />{t("Yorug'", language)}
+            </Button>
+            <Button variant={theme === 'dark' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setTheme('dark')}>
+              <Moon className="h-3.5 w-3.5 mr-1.5" />{t("Qorong'u", language)}
+            </Button>
+          </div>
+        </Card>
 
-      <div className="flex flex-col lg:flex-row" style={{ gap: 24, alignItems: 'flex-start' }}>
+        {/* Language */}
+        <Card className="p-5 sm:p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Languages className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-base font-semibold text-foreground">{t('Til', language)}</h3>
+          </div>
+          <div className="flex gap-2">
+            <Button variant={language === 'latin' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setLanguage('latin')}>
+              {t('Lotin', language)}
+            </Button>
+            <Button variant={language === 'cyrillic' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setLanguage('cyrillic')}>
+              {t('Kiril', language)}
+            </Button>
+          </div>
+        </Card>
 
-        {/* ── LEFT ── */}
-        <div style={{ flex: '1 1 0', minWidth: 0 }}>
-
-          {/* Appearance */}
-          <RetroSectionTitle>Appearance</RetroSectionTitle>
-          <RetroCard style={{ marginBottom: 28 }}>
-
-            {/* Mavzu */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
-              <div>
-                <p style={{ fontSize: 18, fontWeight: 700, color: R.text, margin: 0 }}>{t('Mavzu', language)}</p>
-                <p style={{ fontSize: 15, color: R.muted, marginTop: 3 }}>Yorug' yoki qorong'u rejim</p>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <RetroChip active={theme === 'light'} onClick={() => setTheme('light')}><Sun size={13} /> {t("Yorug'", language)}</RetroChip>
-                <RetroChip active={theme === 'dark'} onClick={() => setTheme('dark')}><Moon size={13} /> {t("Qorong'u", language)}</RetroChip>
-              </div>
-            </div>
-            <hr className="retro-divider" />
-
-            {/* Til */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
-              <div>
-                <p style={{ fontSize: 18, fontWeight: 700, color: R.text, margin: 0 }}>{t('Til', language)}</p>
-                <p style={{ fontSize: 15, color: R.muted, marginTop: 3 }}>Interfeys tili</p>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <RetroChip active={language === 'latin'} onClick={() => setLanguage('latin')}>{t('Lotin', language)}</RetroChip>
-                <RetroChip active={language === 'cyrillic'} onClick={() => setLanguage('cyrillic')}>{t('Kiril', language)}</RetroChip>
-              </div>
-            </div>
-            <hr className="retro-divider" />
-
-            {/* Yozuv o'lchami */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
-              <div>
-                <p style={{ fontSize: 18, fontWeight: 700, color: R.text, margin: 0 }}>{t("Yozuv o'lchami", language)}</p>
-                <p style={{ fontSize: 15, color: R.muted, marginTop: 3 }}>Kichik, o'rta yoki katta</p>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <RetroChip active={fontSize === 'sm'} onClick={() => setFontSize('sm')}>{t('Kichik', language)}</RetroChip>
-                <RetroChip active={fontSize === 'md'} onClick={() => setFontSize('md')}>{t("O'rta", language)}</RetroChip>
-                <RetroChip active={fontSize === 'lg'} onClick={() => setFontSize('lg')}>{t('Katta', language)}</RetroChip>
-              </div>
-            </div>
-
-          </RetroCard>
-
-          {/* Branches */}
-          {isManagerCtx && (
-            <>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div>
-                  <RetroSectionTitle>Branches</RetroSectionTitle>
-                  <p style={{ fontSize: 15, color: R.muted, marginTop: -4 }}>Kompaniyangizga tegishli barcha filiallar</p>
-                </div>
-                <button onClick={openCreate} style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '8px 16px', marginTop: 2,
-                  background: R.green, color: '#fff',
-                  border: `2px solid ${R.border}`,
-                  boxShadow: `3px 3px 0 ${R.border}`,
-                  fontFamily: R.font, fontSize: 15, fontWeight: 700,
-                  cursor: 'pointer', borderRadius: 2, transition: 'all 0.08s',
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'translate(3px,3px)'; e.currentTarget.style.boxShadow = 'none'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = `3px 3px 0 ${R.border}`; }}
-                >
-                  <Plus size={14} /> + {t("Filial qo'shish", language)}
-                </button>
-              </div>
-
-              <RetroCard>
-                {branchesLoading ? (
-                  <div style={{ padding: 20, display: 'flex', gap: 8, alignItems: 'center', color: R.muted }}>
-                    <Loader2 size={14} className="animate-spin" /><span style={{ fontSize: 14 }}>Yuklanmoqda...</span>
-                  </div>
-                ) : branches.length === 0 ? (
-                  <div style={{ padding: 32, textAlign: 'center', color: R.muted }}>
-                    <Building2 size={24} style={{ margin: '0 auto 8px', opacity: 0.3 }} />
-                    <p style={{ fontSize: 14 }}>Hali filial yo'q</p>
-                  </div>
-                ) : branches.map((b, i) => {
-                  const isActive = b.status === 'ACTIVE';
-                  const isCurrent = b.id === selectedBranchId;
-                  return (
-                    <div key={b.id}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px' }}>
-                        {/* Icon */}
-                        <div style={{
-                          width: 44, height: 44, flexShrink: 0,
-                          background: R.cardHdr, border: `2px solid ${R.border}`,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>
-                          {i === 0 ? <Star size={18} style={{ color: '#D4A020', fill: '#D4A020' }} /> : <Building2 size={16} style={{ color: R.muted }} />}
-                        </div>
-                        {/* Info */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontSize: 17, fontWeight: 700, color: R.text }}>{b.name}</span>
-                            <span style={{
-                              fontSize: 12, fontWeight: 700, padding: '2px 6px',
-                              border: `1.5px solid ${R.green}`, background: R.greenBg,
-                              color: R.green, letterSpacing: '0.06em', textTransform: 'uppercase',
-                              borderRadius: 2,
-                            }}>
-                              {isActive ? 'AKTIV' : 'NOFAOL'}
-                            </span>
-                          </div>
-                          {b.addres && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                              <MapPin size={11} style={{ color: R.muted }} />
-                              <span style={{ fontSize: 15, color: R.muted }}>{b.addres}</span>
-                            </div>
-                          )}
-                        </div>
-                        {/* Status dot */}
-                        <div style={{
-                          display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
-                          border: `1.5px solid ${R.border}`, background: R.cream,
-                          fontSize: 14, fontWeight: 700, color: isActive ? R.green : R.muted,
-                          borderRadius: 2,
-                        }}>
-                          <span style={{ width: 7, height: 7, borderRadius: 1, background: isActive ? R.greenHi : R.muted }} />
-                          {isCurrent ? 'Bosh' : isActive ? 'Faol' : 'Nofaol'}
-                        </div>
-                        {/* Actions */}
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          {[
-                            { icon: Pencil, onClick: () => openEdit(b), danger: false },
-                            { icon: Eye, onClick: () => {}, danger: false },
-                            { icon: Trash2, onClick: () => setDeleteId(b.id), danger: true },
-                          ].map(({ icon: Icon, onClick, danger }, idx) => (
-                            <button key={idx} onClick={onClick} style={{
-                              width: 32, height: 32, border: `2px solid ${R.border}`,
-                              background: R.cream, cursor: 'pointer',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              color: danger ? '#c0392b' : R.muted, borderRadius: 2,
-                              boxShadow: `2px 2px 0 ${R.border}`, transition: 'all 0.08s',
-                            }}
-                              onMouseEnter={e => { e.currentTarget.style.transform = 'translate(2px,2px)'; e.currentTarget.style.boxShadow = 'none'; }}
-                              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = `2px 2px 0 ${R.border}`; }}
-                            >
-                              <Icon size={13} />
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      {i < branches.length - 1 && <hr className="retro-divider" />}
-                    </div>
-                  );
-                })}
-              </RetroCard>
-            </>
-          )}
-        </div>
-
-        {/* ── RIGHT ── */}
-        <div className="w-full lg:w-64 lg:flex-shrink-0">
-          <p style={{ fontSize: 18, fontWeight: 700, color: R.text, marginBottom: 10, fontFamily: R.font }}>Metric cards</p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
-            {[
-              { label: 'Filiallar', value: branches.length, sub: 'ta jami', icon: Building2, prog: 65, col: R.green },
-              { label: 'Faollar', value: branches.filter(b => b.status === 'ACTIVE').length, sub: 'ta faol', icon: TrendingUp, prog: 45, col: '#5B6ABF' },
-            ].map(({ label, value, sub, icon: Icon, prog, col }) => (
-              <RetroCard key={label} style={{ padding: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 14, color: R.muted, fontWeight: 700 }}>{label}</span>
-                  <Icon size={14} style={{ color: col }} />
-                </div>
-                <p style={{ fontSize: 30, fontWeight: 700, color: R.text, margin: '4px 0 2px' }}>{value}</p>
-                <p style={{ fontSize: 13, color: R.muted, margin: '0 0 8px' }}>{sub}</p>
-                <div style={{ height: 4, background: '#D8D0A8', borderRadius: 0, border: `1px solid ${R.border}` }}>
-                  <div style={{ width: `${prog}%`, height: '100%', background: col }} />
-                </div>
-              </RetroCard>
+        {/* Font size */}
+        <Card className="p-5 sm:p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Type className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-base font-semibold text-foreground">{t("Yozuv o'lchami", language)}</h3>
+          </div>
+          <div className="flex gap-2">
+            {([{ key: 'sm', label: 'Kichik' }, { key: 'md', label: "O'rta" }, { key: 'lg', label: 'Katta' }] as const).map(s => (
+              <Button key={s.key} variant={fontSize === s.key ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setFontSize(s.key)}>
+                {t(s.label, language)}
+              </Button>
             ))}
           </div>
-
-          {/* Branch panel */}
-          <RetroCard>
-            <div style={{ height: 130, background: `linear-gradient(135deg, ${R.greenBg} 0%, #D8ECD8 100%)`, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 8, background: R.border }} />
-              {/* Retro trees */}
-              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', paddingBottom: 12 }}>
-                {[{ h: 50, w: 36, c: '#5A8A5A' }, { h: 68, w: 44, c: R.green }, { h: 58, w: 38, c: '#4A7A4A' }, { h: 46, w: 32, c: '#6A9A6A' }].map((tree, i) => (
-                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ width: tree.w, height: tree.h, background: tree.c, clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)', border: `2px solid ${R.border}` }} />
-                    <div style={{ width: 8, height: 14, background: '#8B6914', border: `1px solid ${R.border}` }} />
-                  </div>
-                ))}
-              </div>
-              {/* Clouds */}
-              <div style={{ position: 'absolute', top: 8, right: 14, display: 'flex', gap: 4 }}>
-                {[1, 1].map((_, i) => (
-                  <div key={i} style={{ width: 28, height: 14, background: '#fff', border: `1.5px solid ${R.border}`, borderRadius: 99 }} />
-                ))}
-              </div>
-            </div>
-            <div style={{ padding: '14px 16px' }}>
-              <p style={{ fontSize: 16, fontWeight: 700, color: R.text, margin: '0 0 6px', fontFamily: R.font }}>Branch management panel</p>
-              <p style={{ fontSize: 14, color: R.muted, margin: '0 0 14px', lineHeight: 1.5 }}>Filiallaringizni kuzatish va boshqarish.</p>
-              <button onClick={openCreate} style={{
-                width: '100%', padding: '9px', cursor: 'pointer',
-                background: R.green, color: '#fff', fontFamily: R.font,
-                border: `2px solid ${R.border}`, boxShadow: `3px 3px 0 ${R.border}`,
-                fontSize: 15, fontWeight: 700, borderRadius: 2,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-                transition: 'all 0.08s',
-              }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translate(3px,3px)'; e.currentTarget.style.boxShadow = 'none'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = `3px 3px 0 ${R.border}`; }}
-              >
-                <Plus size={14} /> + Add branch
-              </button>
-            </div>
-          </RetroCard>
-        </div>
+        </Card>
       </div>
 
-      {/* Dialogs */}
+      {/* ── Filiallar ────────────────────────────────────────────────── */}
+      {isManagerCtx && (
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <GitBranch className="h-5 w-5 text-muted-foreground" />
+              <h3 className="text-lg font-semibold text-foreground">Filiallar</h3>
+              {!branchesLoading && (
+                <Badge variant="secondary" className="ml-1">{branches.length} ta</Badge>
+              )}
+            </div>
+            <Button size="sm" onClick={openCreate} className="gap-1.5">
+              <Plus className="h-4 w-4" />
+              Filial qo'shish
+            </Button>
+          </div>
+
+          {branchesLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground py-6">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Yuklanmoqda...</span>
+            </div>
+          ) : branches.length === 0 ? (
+            <Card className="p-8 text-center text-muted-foreground text-sm">
+              Hali filial yo'q. Birinchi filialni qo'shing.
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {branches.map((b, i) => {
+                const isActive = b.status === 'ACTIVE';
+                const isCurrent = b.id === selectedBranchId;
+                return (
+                  <Card key={b.id} className={`p-4 ${isCurrent ? 'ring-2 ring-primary' : ''}`}>
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {i === 0 && <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500 shrink-0" />}
+                        <span className="font-medium text-foreground truncate">{b.name}</span>
+                      </div>
+                      <Badge variant={isActive ? 'default' : 'secondary'} className="text-xs shrink-0">
+                        {isActive ? 'Faol' : 'Nofaol'}
+                      </Badge>
+                    </div>
+
+                    {/* Address */}
+                    {b.addres && (
+                      <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{b.addres}</span>
+                      </div>
+                    )}
+
+                    {/* KPI */}
+                    {b.kpi > 0 && (
+                      <p className="mt-1 text-xs text-muted-foreground">KPI: {b.kpi}%</p>
+                    )}
+
+                    {isCurrent && (
+                      <p className="mt-1 text-xs text-primary font-medium">Joriy filial</p>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-1 mt-3 pt-3 border-t border-border">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs gap-1 flex-1"
+                        onClick={() => openEdit(b)}
+                      >
+                        <Pencil className="h-3 w-3" />
+                        Tahrirlash
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs gap-1 flex-1"
+                        disabled={toggleMutation.isPending}
+                        onClick={() => toggleMutation.mutate(b.id)}
+                      >
+                        {isActive
+                          ? <ToggleRight className="h-3.5 w-3.5 text-green-600" />
+                          : <ToggleLeft className="h-3.5 w-3.5 text-muted-foreground" />
+                        }
+                        {isActive ? 'Faol' : 'Nofaol'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => setDeleteId(b.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Create / Edit Dialog ─────────────────────────────────────── */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle style={{ fontFamily: R.font }}>{editingId ? 'Tahrirlash' : "Yangi filial"}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{editingId ? 'Filialni tahrirlash' : "Yangi filial qo'shish"}</DialogTitle>
+          </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5"><Label>Nomi *</Label><Input placeholder="Filial nomi" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
-            <div className="space-y-1.5"><Label>Manzil</Label><Input placeholder="Shahar, ko'cha" value={form.addres} onChange={e => setForm(f => ({ ...f, addres: e.target.value }))} /></div>
-            <div className="space-y-1.5"><Label>KPI (%)</Label><Input type="number" min="0" max="100" value={form.kpi} onChange={e => setForm(f => ({ ...f, kpi: e.target.value }))} /></div>
+            <div className="space-y-1.5">
+              <Label htmlFor="br-name">Filial nomi <span className="text-destructive">*</span></Label>
+              <Input
+                id="br-name"
+                placeholder="Masalan: Asosiy filial"
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="br-addr">Manzil</Label>
+              <Input
+                id="br-addr"
+                placeholder="Shahar, ko'cha, uy"
+                value={form.addres}
+                onChange={e => setForm(f => ({ ...f, addres: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="br-kpi">KPI foizi (%)</Label>
+              <Input
+                id="br-kpi"
+                type="number"
+                min="0"
+                max="100"
+                placeholder="0"
+                value={form.kpi}
+                onChange={e => setForm(f => ({ ...f, kpi: e.target.value }))}
+              />
+            </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setFormOpen(false)} disabled={isSaving}>Bekor</Button>
+            <Button variant="outline" onClick={() => setFormOpen(false)} disabled={isSaving}>
+              Bekor qilish
+            </Button>
             <Button onClick={handleSubmit} disabled={isSaving}>
               {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               {editingId ? 'Saqlash' : "Qo'shish"}
@@ -380,17 +319,24 @@ export default function Settings() {
         </DialogContent>
       </Dialog>
 
+      {/* ── Delete Confirm ───────────────────────────────────────────── */}
       <AlertDialog open={!!deleteId} onOpenChange={open => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Filialni o'chirish</AlertDialogTitle>
-            <AlertDialogDescription>Bu amalni ortga qaytarib bo'lmaydi.</AlertDialogDescription>
+            <AlertDialogDescription>
+              Bu amalni ortga qaytarib bo'lmaydi. Filial va unga tegishli barcha ma'lumotlar o'chib ketadi.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => deleteId && deleteMutation.mutate(deleteId)} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />} O'chirish
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteId && deleteMutation.mutate(deleteId)}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              O'chirish
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
