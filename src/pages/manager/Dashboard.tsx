@@ -159,7 +159,7 @@ export default function ManagerDashboard() {
                         { label: t('Jami xodimlar', language), value: status?.totalUsers ?? 0, icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-500', border: 'border-emerald-100', light: 'bg-emerald-50' },
                         { label: t('Filiallar', language), value: status?.totalBranches ?? 0, icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-500', border: 'border-emerald-100', light: 'bg-emerald-50' },
                         { label: t('Menejerlar', language), value: status?.totalManagers ?? 0, icon: ShoppingBag, color: 'text-emerald-600', bg: 'bg-emerald-500', border: 'border-emerald-100', light: 'bg-emerald-50' },
-                        { label: t("O'rtacha kunlik daromad", language), value: formatPrice(status?.averageDailyRevenue ?? 0), icon: Banknote, color: 'text-emerald-600', bg: 'bg-emerald-500', border: 'border-emerald-100', light: 'bg-emerald-50'' },
+                        { label: t("O'rtacha kunlik daromad", language), value: formatPrice(status?.averageDailyRevenue ?? 0), icon: Banknote, color: 'text-emerald-600', bg: 'bg-emerald-500', border: 'border-emerald-100', light: 'bg-emerald-50' },
                     ].map((s, i) => (
                         <Card key={i} className={`p-4 shadow-sm border ${s.border} rounded-2xl overflow-hidden relative`}>
                             <div className={`absolute top-0 left-0 right-0 h-1 ${s.bg} opacity-60`} />
