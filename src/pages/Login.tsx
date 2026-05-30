@@ -119,7 +119,7 @@ export default function Login() {
 
         {/* Logo */}
         <div className="leaf-float" style={{ marginBottom: 12, filter: 'drop-shadow(0 0 16px rgba(212,160,20,0.5))' }}>
-          <img src="/LOGO.PNJ.png" alt="Sohil Choyxonasi" style={{ width: 72, height: 72, objectFit: 'contain' }} />
+          <img src="/hisobchim-logo.ico" alt="Hisobchim" style={{ width: 72, height: 72, objectFit: 'contain' }} />
         </div>
 
         {/* Title */}
