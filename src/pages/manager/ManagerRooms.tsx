@@ -448,7 +448,7 @@ export default function ManagerRooms() {
           <TabsList className="mb-4 bg-muted/40 rounded-xl p-1 h-auto gap-1">
             <TabsTrigger
               value="rooms"
-              className="rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              className="rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-[#0F1729] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
               <BedDouble className="h-3.5 w-3.5 mr-1.5" />
               Xonalar
