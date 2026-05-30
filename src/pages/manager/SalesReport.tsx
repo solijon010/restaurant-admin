@@ -380,7 +380,7 @@ export default function SalesReport() {
             )}
 
             {/* ── Kunlik daromad dinamikasi + Kategoriya bar chart ── */}
-            {revenueData.length > 0 && (
+            {true && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
                     {/* Line chart — Kunlik daromad dinamikasi */}
@@ -388,7 +388,15 @@ export default function SalesReport() {
                         <p style={{ fontSize: 15, fontWeight: 600, color: 'hsl(var(--foreground))', margin: '0 0 16px' }}>Kunlik daromad dinamikasi</p>
                         <div style={{ height: 240 }}>
                             <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={revenueData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+                                <LineChart
+                                    data={revenueData.length > 0 ? revenueData : [
+                                        { date: '01.05', revenue: 0 }, { date: '02.05', revenue: 0 },
+                                        { date: '03.05', revenue: 0 }, { date: '04.05', revenue: 0 },
+                                        { date: '05.05', revenue: 0 }, { date: '06.05', revenue: 0 },
+                                        { date: '07.05', revenue: 0 },
+                                    ]}
+                                    margin={{ top: 10, right: 10, bottom: 0, left: 0 }}
+                                >
                                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                                     <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false}
                                         interval={Math.max(0, Math.floor(revenueData.length / 7))} />
