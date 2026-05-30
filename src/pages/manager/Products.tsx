@@ -1017,8 +1017,12 @@ export default function ManagerProducts() {
                                                     {/* Image */}
                                                     <div style={{ height: 100, background: 'hsl(var(--muted))', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                         {p.photo ? (
-                                                            <img src={`${import.meta.env.VITE_API_URL}/image/${p.photo}`} alt={p.name}
-                                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            <img
+                                                                src={`${(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '').replace(/\/api$/, '')}/image/${p.photo}`}
+                                                                alt={p.name}
+                                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                onError={e => { const t = e.target as HTMLImageElement; t.style.display = 'none'; }}
+                                                            />
                                                         ) : (
                                                             <Package style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))', opacity: 0.4 }} />
                                                         )}

@@ -238,8 +238,7 @@ export default function Login() {
               cursor: loading ? 'not-allowed' : 'pointer',
               background: loading
                 ? 'rgba(184,134,11,0.4)'
-                : 'linear-gradient(90deg, #9a7009, #d4a020, #f0c030, #d4a020, #9a7009)',
-              backgroundSize: '200% auto',
+                : 'linear-gradient(90deg, #d4a020, #f0c030, #d4a020)',
               color: '#1a0f00', fontSize: 13, fontWeight: 800,
               letterSpacing: 4, textTransform: 'uppercase',
               fontFamily: 'Georgia, serif',
