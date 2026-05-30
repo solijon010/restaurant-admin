@@ -100,7 +100,7 @@ export default function ManagerDashboard() {
         queryKey: ['day-orders', selectedBranchId, dayDate],
         queryFn: async () => {
             const res = await api.get(`/order/branch/${selectedBranchId}`, {
-                params: { date: dayDate, limit: 1000 },
+                params: { limit: 1000 },
             });
             return res.data;
         },
@@ -108,7 +108,7 @@ export default function ManagerDashboard() {
         staleTime: 60 * 1000,
     });
 
-    const dayOrders = toArray<DayOrder>(dayOrdersRaw);
+    const dayOrders = toArray<DayOrder>(dayOrdersRaw).filter(o => (o.createdAt ?? '').slice(0, 10) === dayDate);
 
     // Xona bo'yicha guruhla
     const roomStats = (() => {
