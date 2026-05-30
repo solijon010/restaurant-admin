@@ -1026,28 +1026,6 @@ export default function ManagerProducts() {
                                                         ) : (
                                                             <Package style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))', opacity: 0.4 }} />
                                                         )}
-                                                        {/* Popular toggle */}
-                                                        <button
-                                                            onClick={() => {
-                                                                if (isPopular) {
-                                                                    const pop = popularList.find(x => x.productId === p.id);
-                                                                    if (pop) deletePopularMutation.mutate(pop.id);
-                                                                } else {
-                                                                    createPopularMutation.mutate({ productId: p.id, branchId: selectedBranchId });
-                                                                }
-                                                            }}
-                                                            style={{
-                                                                position: 'absolute', top: 8, right: 8,
-                                                                width: 30, height: 30, borderRadius: 8,
-                                                                background: isPopular ? '#f59e0b' : 'rgba(255,255,255,0.9)',
-                                                                border: isPopular ? 'none' : '1px solid #e2e8f0',
-                                                                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                transition: 'all 0.15s', boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-                                                            }}
-                                                            title={isPopular ? "Tezkordan olib tashlash" : "Tezkorga qo'shish"}
-                                                        >
-                                                            <Star style={{ width: 14, height: 14, fill: isPopular ? '#fff' : 'none', color: isPopular ? '#fff' : '#94a3b8' }} />
-                                                        </button>
                                                     </div>
 
                                                     {/* Content */}
