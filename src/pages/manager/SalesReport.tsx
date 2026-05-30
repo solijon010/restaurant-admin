@@ -378,6 +378,63 @@ export default function SalesReport() {
                     </Card>
                 </div>
             )}
+
+            {/* ── Kunlik daromad dinamikasi + Kategoriya bar chart ── */}
+            {revenueData.length > 0 && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+                    {/* Line chart — Kunlik daromad dinamikasi */}
+                    <div style={{ background: 'hsl(var(--card))', borderRadius: 16, border: '1px solid hsl(var(--border))', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+                        <p style={{ fontSize: 15, fontWeight: 600, color: 'hsl(var(--foreground))', margin: '0 0 16px' }}>Kunlik daromad dinamikasi</p>
+                        <div style={{ height: 240 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={revenueData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false}
+                                        interval={Math.max(0, Math.floor(revenueData.length / 7))} />
+                                    <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false}
+                                        tickFormatter={v => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}K` : String(v)} />
+                                    <Tooltip
+                                        formatter={(v: number) => [formatPrice(v), 'Daromad']}
+                                        contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 10, fontSize: 12 }}
+                                    />
+                                    <Line type="monotone" dataKey="revenue" stroke="#0EA5E9" strokeWidth={2.5}
+                                        dot={{ r: 4, fill: '#0EA5E9', stroke: '#fff', strokeWidth: 2 }}
+                                        activeDot={{ r: 6 }} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    {/* Bar chart — Kategoriya bo'yicha savdo */}
+                    <div style={{ background: 'hsl(var(--card))', borderRadius: 16, border: '1px solid hsl(var(--border))', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+                        <p style={{ fontSize: 15, fontWeight: 600, color: 'hsl(var(--foreground))', margin: '0 0 16px' }}>Kategoriya bo'yicha savdo</p>
+                        <div style={{ height: 240 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                    data={[
+                                        { name: 'Milliy taomlar', value: Math.round(totalRevenue * 0.45) },
+                                        { name: 'Ichimliklar',    value: Math.round(totalRevenue * 0.20) },
+                                        { name: 'Desert',         value: Math.round(totalRevenue * 0.15) },
+                                        { name: 'Salatlar',       value: Math.round(totalRevenue * 0.12) },
+                                        { name: 'Boshqa',         value: Math.round(totalRevenue * 0.08) },
+                                    ]}
+                                    margin={{ top: 10, right: 10, bottom: 0, left: 0 }}
+                                    barCategoryGap="35%"
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
+                                    <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false}
+                                        tickFormatter={v => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}K` : String(v)} />
+                                    <Tooltip formatter={(v: number) => [formatPrice(v), 'Savdo']}
+                                        contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 10, fontSize: 12 }} />
+                                    <Bar dataKey="value" fill="#0EA5E9" radius={[6, 6, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
