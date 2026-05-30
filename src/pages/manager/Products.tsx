@@ -65,6 +65,9 @@ import {
     Eye,
     Pencil,
     Package,
+    LayoutGrid,
+    List,
+    TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -402,6 +405,7 @@ export default function ManagerProducts() {
     const [deleteProdId, setDeleteProdId] = useState<string | null>(null);
     const [viewProdDialog, setViewProdDialog] = useState(false);
     const [viewProd, setViewProd] = useState<Product | null>(null);
+    const [prodViewMode, setProdViewMode] = useState<'table' | 'card'>('table');
     const [prodAdditionalInfo, setProdAdditionalInfo] = useState<string[]>([]);
     const [additionalInfoInput, setAdditionalInfoInput] = useState("");
     const [viewAddInfoInput, setViewAddInfoInput] = useState("");
@@ -968,6 +972,17 @@ export default function ManagerProducts() {
                                     <Loader2 className="h-3 w-3 animate-spin" /> Yangilanmoqda...
                                 </span>
                             )}
+                            {/* View toggle */}
+                            <div className="flex items-center rounded-lg border border-border overflow-hidden">
+                                <button onClick={() => setProdViewMode('table')}
+                                    className={`h-9 px-2.5 flex items-center justify-center transition-colors ${prodViewMode === 'table' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}>
+                                    <List className="h-4 w-4" />
+                                </button>
+                                <button onClick={() => setProdViewMode('card')}
+                                    className={`h-9 px-2.5 flex items-center justify-center transition-colors ${prodViewMode === 'card' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}>
+                                    <LayoutGrid className="h-4 w-4" />
+                                </button>
+                            </div>
                             <Button onClick={openAddProd} size="sm" className="h-9" disabled={activeCats.length === 0}>
                                 <Plus className="h-4 w-4 mr-1" /> Mahsulot qo'shish
                             </Button>
@@ -979,8 +994,103 @@ export default function ManagerProducts() {
                             </div>
                         )}
 
+                        {/* ═══ CARD GRID VIEW ═══ */}
+                        {prodViewMode === 'card' && (
+                            <div>
+                                {prodsLoading ? (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                        {[...Array(8)].map((_, i) => <div key={i} className="h-52 skeleton rounded-2xl" />)}
+                                    </div>
+                                ) : productsList.length === 0 ? (
+                                    <div className="text-center py-16 text-muted-foreground text-sm">Mahsulot topilmadi</div>
+                                ) : (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                        {productsList.map((p) => {
+                                            const cat = categories.find(c => c.id === p.productCategoryId);
+                                            const isPopular = popularList.some(pop => pop.productId === p.id);
+                                            const isActive = p.status === 'ACTIVE';
+                                            return (
+                                                <div key={p.id} style={{ background: '#fff', borderRadius: 16, border: '1px solid hsl(var(--border))', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', transition: 'box-shadow 0.2s' }}
+                                                    onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.1)')}
+                                                    onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)')}
+                                                >
+                                                    {/* Image */}
+                                                    <div style={{ height: 100, background: 'hsl(var(--muted))', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        {p.photo ? (
+                                                            <img src={`${import.meta.env.VITE_API_URL}/image/${p.photo}`} alt={p.name}
+                                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        ) : (
+                                                            <Package style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))', opacity: 0.4 }} />
+                                                        )}
+                                                        {isPopular && (
+                                                            <div style={{ position: 'absolute', top: 8, right: 8, background: '#f59e0b', borderRadius: 99, padding: '2px 6px', fontSize: 10, fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 3 }}>
+                                                                <Star style={{ width: 9, height: 9, fill: '#fff' }} /> Top
+                                                            </div>
+                                                        )}
+                                                        {/* Actions */}
+                                                        <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 4 }}>
+                                                            <button onClick={() => openEditProd(p)}
+                                                                style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(255,255,255,0.9)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <Pencil style={{ width: 12, height: 12, color: '#64748b' }} />
+                                                            </button>
+                                                            <button onClick={() => setDeleteProdId(p.id)}
+                                                                style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(255,255,255,0.9)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <Trash2 style={{ width: 12, height: 12, color: '#ef4444' }} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Content */}
+                                                    <div style={{ padding: '12px 14px' }}>
+                                                        <p style={{ fontSize: 14, fontWeight: 700, color: 'hsl(var(--foreground))', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
+                                                        {cat && (
+                                                            <span style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))', background: 'hsl(var(--muted))', padding: '2px 8px', borderRadius: 99, display: 'inline-block', marginBottom: 10 }}>
+                                                                {cat.name}
+                                                            </span>
+                                                        )}
+
+                                                        {/* Stats grid */}
+                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px', marginBottom: 12 }}>
+                                                            <div>
+                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Narx</p>
+                                                                <p style={{ fontSize: 13, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0 }}>{formatPrice(p.price)}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Birlik</p>
+                                                                <p style={{ fontSize: 13, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0 }}>{p.unit}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Miqdor</p>
+                                                                <p style={{ fontSize: 13, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0 }}>{p.amount}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Holat</p>
+                                                                <p style={{ fontSize: 12, fontWeight: 700, color: isActive ? '#10b981' : '#94a3b8', margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: isActive ? '#10b981' : '#94a3b8', display: 'inline-block' }} />
+                                                                    {isActive ? 'Faol' : 'Nofaol'}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Action button */}
+                                                        <button onClick={() => openViewProd(p)}
+                                                            style={{ width: '100%', padding: '8px', borderRadius: 10, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, background: 'hsl(var(--foreground))', color: 'hsl(var(--background))', transition: 'opacity 0.15s' }}
+                                                            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                                                            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                                                        >
+                                                            Ko'rish
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* ═══ MOBILE PRODUCT CARDS ═══ */}
-                        <div className="md:hidden space-y-3">
+                        <div className={`${prodViewMode === 'card' ? 'hidden' : 'md:hidden'} space-y-3`}>
                             {prodsLoading ? (
                                 <div className="text-center py-8"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></div>
                             ) : productsList.length === 0 ? (
@@ -1046,7 +1156,7 @@ export default function ManagerProducts() {
                         </div>
 
                         {/* ═══ DESKTOP PRODUCT TABLE ═══ */}
-                        <div className="shadow-sm border border-border/60 rounded-2xl overflow-hidden hidden md:block">
+                        <div className={`shadow-sm border border-border/60 rounded-2xl overflow-hidden ${prodViewMode === 'card' ? 'hidden' : 'hidden md:block'}`}>
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-muted/40 hover:bg-muted/40">
