@@ -274,12 +274,14 @@ export default function ManagerStaff() {
       toast.error("Parol kiriting");
       return;
     }
+    if (!editItem && form.password.trim().length < 6) {
+      toast.error("Parol kamida 6 ta belgidan iborat bo'lishi kerak");
+      return;
+    }
     if (!form.branchId) {
       toast.error("Filialni tanlang");
       return;
     }
-
-    const isWaiterRole = ["AFITSANT", "SUPER_AFITSANT"].includes(form.role);
 
     if (editItem) {
       // Tahrirlash — role va branchId YUBORILMAYDI
@@ -296,7 +298,7 @@ export default function ManagerStaff() {
       }
       updateMutation.mutate({ id: editItem.id, data: updateData });
     } else {
-      // Yangi xodim yaratish
+      // Yangi xodim yaratish — pinCode YUBORILMAYDI
       const payload: StaffPayload = {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
@@ -306,10 +308,6 @@ export default function ManagerStaff() {
         branchId: form.branchId,
         salary: Number(form.salary) || 0,
       };
-      // Afitsantlar uchun parol PIN sifatida ham saqlanadi
-      if (isWaiterRole) {
-        payload.pinCode = form.password.trim();
-      }
       createMutation.mutate(payload);
     }
   };
@@ -652,8 +650,11 @@ export default function ManagerStaff() {
                 type="password"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                placeholder={editItem ? "Yangi parol (o'zgartirish uchun)" : "Parol"}
+                placeholder={editItem ? "Yangi parol (o'zgartirish uchun)" : "Kamida 6 ta belgi"}
               />
+              {!editItem && (
+                <p className="text-xs text-muted-foreground">Kamida 6 ta belgi bo'lishi kerak</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label className="flex items-center gap-1.5">
