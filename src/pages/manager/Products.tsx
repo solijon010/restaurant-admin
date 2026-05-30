@@ -1026,11 +1026,28 @@ export default function ManagerProducts() {
                                                         ) : (
                                                             <Package style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))', opacity: 0.4 }} />
                                                         )}
-                                                        {isPopular && (
-                                                            <div style={{ position: 'absolute', top: 8, right: 8, background: '#f59e0b', borderRadius: 99, padding: '2px 6px', fontSize: 10, fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 3 }}>
-                                                                <Star style={{ width: 9, height: 9, fill: '#fff' }} /> Top
-                                                            </div>
-                                                        )}
+                                                        {/* Popular toggle */}
+                                                        <button
+                                                            onClick={() => {
+                                                                if (isPopular) {
+                                                                    const pop = popularList.find(x => x.productId === p.id);
+                                                                    if (pop) deletePopularMutation.mutate(pop.id);
+                                                                } else {
+                                                                    createPopularMutation.mutate({ productId: p.id, branchId: selectedBranchId });
+                                                                }
+                                                            }}
+                                                            style={{
+                                                                position: 'absolute', top: 8, right: 8,
+                                                                width: 30, height: 30, borderRadius: 8,
+                                                                background: isPopular ? '#f59e0b' : 'rgba(255,255,255,0.9)',
+                                                                border: isPopular ? 'none' : '1px solid #e2e8f0',
+                                                                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                transition: 'all 0.15s', boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+                                                            }}
+                                                            title={isPopular ? "Tezkordan olib tashlash" : "Tezkorga qo'shish"}
+                                                        >
+                                                            <Star style={{ width: 14, height: 14, fill: isPopular ? '#fff' : 'none', color: isPopular ? '#fff' : '#94a3b8' }} />
+                                                        </button>
                                                         {/* Actions */}
                                                         <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 4 }}>
                                                             <button onClick={() => openEditProd(p)}
