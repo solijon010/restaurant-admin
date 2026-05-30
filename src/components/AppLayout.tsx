@@ -231,8 +231,8 @@ export function AppLayout({ requiredRole }: { requiredRole: UserRole }) {
                             <ArrowLeft size={15} /> Orqaga
                         </button>
                     ) : (
-                        <button onClick={() => setMob(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--foreground))' }}>
-                            <Menu size={18} />
+                        <button onClick={() => setMob(true)} className="text-foreground">
+                            <Menu className="h-5 w-5" />
                         </button>
                     )}
                     <span style={{ fontSize: 14, fontWeight: 600, color: 'hsl(var(--foreground))' }}>Sohil Choyxonasi</span>
