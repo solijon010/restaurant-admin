@@ -290,10 +290,6 @@ export default function ManagerStaff() {
       };
       if (form.password && form.password.trim().length > 0) {
         updateData.password = form.password.trim();
-        // Afitsantlar uchun parol PIN sifatida ham saqlanadi
-        if (isWaiterRole) {
-          updateData.pinCode = form.password.trim();
-        }
       }
       if (form.salary && !isNaN(Number(form.salary))) {
         updateData.salary = Number(form.salary);
