@@ -26,11 +26,11 @@ interface DayOrder { orderItem: OrderItem[]; room: OrderRoom; status: string; }
 type FilterType = 'today' | 'yesterday' | 'last7' | 'last30' | 'custom';
 
 const RANGES: { label: string; filter: FilterType; active: string; inactive: string }[] = [
-    { label: 'Bugun',  filter: 'today',     active: 'bg-emerald-500 text-white border-emerald-500', inactive: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
-    { label: 'Kecha',  filter: 'yesterday', active: 'bg-blue-500 text-white border-blue-500',       inactive: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' },
-    { label: '7 kun',  filter: 'last7',     active: 'bg-violet-500 text-white border-violet-500',   inactive: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100' },
-    { label: '30 kun', filter: 'last30',    active: 'bg-orange-500 text-white border-orange-500',   inactive: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' },
-    { label: 'Boshqa', filter: 'custom',    active: 'bg-slate-700 text-white border-slate-700',     inactive: 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100' },
+    { label: 'Bugun',  filter: 'today',     active: 'bg-primary text-primary-foreground border-primary', inactive: 'bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
+    { label: 'Kecha',  filter: 'yesterday', active: 'bg-primary text-primary-foreground border-primary', inactive: 'bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
+    { label: '7 kun',  filter: 'last7',     active: 'bg-primary text-primary-foreground border-primary', inactive: 'bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
+    { label: '30 kun', filter: 'last30',    active: 'bg-primary text-primary-foreground border-primary', inactive: 'bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
+    { label: 'Boshqa', filter: 'custom',    active: 'bg-primary text-primary-foreground border-primary', inactive: 'bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground' },
 ];
 
 function todayStr() { return new Date().toISOString().slice(0, 10); }
@@ -138,36 +138,43 @@ export default function ManagerDashboard() {
         <div className="space-y-6">
 
             {/* Header */}
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight">{t('Bosh sahifa', language)}</h1>
-                <p className="text-sm text-muted-foreground mt-1">Savdo tahlili va kunlik statistika</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('Bosh sahifa', language)}</h1>
+                    <p className="text-sm text-muted-foreground mt-1">Savdo tahlili va kunlik statistika</p>
+                </div>
             </div>
 
-            {/* Stats */}
+            {/* KPI Stats */}
             {statusLoading ? (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[...Array(4)].map((_, i) => (
-                        <div key={i} className="h-28 rounded-xl bg-muted animate-pulse" />
+                        <div key={i} className="h-28 rounded-2xl skeleton" />
                     ))}
                 </div>
             ) : (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: t('Jami xodimlar', language),         value: status?.totalUsers ?? 0,                          icon: Users,      accent: '#10b981' },
-                        { label: t('Filiallar', language),              value: status?.totalBranches ?? 0,                       icon: Building2,  accent: '#6366f1' },
-                        { label: t('Menejerlar', language),             value: status?.totalManagers ?? 0,                       icon: ShoppingBag,accent: '#f59e0b' },
-                        { label: t("O'rtacha kunlik daromad", language), value: formatPrice(status?.averageDailyRevenue ?? 0),   icon: Banknote,   accent: '#10b981' },
+                        { label: t('Jami xodimlar', language),          value: status?.totalUsers ?? 0,                         icon: Users,      color: '#0EA5E9', bg: '#EFF6FF' },
+                        { label: t('Filiallar', language),               value: status?.totalBranches ?? 0,                      icon: Building2,  color: '#8B5CF6', bg: '#F5F3FF' },
+                        { label: t('Menejerlar', language),              value: status?.totalManagers ?? 0,                      icon: ShoppingBag,color: '#F59E0B', bg: '#FFFBEB' },
+                        { label: t("O'rtacha kunlik daromad", language), value: formatPrice(status?.averageDailyRevenue ?? 0),   icon: Banknote,   color: '#10B981', bg: '#ECFDF5' },
                     ].map((s, i) => (
-                        <div key={i} className="relative overflow-hidden rounded-xl border border-border bg-card p-5 hover:shadow-md transition-shadow">
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: s.accent + '18' }}>
-                                    <s.icon className="h-[18px] w-[18px]" style={{ color: s.accent }} />
+                        <div key={i} className="card-hover" style={{
+                            background: '#fff', borderRadius: 16,
+                            border: '1px solid hsl(var(--border))',
+                            padding: '20px', position: 'relative', overflow: 'hidden',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+                                <div style={{ width: 40, height: 40, borderRadius: 10, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <s.icon style={{ width: 20, height: 20, color: s.color }} />
                                 </div>
-                                <div className="w-1.5 h-1.5 rounded-full mt-1" style={{ background: s.accent }} />
+                                <span style={{ fontSize: 11, color: '#10B981', fontWeight: 600, background: '#ECFDF5', padding: '2px 6px', borderRadius: 99 }}>+0%</span>
                             </div>
-                            <p className="text-2xl font-bold tracking-tight">{s.value}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: `linear-gradient(90deg, ${s.accent}40, transparent)` }} />
+                            <p style={{ fontSize: 26, fontWeight: 800, color: 'hsl(var(--foreground))', margin: 0, letterSpacing: '-0.02em' }}>{s.value}</p>
+                            <p style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', margin: '4px 0 0' }}>{s.label}</p>
+                            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${s.color}, transparent)`, opacity: 0.5 }} />
                         </div>
                     ))}
                 </div>
@@ -288,7 +295,7 @@ export default function ManagerDashboard() {
                                     <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false}
                                         tickFormatter={v => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}K` : String(v)} />
                                     <Tooltip formatter={(v: number) => formatPrice(v)} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
-                                    <Bar dataKey="revenue" fill="#10b981" name={t('Daromad', language)} radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="revenue" fill="#0EA5E9" name={t('Daromad', language)} radius={[6, 6, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
