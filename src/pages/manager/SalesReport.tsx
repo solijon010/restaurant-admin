@@ -10,7 +10,8 @@ import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-    ResponsiveContainer,
+    ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend,
+    AreaChart, Area,
 } from 'recharts';
 import {
     Loader2, TrendingUp, ShoppingCart, Banknote,
@@ -277,6 +278,105 @@ export default function SalesReport() {
                         </>
                     )}
                 </Card>
+            )}
+
+            {/* ── Charts row ─────────────────────────────────────── */}
+            {revenueData.length > 0 && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+                    {/* Line chart — daromad dinamikasi */}
+                    <Card className="p-5 shadow-sm border border-border/60 rounded-2xl">
+                        <p className="text-sm font-semibold text-foreground mb-1">
+                            {isSingleDay ? 'Kunlik daromad dinamikasi' : 'Daromad dinamikasi'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mb-4">
+                            {formatPrice(totalRevenue)} jami daromad
+                        </p>
+                        <div style={{ height: 200 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={revenueData} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#0EA5E9" stopOpacity={0.15} />
+                                            <stop offset="95%" stopColor="#0EA5E9" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" vertical={false} />
+                                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#64748b' }} tickLine={false} axisLine={false}
+                                        interval={Math.max(0, Math.floor(revenueData.length / 6))} />
+                                    <YAxis tick={{ fontSize: 11, fill: '#64748b' }} tickLine={false} axisLine={false}
+                                        tickFormatter={v => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}K` : String(v)} />
+                                    <Tooltip formatter={(v: number) => formatPrice(v)}
+                                        contentStyle={{ background: '#fff', border: '1px solid hsl(214,32%,91%)', borderRadius: 10, fontSize: 12 }} />
+                                    <Area type="monotone" dataKey="revenue" stroke="#0EA5E9" strokeWidth={2.5} fill="url(#colorRev)" dot={{ r: 3, fill: '#0EA5E9' }} activeDot={{ r: 5 }} name="Daromad" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </Card>
+
+                    {/* Bar chart — kunlik taqsimot */}
+                    <Card className="p-5 shadow-sm border border-border/60 rounded-2xl">
+                        <p className="text-sm font-semibold text-foreground mb-1">Kunlik taqsimot</p>
+                        <p className="text-xs text-muted-foreground mb-4">Har kun daromad</p>
+                        <div style={{ height: 200 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={revenueData.slice(-7)} margin={{ top: 5, right: 5, bottom: 0, left: 0 }} barCategoryGap="35%">
+                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" vertical={false} />
+                                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#64748b' }} tickLine={false} axisLine={false} />
+                                    <YAxis tick={{ fontSize: 11, fill: '#64748b' }} tickLine={false} axisLine={false}
+                                        tickFormatter={v => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}K` : String(v)} />
+                                    <Tooltip formatter={(v: number) => formatPrice(v)}
+                                        contentStyle={{ background: '#fff', border: '1px solid hsl(214,32%,91%)', borderRadius: 10, fontSize: 12 }} />
+                                    <Bar dataKey="revenue" fill="#0EA5E9" radius={[6, 6, 0, 0]} name="Daromad" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </Card>
+                </div>
+            )}
+
+            {/* ── Room pie/bar charts ─────────────────────────────── */}
+            {roomStats.length > 1 && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+                    {/* Pie chart */}
+                    <Card className="p-5 shadow-sm border border-border/60 rounded-2xl">
+                        <p className="text-sm font-semibold text-foreground mb-1">Xona bo'yicha ulush</p>
+                        <p className="text-xs text-muted-foreground mb-4">Har bir xonaning daromad ulushi</p>
+                        <div style={{ height: 220 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie data={roomStats.slice(0, 5)} dataKey="sum" nameKey="name"
+                                        cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                        labelLine={false} fontSize={11}>
+                                        {roomStats.slice(0, 5).map((_, i) => (
+                                            <Cell key={i} fill={['#0EA5E9','#10B981','#8B5CF6','#F59E0B','#EF4444'][i % 5]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip formatter={(v: number) => formatPrice(v)} contentStyle={{ background: '#fff', border: '1px solid hsl(214,32%,91%)', borderRadius: 10, fontSize: 12 }} />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </Card>
+
+                    {/* Bar chart — xona bo'yicha */}
+                    <Card className="p-5 shadow-sm border border-border/60 rounded-2xl">
+                        <p className="text-sm font-semibold text-foreground mb-1">Xona bo'yicha savdo</p>
+                        <p className="text-xs text-muted-foreground mb-4">Har bir xona daromadi</p>
+                        <div style={{ height: 220 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={roomStats.slice(0, 8)} layout="vertical" margin={{ top: 0, right: 10, bottom: 0, left: 60 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" horizontal={false} />
+                                    <XAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} tickLine={false} axisLine={false}
+                                        tickFormatter={v => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}K` : String(v)} />
+                                    <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} tickLine={false} axisLine={false} width={55} />
+                                    <Tooltip formatter={(v: number) => formatPrice(v)} contentStyle={{ background: '#fff', border: '1px solid hsl(214,32%,91%)', borderRadius: 10, fontSize: 12 }} />
+                                    <Bar dataKey="sum" fill="#0EA5E9" radius={[0, 6, 6, 0]} name="Daromad" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </Card>
+                </div>
             )}
         </div>
     );
