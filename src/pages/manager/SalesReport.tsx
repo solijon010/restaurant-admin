@@ -80,11 +80,11 @@ export default function SalesReport() {
     const { data: dayOrdersRaw, isLoading: dayLoading } = useQuery({
         queryKey: ['sales-day-orders', selectedBranchId, singleDate],
         queryFn: () =>
-            api.get(`/order/branch/${selectedBranchId}`, { params: { date: singleDate, limit: 1000 } }).then(r => r.data),
+            api.get(`/order/branch/${selectedBranchId}`, { params: { limit: 1000 } }).then(r => r.data),
         enabled: !!selectedBranchId && isSingleDay && !!singleDate,
         staleTime: 60 * 1000,
     });
-    const dayOrders = toArray<DayOrder>(dayOrdersRaw);
+    const dayOrders = toArray<DayOrder>(dayOrdersRaw).filter(o => (o.createdAt ?? '').slice(0, 10) === singleDate);
 
     // Room stats
     const roomStats = (() => {

@@ -274,15 +274,12 @@ export default function ManagerStaff() {
       toast.error("Parol kiriting");
       return;
     }
-    if (!form.branchId) {
-      toast.error("Filialni tanlang");
+    if (!editItem && form.password.trim().length < 6) {
+      toast.error("Parol kamida 6 ta belgidan iborat bo'lishi kerak");
       return;
     }
-
-    // PIN validatsiya (faqat afitsant rollari uchun)
-    const isWaiterRole = ["AFITSANT", "SUPER_AFITSANT"].includes(form.role);
-    if (!editItem && isWaiterRole && form.pinCode && form.pinCode.trim().length !== 4) {
-      toast.error("PIN kod 4 ta raqamdan iborat bo'lishi kerak");
+    if (!form.branchId) {
+      toast.error("Filialni tanlang");
       return;
     }
 
@@ -299,12 +296,9 @@ export default function ManagerStaff() {
       if (form.salary && !isNaN(Number(form.salary))) {
         updateData.salary = Number(form.salary);
       }
-      if (form.pinCode && form.pinCode.trim().length === 4) {
-        updateData.pinCode = form.pinCode.trim();
-      }
       updateMutation.mutate({ id: editItem.id, data: updateData });
     } else {
-      // Yangi xodim yaratish
+      // Yangi xodim yaratish — pinCode YUBORILMAYDI
       const payload: StaffPayload = {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
@@ -314,9 +308,6 @@ export default function ManagerStaff() {
         branchId: form.branchId,
         salary: Number(form.salary) || 0,
       };
-      if (form.pinCode && form.pinCode.trim().length === 4) {
-        payload.pinCode = form.pinCode.trim();
-      }
       createMutation.mutate(payload);
     }
   };
@@ -653,34 +644,17 @@ export default function ManagerStaff() {
                 placeholder="+998 XX XXX XX XX"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Parol {!editItem && "*"}</Label>
-                <Input
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  placeholder={editItem ? "Yangi parol (o'zgartirish uchun)" : "Parol"}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-1.5">
-                  <KeyRound className="h-3.5 w-3.5 text-violet-500" />
-                  PIN kod {!editItem && ["AFITSANT", "SUPER_AFITSANT"].includes(form.role) ? "*" : ""}
-                </Label>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={4}
-                  value={form.pinCode}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "").slice(0, 4);
-                    setForm({ ...form, pinCode: val });
-                  }}
-                  placeholder={editItem ? "Yangi PIN (o'zgartirish uchun)" : "4 ta raqam"}
-                  className="tracking-widest font-mono"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label>Parol {!editItem && "*"}</Label>
+              <Input
+                type="password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                placeholder={editItem ? "Yangi parol (o'zgartirish uchun)" : "Kamida 6 ta belgi"}
+              />
+              {!editItem && (
+                <p className="text-xs text-muted-foreground">Kamida 6 ta belgi bo'lishi kerak</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label className="flex items-center gap-1.5">
