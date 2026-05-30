@@ -76,7 +76,7 @@ export function AppLayout({ requiredRole }: { requiredRole: UserRole }) {
         bg-sidebar text-sidebar-foreground
         flex flex-col
         transform transition-transform duration-200 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${mob ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
                 <div className="p-6 border-b border-sidebar-border flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-2">
@@ -235,7 +235,7 @@ export function AppLayout({ requiredRole }: { requiredRole: UserRole }) {
                             Orqaga
                         </button>
                     ) : (
-                        <button onClick={() => setSidebarOpen(true)} className="text-foreground">
+                        <button onClick={() => setMob(true)} className="text-foreground">
                             <Menu className="h-5 w-5" />
                         </button>
                     )}
