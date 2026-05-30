@@ -405,7 +405,7 @@ export default function ManagerProducts() {
     const [deleteProdId, setDeleteProdId] = useState<string | null>(null);
     const [viewProdDialog, setViewProdDialog] = useState(false);
     const [viewProd, setViewProd] = useState<Product | null>(null);
-    const [prodViewMode, setProdViewMode] = useState<'table' | 'card'>('table');
+    const prodViewMode = 'card';
     const [prodAdditionalInfo, setProdAdditionalInfo] = useState<string[]>([]);
     const [additionalInfoInput, setAdditionalInfoInput] = useState("");
     const [viewAddInfoInput, setViewAddInfoInput] = useState("");
@@ -972,17 +972,6 @@ export default function ManagerProducts() {
                                     <Loader2 className="h-3 w-3 animate-spin" /> Yangilanmoqda...
                                 </span>
                             )}
-                            {/* View toggle */}
-                            <div className="flex items-center rounded-lg border border-border overflow-hidden">
-                                <button onClick={() => setProdViewMode('table')}
-                                    className={`h-9 px-2.5 flex items-center justify-center transition-colors ${prodViewMode === 'table' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}>
-                                    <List className="h-4 w-4" />
-                                </button>
-                                <button onClick={() => setProdViewMode('card')}
-                                    className={`h-9 px-2.5 flex items-center justify-center transition-colors ${prodViewMode === 'card' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}>
-                                    <LayoutGrid className="h-4 w-4" />
-                                </button>
-                            </div>
                             <Button onClick={openAddProd} size="sm" className="h-9" disabled={activeCats.length === 0}>
                                 <Plus className="h-4 w-4 mr-1" /> Mahsulot qo'shish
                             </Button>
