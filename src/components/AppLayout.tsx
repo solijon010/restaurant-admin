@@ -89,7 +89,7 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
       `}>
                 <div className="p-6 border-b border-sidebar-border flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-2">
-                        <img src="/LOGO.PNJ.png" alt="Logo" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                        <img src="/hisobchim-logo.ico" alt="Logo" style={{ width: 36, height: 36, objectFit: 'contain' }} />
                         <div>
                             <h1 className="text-lg font-bold text-sidebar-primary-foreground">Sohil Choyxonasi</h1>
                             <p className="text-xs text-sidebar-foreground/60 mt-0.5">{t('Boshqaruv tizimi', language)}</p>
@@ -170,7 +170,7 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                             <Menu className="h-5 w-5" />
                         </button>
                     )}
-                    <img src="/LOGO.PNJ.png" alt="Logo" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                    <img src="/hisobchim-logo.ico" alt="Logo" style={{ width: 28, height: 28, objectFit: 'contain' }} />
                 </div>
                 <div className="flex-1 p-4 sm:p-6 lg:p-8">
                     {!isRoot && (
