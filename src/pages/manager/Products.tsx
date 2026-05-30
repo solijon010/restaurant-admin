@@ -1048,22 +1048,28 @@ export default function ManagerProducts() {
                                                         >
                                                             <Star style={{ width: 14, height: 14, fill: isPopular ? '#fff' : 'none', color: isPopular ? '#fff' : '#94a3b8' }} />
                                                         </button>
-                                                        {/* Actions */}
-                                                        <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 4 }}>
-                                                            <button onClick={() => openEditProd(p)}
-                                                                style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(255,255,255,0.9)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                <Pencil style={{ width: 12, height: 12, color: '#64748b' }} />
-                                                            </button>
-                                                            <button onClick={() => setDeleteProdId(p.id)}
-                                                                style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(255,255,255,0.9)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                <Trash2 style={{ width: 12, height: 12, color: '#ef4444' }} />
-                                                            </button>
-                                                        </div>
                                                     </div>
 
                                                     {/* Content */}
                                                     <div style={{ padding: '12px 14px' }}>
-                                                        <p style={{ fontSize: 14, fontWeight: 700, color: 'hsl(var(--foreground))', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
+                                                        {/* Name + actions row */}
+                                                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
+                                                            <p style={{ fontSize: 14, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{p.name}</p>
+                                                            <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
+                                                                <button onClick={() => openEditProd(p)}
+                                                                    style={{ width: 26, height: 26, borderRadius: 6, background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.12s' }}
+                                                                    onMouseEnter={e => { e.currentTarget.style.background = '#e0f2fe'; e.currentTarget.style.borderColor = '#0ea5e9'; }}
+                                                                    onMouseLeave={e => { e.currentTarget.style.background = 'hsl(var(--muted))'; e.currentTarget.style.borderColor = 'hsl(var(--border))'; }}>
+                                                                    <Pencil style={{ width: 11, height: 11, color: '#64748b' }} />
+                                                                </button>
+                                                                <button onClick={() => setDeleteProdId(p.id)}
+                                                                    style={{ width: 26, height: 26, borderRadius: 6, background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.12s' }}
+                                                                    onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.borderColor = '#ef4444'; }}
+                                                                    onMouseLeave={e => { e.currentTarget.style.background = 'hsl(var(--muted))'; e.currentTarget.style.borderColor = 'hsl(var(--border))'; }}>
+                                                                    <Trash2 style={{ width: 11, height: 11, color: '#ef4444' }} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                         {cat && (
                                                             <span style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))', background: 'hsl(var(--muted))', padding: '2px 8px', borderRadius: 99, display: 'inline-block', marginBottom: 10 }}>
                                                                 {cat.name}
