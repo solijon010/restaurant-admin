@@ -94,48 +94,78 @@ export function AppLayout({ requiredRole }: { requiredRole: UserRole }) {
                 </div>
 
                 {/* Nav */}
-                <nav style={{ flex: 1, padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 2, overflow: 'hidden' }}>
+                <nav style={{ flex: 1, padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
 
                     {entries.map((entry) => {
                         if (isGroup(entry)) {
                             const open = !!groups[entry.label];
                             const hasActive = entry.children.some(c => location.pathname.startsWith(c.path));
                             return (
-                                <div key={entry.label}>
+                                <div key={entry.label} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                     <button
                                         onClick={() => setGroups(p => ({ ...p, [entry.label]: !p[entry.label] }))}
                                         style={{
                                             display: 'flex', alignItems: 'center', gap: 10,
-                                            width: '100%', padding: '8px 10px', borderRadius: 8,
-                                            border: 'none', cursor: 'pointer', transition: 'all 0.15s',
-                                            fontSize: 13.5, fontWeight: 500,
-                                            background: hasActive ? 'hsl(var(--sidebar-accent))' : 'transparent',
-                                            color: hasActive ? '#fff' : 'hsl(var(--sidebar-foreground))',
+                                            width: '100%', padding: '10px 12px', borderRadius: 10,
+                                            border: hasActive
+                                                ? '1px solid hsl(var(--sidebar-primary)/0.4)'
+                                                : '1px solid rgba(255,255,255,0.06)',
+                                            cursor: 'pointer', transition: 'all 0.18s ease',
+                                            fontSize: 13.5, fontWeight: hasActive ? 600 : 400,
+                                            background: hasActive ? 'hsl(var(--sidebar-primary)/0.14)' : 'rgba(255,255,255,0.03)',
+                                            color: hasActive ? 'hsl(var(--sidebar-primary))' : 'hsl(var(--sidebar-foreground))',
                                         }}
-                                        onMouseEnter={e => { if (!hasActive) e.currentTarget.style.background = 'hsl(var(--sidebar-accent)/0.7)'; }}
-                                        onMouseLeave={e => { if (!hasActive) e.currentTarget.style.background = 'transparent'; }}
+                                        onMouseEnter={e => {
+                                            if (!hasActive) {
+                                                e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+                                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
+                                                e.currentTarget.style.color = '#fff';
+                                            }
+                                        }}
+                                        onMouseLeave={e => {
+                                            if (!hasActive) {
+                                                e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
+                                                e.currentTarget.style.color = 'hsl(var(--sidebar-foreground))';
+                                            }
+                                        }}
                                     >
-                                        <entry.icon size={16} style={{ flexShrink: 0, opacity: hasActive ? 1 : 0.6 }} />
+                                        <entry.icon size={16} style={{ flexShrink: 0, opacity: hasActive ? 1 : 0.55 }} />
                                         <span style={{ flex: 1, textAlign: 'left' }}>{t(entry.label, language)}</span>
                                         <ChevronDown size={13} style={{ opacity: 0.4, transform: open ? 'rotate(0)' : 'rotate(-90deg)', transition: 'transform 0.2s' }} />
                                     </button>
                                     {open && (
-                                        <div style={{ marginTop: 2, marginLeft: 12, paddingLeft: 10, borderLeft: '1px solid hsl(var(--sidebar-border))', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        <div style={{ marginLeft: 10, paddingLeft: 8, borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', gap: 4 }}>
                                             {entry.children.map(child => (
                                                 <NavLink key={child.path} to={child.path} onClick={() => setMob(false)}>
                                                     {({ isActive }) => (
                                                         <div style={{
                                                             display: 'flex', alignItems: 'center', gap: 9,
-                                                            padding: '7px 10px', borderRadius: 7, cursor: 'pointer',
+                                                            padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
                                                             fontSize: 13, fontWeight: isActive ? 600 : 400,
-                                                            transition: 'all 0.15s',
-                                                            background: isActive ? 'hsl(var(--sidebar-primary)/0.18)' : 'transparent',
+                                                            transition: 'all 0.18s ease',
+                                                            border: isActive
+                                                                ? '1px solid hsl(var(--sidebar-primary)/0.35)'
+                                                                : '1px solid rgba(255,255,255,0.05)',
+                                                            background: isActive ? 'hsl(var(--sidebar-primary)/0.14)' : 'rgba(255,255,255,0.02)',
                                                             color: isActive ? 'hsl(var(--sidebar-primary))' : 'hsl(var(--sidebar-foreground))',
                                                         }}
-                                                            onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'hsl(var(--sidebar-accent)/0.6)'; e.currentTarget.style.color = '#fff'; }}}
-                                                            onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'hsl(var(--sidebar-foreground))'; }}}
+                                                            onMouseEnter={e => {
+                                                                if (!isActive) {
+                                                                    e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+                                                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
+                                                                    e.currentTarget.style.color = '#fff';
+                                                                }
+                                                            }}
+                                                            onMouseLeave={e => {
+                                                                if (!isActive) {
+                                                                    e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                                                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
+                                                                    e.currentTarget.style.color = 'hsl(var(--sidebar-foreground))';
+                                                                }
+                                                            }}
                                                         >
-                                                            <child.icon size={14} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.55 }} />
+                                                            <child.icon size={14} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.5 }} />
                                                             {t(child.label, language)}
                                                         </div>
                                                     )}
@@ -155,16 +185,31 @@ export function AppLayout({ requiredRole }: { requiredRole: UserRole }) {
                                 {({ isActive }) => (
                                     <div style={{
                                         display: 'flex', alignItems: 'center', gap: 10,
-                                        padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
+                                        padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
                                         fontSize: 13.5, fontWeight: isActive ? 600 : 400,
-                                        transition: 'all 0.15s',
-                                        background: isActive ? 'hsl(var(--sidebar-primary)/0.16)' : 'transparent',
+                                        transition: 'all 0.18s ease',
+                                        border: isActive
+                                            ? '1px solid hsl(var(--sidebar-primary)/0.4)'
+                                            : '1px solid rgba(255,255,255,0.06)',
+                                        background: isActive ? 'hsl(var(--sidebar-primary)/0.14)' : 'rgba(255,255,255,0.03)',
                                         color: isActive ? 'hsl(var(--sidebar-primary))' : 'hsl(var(--sidebar-foreground))',
                                     }}
-                                        onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'hsl(var(--sidebar-accent))'; e.currentTarget.style.color = '#fff'; }}}
-                                        onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'hsl(var(--sidebar-foreground))'; }}}
+                                        onMouseEnter={e => {
+                                            if (!isActive) {
+                                                e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+                                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
+                                                e.currentTarget.style.color = '#fff';
+                                            }
+                                        }}
+                                        onMouseLeave={e => {
+                                            if (!isActive) {
+                                                e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
+                                                e.currentTarget.style.color = 'hsl(var(--sidebar-foreground))';
+                                            }
+                                        }}
                                     >
-                                        <entry.icon size={16} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.6 }} />
+                                        <entry.icon size={16} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.55 }} />
                                         <span style={{ flex: 1 }}>{t(entry.label, language)}</span>
                                         {isActive && (
                                             <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'hsl(var(--sidebar-primary))', flexShrink: 0 }} />
