@@ -78,22 +78,19 @@ export function AppLayout({ requiredRole }: { requiredRole: UserRole }) {
         transform transition-transform duration-200 ease-in-out
         ${mob ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-                <div className="p-6 border-b border-sidebar-border flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-2">
-                        <img src="/hisobchim-logo.ico" alt="Logo" style={{ width: 36, height: 36, objectFit: 'contain' }} />
-                        <div>
-                            <h1 style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.01em' }}>
-                                Sohil Choyxonasi
-                            </h1>
-                            <p style={{ fontSize: 11, color: 'hsl(var(--sidebar-foreground))', margin: '3px 0 0', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                                {t('Boshqaruv tizimi', language)}
-                            </p>
-                        </div>
-                        <button onClick={() => setMob(false)} className="lg:hidden"
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--sidebar-foreground))', opacity: 0.5 }}>
-                            <X size={16} />
-                        </button>
+                <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid hsl(var(--sidebar-border))', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                        <h1 style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.01em' }}>
+                            Sohil Choyxonasi
+                        </h1>
+                        <p style={{ fontSize: 11, color: 'hsl(var(--sidebar-foreground))', margin: '3px 0 0', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                            {t('Boshqaruv tizimi', language)}
+                        </p>
                     </div>
+                    <button onClick={() => setMob(false)} className="lg:hidden"
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--sidebar-foreground))', opacity: 0.5 }}>
+                        <X size={16} />
+                    </button>
                 </div>
 
                 {/* Nav */}
@@ -230,16 +227,15 @@ export function AppLayout({ requiredRole }: { requiredRole: UserRole }) {
             <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
                 <div className="sticky top-0 z-30 lg:hidden bg-background border-b border-border px-4 py-3 flex items-center gap-3 shrink-0">
                     {!isRoot ? (
-                        <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                            <ArrowLeft className="h-5 w-5" />
-                            Orqaga
+                        <button onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 500, color: 'hsl(var(--muted-foreground))', background: 'none', border: 'none', cursor: 'pointer' }}>
+                            <ArrowLeft size={15} /> Orqaga
                         </button>
                     ) : (
                         <button onClick={() => setMob(true)} className="text-foreground">
                             <Menu className="h-5 w-5" />
                         </button>
                     )}
-                    <img src="/hisobchim-logo.ico" alt="Logo" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                    <span style={{ fontSize: 14, fontWeight: 600, color: 'hsl(var(--foreground))' }}>Sohil Choyxonasi</span>
                 </div>
 
                 {/* Content */}
