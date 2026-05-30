@@ -946,7 +946,7 @@ export default function ManagerProducts() {
                                             <SelectItem key={c.id} value={c.id}>
                                                 <div className="flex items-center gap-2">
                                                     {c.icon && (
-                                                        <img src={`${(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL?.replace("/api",""))}/image/${c.icon}`}
+                                                        <img src={`${import.meta.env.VITE_API_BASE_URL}/image/${c.icon}`}
                                                             alt="" className="h-4 w-4 rounded object-cover" />
                                                     )}
                                                     {c.name}
@@ -1018,10 +1018,10 @@ export default function ManagerProducts() {
                                                     <div style={{ height: 100, background: 'hsl(var(--muted))', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                         {p.photo ? (
                                                             <img
-                                                                src={`${(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '').replace(/\/api$/, '')}/image/${p.photo}`}
+                                                                src={`${import.meta.env.VITE_API_BASE_URL}/image/${p.photo}`}
                                                                 alt={p.name}
                                                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                onError={e => { const t = e.target as HTMLImageElement; t.style.display = 'none'; }}
+                                                                onError={e => { const t = e.target as HTMLImageElement; t.style.display = 'none'; t.parentElement!.style.background = 'hsl(var(--muted))'; }}
                                                             />
                                                         ) : (
                                                             <Package style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))', opacity: 0.4 }} />
@@ -1111,7 +1111,7 @@ export default function ManagerProducts() {
                                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                                     {p.photo && (
                                                         <img
-                                                            src={`${(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL?.replace("/api",""))}/image/${p.photo}`}
+                                                            src={`${import.meta.env.VITE_API_BASE_URL}/image/${p.photo}`}
                                                             alt={p.name}
                                                             className="h-10 w-10 rounded-xl object-cover border border-border shrink-0"
                                                         />
@@ -1208,7 +1208,7 @@ export default function ManagerProducts() {
                                                         <div className="flex items-center gap-2">
                                                             {p.photo && (
                                                                 <img
-                                                                    src={`${(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL?.replace("/api",""))}/image/${p.photo}`}
+                                                                    src={`${import.meta.env.VITE_API_BASE_URL}/image/${p.photo}`}
                                                                     alt={p.name}
                                                                     className="h-8 w-8 rounded-lg object-cover border border-border shrink-0"
                                                                 />
@@ -1221,7 +1221,7 @@ export default function ManagerProducts() {
                                                     <TableCell>
                                                         {cat ? (
                                                             <div className="flex items-center gap-1.5">
-                                                                {cat.icon && <img src={`${(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL?.replace("/api",""))}/image/${cat.icon}`} alt="" className="h-4 w-4 rounded object-cover" />}
+                                                                {cat.icon && <img src={`${import.meta.env.VITE_API_BASE_URL}/image/${cat.icon}`} alt="" className="h-4 w-4 rounded object-cover" />}
                                                                 <Badge variant="secondary">{cat.name}</Badge>
                                                             </div>
                                                         ) : <span className="text-muted-foreground text-sm">—</span>}
@@ -1291,7 +1291,7 @@ export default function ManagerProducts() {
                                         <div key={c.id} className="rounded-2xl border border-border/60 shadow-sm p-4 bg-background">
                                             <div className="flex items-center justify-between gap-3">
                                                 <div className="min-w-0 flex-1 flex items-center gap-2">
-                                                    {c.icon && <img src={`${(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL?.replace("/api",""))}/image/${c.icon}`} alt={c.name} className="h-6 w-6 rounded object-cover border border-border shrink-0" />}
+                                                    {c.icon && <img src={`${import.meta.env.VITE_API_BASE_URL}/image/${c.icon}`} alt={c.name} className="h-6 w-6 rounded object-cover border border-border shrink-0" />}
                                                     <div>
                                                         <p className="font-medium">{c.name}</p>
                                                         <div className="flex items-center gap-2 mt-0.5">
@@ -1343,7 +1343,7 @@ export default function ManagerProducts() {
                                                 <TableRow key={c.id}>
                                                     <TableCell className="font-medium">
                                                         <div className="flex items-center gap-2">
-                                                            {c.icon && <img src={`${(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL?.replace("/api",""))}/image/${c.icon}`} alt={c.name} className="h-6 w-6 rounded object-cover border border-border" />}
+                                                            {c.icon && <img src={`${import.meta.env.VITE_API_BASE_URL}/image/${c.icon}`} alt={c.name} className="h-6 w-6 rounded object-cover border border-border" />}
                                                             {c.name}
                                                         </div>
                                                     </TableCell>
@@ -1437,7 +1437,7 @@ export default function ManagerProducts() {
                                                         {cat ? (
                                                             <div className="flex items-center gap-1.5">
                                                                 {cat.icon && (
-                                                                    <img src={`${(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL?.replace("/api",""))}/image/${cat.icon}`}
+                                                                    <img src={`${import.meta.env.VITE_API_BASE_URL}/image/${cat.icon}`}
                                                                         alt="" className="h-4 w-4 rounded object-cover" />
                                                                 )}
                                                                 <Badge variant="secondary">{cat.name}</Badge>
@@ -1518,7 +1518,7 @@ export default function ManagerProducts() {
                                             <SelectItem key={c.id} value={c.id}>
                                                 <div className="flex items-center gap-2">
                                                     {c.icon && (
-                                                        <img src={`${(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL?.replace("/api",""))}/image/${c.icon}`}
+                                                        <img src={`${import.meta.env.VITE_API_BASE_URL}/image/${c.icon}`}
                                                             alt="" className="h-4 w-4 rounded object-cover" />
                                                     )}
                                                     {c.name}
@@ -1603,7 +1603,7 @@ export default function ManagerProducts() {
                             hint="PNG, JPG • maks 5MB"
                             existingUrl={
                                 editProd?.photo
-                                    ? `${(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL?.replace("/api",""))}/image/${editProd.photo}`
+                                    ? `${import.meta.env.VITE_API_BASE_URL}/image/${editProd.photo}`
                                     : null
                             }
                         />
@@ -1648,7 +1648,7 @@ export default function ManagerProducts() {
                             hint="PNG, JPG • maks 2MB"
                             existingUrl={
                                 editCat?.icon
-                                    ? `${(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL?.replace("/api",""))}/image/${editCat.icon}`
+                                    ? `${import.meta.env.VITE_API_BASE_URL}/image/${editCat.icon}`
                                     : null
                             }
                         />
