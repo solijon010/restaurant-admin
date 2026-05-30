@@ -1079,11 +1079,11 @@ export default function ManagerProducts() {
 
                                                         {/* Action button */}
                                                         <button onClick={() => openViewProd(p)}
-                                                            style={{ width: '100%', padding: '9px', borderRadius: 10, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, background: '#0EA5E9', color: '#fff', transition: 'all 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-                                                            onMouseEnter={e => e.currentTarget.style.background = '#0284C7'}
-                                                            onMouseLeave={e => e.currentTarget.style.background = '#0EA5E9'}
+                                                            style={{ width: '100%', padding: '8px', borderRadius: 10, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, background: 'hsl(var(--foreground))', color: 'hsl(var(--background))', transition: 'opacity 0.15s' }}
+                                                            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                                                            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                                                         >
-                                                            <Eye style={{ width: 13, height: 13 }} /> Ko'rish
+                                                            Ko'rish
                                                         </button>
                                                     </div>
                                                 </div>
