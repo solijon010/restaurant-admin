@@ -7,134 +7,135 @@ import { getRoleBasePath, UserRole } from '@/lib/auth';
 import {
     LogOut, LayoutDashboard, Building2, Users, User,
     ShoppingCart, Package, Menu, X, Settings,
-    HomeIcon, Wallet, ArrowLeft, TrendingUp, ChevronDown, Layers,
+    HomeIcon, Wallet, TrendingUp, ChevronDown,
+    BarChart3, ArrowLeft,
 } from 'lucide-react';
 
-interface NavItem  { label: string; path: string; icon: React.ElementType; }
+interface NavItem  { label: string; path: string; icon: React.ElementType; badge?: string; }
 interface NavGroup { label: string; icon: React.ElementType; children: NavItem[]; }
 type NavEntry = NavItem | NavGroup;
 const isGroup = (e: NavEntry): e is NavGroup => 'children' in e;
 
 const NAV_BY_ROLE: Record<string, NavEntry[]> = {
     SUPERADMIN: [
-        { label: "Bosh sahifa",  path: "/superadmin",           icon: LayoutDashboard },
-        { label: "Kompaniyalar", path: "/superadmin/companies",  icon: Building2 },
-        { label: "Menejerlar",   path: "/superadmin/managers",   icon: Users },
-        { label: "Profil",       path: "/superadmin/profile",    icon: User },
-        { label: "Sozlamalar",   path: "/superadmin/settings",   icon: Settings },
+        { label: 'Bosh sahifa',  path: '/superadmin',           icon: LayoutDashboard },
+        { label: 'Kompaniyalar', path: '/superadmin/companies',  icon: Building2 },
+        { label: 'Menejerlar',   path: '/superadmin/managers',   icon: Users },
+        { label: 'Profil',       path: '/superadmin/profile',    icon: User },
+        { label: 'Sozlamalar',   path: '/superadmin/settings',   icon: Settings },
     ],
     MANAGER: [
-        { label: "Bosh sahifa",        path: "/manager",         icon: LayoutDashboard },
-        { label: "Umumiy hisobot",     path: "/manager/orders",  icon: ShoppingCart },
-        { label: "Ofitsiant hisoboti", path: "/manager/finance", icon: Wallet },
-        { label: "Savdo tahlili",      path: "/manager/sales",   icon: TrendingUp },
+        { label: 'Bosh sahifa',        path: '/manager',         icon: LayoutDashboard },
+        { label: 'Umumiy hisobot',     path: '/manager/orders',  icon: ShoppingCart },
+        { label: 'Ofitsiant hisoboti', path: '/manager/finance', icon: Wallet },
+        { label: 'Savdo tahlili',      path: '/manager/sales',   icon: BarChart3 },
         {
-            label: "Boshqaruv", icon: Layers,
+            label: 'Boshqaruv', icon: Building2,
             children: [
-                { label: "Xodimlar",      path: "/manager/staff",    icon: Users },
-                { label: "Mahsulotlar",   path: "/manager/products", icon: Package },
-                { label: "Xona yaratish", path: "/manager/rooms",    icon: HomeIcon },
+                { label: 'Xodimlar',      path: '/manager/staff',    icon: Users },
+                { label: 'Mahsulotlar',   path: '/manager/products', icon: Package },
+                { label: 'Xona yaratish', path: '/manager/rooms',    icon: HomeIcon },
             ],
         },
     ],
 };
 
-interface AppLayoutProps {
-    requiredRole: UserRole;
-}
-
-export function AppLayout({ requiredRole }: AppLayoutProps) {
+export function AppLayout({ requiredRole }: { requiredRole: UserRole }) {
     const { user, isAuthenticated, logout } = useAuth();
     const { language } = useSettings();
-    const navigate = useNavigate();
-    const location = useLocation();
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ Boshqaruv: true });
+    const navigate  = useNavigate();
+    const location  = useLocation();
+    const [mob, setMob]       = useState(false);
+    const [groups, setGroups] = useState<Record<string, boolean>>({ Boshqaruv: true });
     const isRoot = location.pathname === getRoleBasePath(requiredRole);
-    const toggleGroup = (label: string) => setOpenGroups(p => ({ ...p, [label]: !p[label] }));
 
     useEffect(() => {
-        if (!isAuthenticated) {
-            navigate('/login', { replace: true });
-            return;
-        }
-        if (user && user.role !== requiredRole) {
-            navigate(getRoleBasePath(user.role), { replace: true });
-        }
+        if (!isAuthenticated) { navigate('/login', { replace: true }); return; }
+        if (user && user.role !== requiredRole) navigate(getRoleBasePath(user.role), { replace: true });
     }, [isAuthenticated, user, requiredRole, navigate]);
 
     if (!user || user.role !== requiredRole) return null;
 
-    const navItems: NavEntry[] = NAV_BY_ROLE[user.role] ?? [];
-
-    const handleLogout = () => {
-        logout();
-        navigate('/login', { replace: true });
-    };
-
-    const closeSidebar = () => setSidebarOpen(false);
+    const entries: NavEntry[] = NAV_BY_ROLE[user.role] ?? [];
+    const initials = `${user.firstName?.[0]??''}${user.lastName?.[0]??''}`.toUpperCase();
 
     return (
-        <div className="flex h-screen w-full overflow-hidden">
-            {sidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/40 z-40 lg:hidden"
-                    onClick={closeSidebar}
-                />
+        <div className="flex h-screen w-full overflow-hidden" style={{ background: 'hsl(var(--background))' }}>
+
+            {mob && (
+                <div onClick={() => setMob(false)}
+                    className="fixed inset-0 z-40 lg:hidden"
+                    style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)' }} />
             )}
 
-            <aside className={`
-        fixed lg:sticky lg:top-0
-        inset-y-0 left-0 z-50
-        h-screen
-        w-64 shrink-0
-        bg-sidebar text-sidebar-foreground
-        flex flex-col
-        transform transition-transform duration-200 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-                <div className="px-5 py-4 border-b border-sidebar-border flex items-center justify-between shrink-0">
-                    <div>
-                        <h1 className="text-[14px] font-bold text-white leading-none">Sohil Choyxonasi</h1>
-                        <p className="text-[10px] text-sidebar-foreground/40 mt-1 uppercase tracking-widest">{t('Boshqaruv tizimi', language)}</p>
+            {/* ══ SIDEBAR ══════════════════════════════════════════════════════ */}
+            <aside className={`fixed lg:sticky lg:top-0 inset-y-0 left-0 z-50 h-screen flex flex-col transition-transform duration-250 ${mob ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+                style={{ width: 240, background: 'hsl(var(--sidebar-background))', borderRight: '1px solid hsl(var(--sidebar-border))' }}>
+
+                {/* Brand */}
+                <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid hsl(var(--sidebar-border))' }}>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.01em' }}>
+                                Sohil Choyxonasi
+                            </h1>
+                            <p style={{ fontSize: 11, color: 'hsl(var(--sidebar-foreground))', margin: '3px 0 0', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                                {t('Boshqaruv tizimi', language)}
+                            </p>
+                        </div>
+                        <button onClick={() => setMob(false)} className="lg:hidden"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--sidebar-foreground))', opacity: 0.5 }}>
+                            <X size={16} />
+                        </button>
                     </div>
-                    <button onClick={closeSidebar} className="lg:hidden p-1 rounded text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors">
-                        <X className="h-4 w-4" />
-                    </button>
                 </div>
 
                 {/* Nav */}
-                <nav className="flex-1 px-3 py-4 space-y-1 overflow-hidden">
-                    {navItems.map((entry) => {
+                <nav style={{ flex: 1, padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 2, overflow: 'hidden' }}>
+
+                    {entries.map((entry) => {
                         if (isGroup(entry)) {
-                            const open = !!openGroups[entry.label];
+                            const open = !!groups[entry.label];
                             const hasActive = entry.children.some(c => location.pathname.startsWith(c.path));
                             return (
                                 <div key={entry.label}>
-                                    <button onClick={() => toggleGroup(entry.label)} style={{ width:'100%' }}
-                                        className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 ${hasActive ? 'bg-emerald-500/20 text-white' : 'text-sidebar-foreground/70 hover:text-white hover:bg-white/8'}`}>
-                                        <span className={`flex items-center justify-center w-7 h-7 rounded-md shrink-0 ${hasActive ? 'bg-emerald-500/30' : 'bg-transparent group-hover:bg-white/10'}`}>
-                                            <entry.icon className={`h-4 w-4 ${hasActive ? 'text-emerald-400' : 'text-sidebar-foreground/50 group-hover:text-white/80'}`} />
-                                        </span>
-                                        <span className="flex-1 text-left">{t(entry.label, language)}</span>
-                                        <ChevronDown className={`h-3.5 w-3.5 opacity-50 transition-transform duration-200 ${open ? 'rotate-0' : '-rotate-90'}`} />
+                                    <button
+                                        onClick={() => setGroups(p => ({ ...p, [entry.label]: !p[entry.label] }))}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: 10,
+                                            width: '100%', padding: '8px 10px', borderRadius: 8,
+                                            border: 'none', cursor: 'pointer', transition: 'all 0.15s',
+                                            fontSize: 13.5, fontWeight: 500,
+                                            background: hasActive ? 'hsl(var(--sidebar-accent))' : 'transparent',
+                                            color: hasActive ? '#fff' : 'hsl(var(--sidebar-foreground))',
+                                        }}
+                                        onMouseEnter={e => { if (!hasActive) e.currentTarget.style.background = 'hsl(var(--sidebar-accent)/0.7)'; }}
+                                        onMouseLeave={e => { if (!hasActive) e.currentTarget.style.background = 'transparent'; }}
+                                    >
+                                        <entry.icon size={16} style={{ flexShrink: 0, opacity: hasActive ? 1 : 0.6 }} />
+                                        <span style={{ flex: 1, textAlign: 'left' }}>{t(entry.label, language)}</span>
+                                        <ChevronDown size={13} style={{ opacity: 0.4, transform: open ? 'rotate(0)' : 'rotate(-90deg)', transition: 'transform 0.2s' }} />
                                     </button>
                                     {open && (
-                                        <div className="mt-1 ml-3 pl-3 border-l border-sidebar-border space-y-0.5">
+                                        <div style={{ marginTop: 2, marginLeft: 12, paddingLeft: 10, borderLeft: '1px solid hsl(var(--sidebar-border))', display: 'flex', flexDirection: 'column', gap: 1 }}>
                                             {entry.children.map(child => (
-                                                <NavLink key={child.path} to={child.path} onClick={closeSidebar}
-                                                    className={({ isActive }) =>
-                                                        `group flex items-center gap-2.5 px-2 py-2 rounded-md text-[13px] font-medium transition-all duration-150 ${isActive
-                                                            ? 'bg-emerald-500/20 text-white'
-                                                            : 'text-sidebar-foreground/60 hover:text-white hover:bg-white/6'
-                                                        }`
-                                                    }
-                                                >
-                                                    {({ isActive }) => (<>
-                                                        <child.icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-emerald-400' : 'opacity-50 group-hover:opacity-80'}`} />
-                                                        {t(child.label, language)}
-                                                        {isActive && <span className="ml-auto w-1 h-1 rounded-full bg-emerald-400 shrink-0" />}
-                                                    </>)}
+                                                <NavLink key={child.path} to={child.path} onClick={() => setMob(false)}>
+                                                    {({ isActive }) => (
+                                                        <div style={{
+                                                            display: 'flex', alignItems: 'center', gap: 9,
+                                                            padding: '7px 10px', borderRadius: 7, cursor: 'pointer',
+                                                            fontSize: 13, fontWeight: isActive ? 600 : 400,
+                                                            transition: 'all 0.15s',
+                                                            background: isActive ? 'hsl(var(--sidebar-primary)/0.18)' : 'transparent',
+                                                            color: isActive ? 'hsl(var(--sidebar-primary))' : 'hsl(var(--sidebar-foreground))',
+                                                        }}
+                                                            onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'hsl(var(--sidebar-accent)/0.6)'; e.currentTarget.style.color = '#fff'; }}}
+                                                            onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'hsl(var(--sidebar-foreground))'; }}}
+                                                        >
+                                                            <child.icon size={14} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.55 }} />
+                                                            {t(child.label, language)}
+                                                        </div>
+                                                    )}
                                                 </NavLink>
                                             ))}
                                         </div>
@@ -142,81 +143,111 @@ export function AppLayout({ requiredRole }: AppLayoutProps) {
                                 </div>
                             );
                         }
+
                         return (
                             <NavLink key={entry.path} to={entry.path}
                                 end={entry.path === getRoleBasePath(user.role)}
-                                onClick={closeSidebar}
-                                className={({ isActive }) =>
-                                    `group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 ${isActive
-                                        ? 'bg-emerald-500/20 text-white shadow-sm'
-                                        : 'text-sidebar-foreground/70 hover:text-white hover:bg-white/8 hover:translate-x-0.5'
-                                    }`
-                                }
+                                onClick={() => setMob(false)}
                             >
-                                {({ isActive }) => (<>
-                                    <span className={`flex items-center justify-center w-7 h-7 rounded-md transition-all duration-200 shrink-0 ${isActive ? 'bg-emerald-500/30' : 'bg-transparent group-hover:bg-white/10'}`}>
-                                        <entry.icon className={`h-4 w-4 transition-colors ${isActive ? 'text-emerald-400' : 'text-sidebar-foreground/50 group-hover:text-white/80'}`} />
-                                    </span>
-                                    <span className="flex-1">{t(entry.label, language)}</span>
-                                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse" />}
-                                </>)}
+                                {({ isActive }) => (
+                                    <div style={{
+                                        display: 'flex', alignItems: 'center', gap: 10,
+                                        padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
+                                        fontSize: 13.5, fontWeight: isActive ? 600 : 400,
+                                        transition: 'all 0.15s',
+                                        background: isActive ? 'hsl(var(--sidebar-primary)/0.16)' : 'transparent',
+                                        color: isActive ? 'hsl(var(--sidebar-primary))' : 'hsl(var(--sidebar-foreground))',
+                                    }}
+                                        onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'hsl(var(--sidebar-accent))'; e.currentTarget.style.color = '#fff'; }}}
+                                        onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'hsl(var(--sidebar-foreground))'; }}}
+                                    >
+                                        <entry.icon size={16} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.6 }} />
+                                        <span style={{ flex: 1 }}>{t(entry.label, language)}</span>
+                                        {isActive && (
+                                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'hsl(var(--sidebar-primary))', flexShrink: 0 }} />
+                                        )}
+                                    </div>
+                                )}
                             </NavLink>
                         );
                     })}
+
+                    {/* Settings */}
+                    <div style={{ marginTop: 'auto' }}>
+                        <NavLink to={user.role === 'MANAGER' ? '/manager/settings' : '/superadmin/settings'} onClick={() => setMob(false)}>
+                            {({ isActive }) => (
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', gap: 10,
+                                    padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
+                                    fontSize: 13.5, fontWeight: isActive ? 600 : 400,
+                                    transition: 'all 0.15s',
+                                    background: isActive ? 'hsl(var(--sidebar-primary)/0.16)' : 'transparent',
+                                    color: isActive ? 'hsl(var(--sidebar-primary))' : 'hsl(var(--sidebar-foreground))',
+                                }}
+                                    onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'hsl(var(--sidebar-accent))'; e.currentTarget.style.color = '#fff'; }}}
+                                    onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'hsl(var(--sidebar-foreground))'; }}}
+                                >
+                                    <Settings size={16} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.6 }} />
+                                    {t('Sozlamalar', language)}
+                                    {isActive && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'hsl(var(--sidebar-primary))', marginLeft: 'auto' }} />}
+                                </div>
+                            )}
+                        </NavLink>
+                    </div>
                 </nav>
 
-                {/* Footer */}
-                <div className="px-3 py-3 border-t border-sidebar-border shrink-0 space-y-1">
-                    <NavLink
-                        to={user.role === 'MANAGER' ? '/manager/settings' : '/superadmin/settings'}
-                        onClick={closeSidebar}
-                        className={({ isActive }) =>
-                            `group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 w-full ${isActive
-                                ? 'bg-emerald-500/20 text-white shadow-sm'
-                                : 'text-sidebar-foreground/70 hover:text-white hover:bg-white/8 hover:translate-x-0.5'
-                            }`
-                        }
+                {/* User */}
+                <div style={{ padding: '10px', borderTop: '1px solid hsl(var(--sidebar-border))' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: 'hsl(var(--sidebar-accent))', marginBottom: 4 }}>
+                        <div style={{ width: 30, height: 30, borderRadius: 8, background: 'hsl(var(--sidebar-primary)/0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: 'hsl(var(--sidebar-primary))' }}>{initials}</span>
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: 12, fontWeight: 600, color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {user.firstName} {user.lastName}
+                            </p>
+                            <p style={{ fontSize: 10, color: 'hsl(var(--sidebar-foreground))', margin: 0, opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                {user.role}
+                            </p>
+                        </div>
+                    </div>
+                    <button onClick={() => { logout(); navigate('/login', { replace: true }); }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, color: 'hsl(var(--sidebar-foreground))', background: 'transparent', transition: 'all 0.15s', opacity: 0.6 }}
+                        onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.background = 'rgba(248,113,113,0.08)'; e.currentTarget.style.opacity = '1'; }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--sidebar-foreground))'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.opacity = '0.6'; }}
                     >
-                        {({ isActive }) => (<>
-                            <span className={`flex items-center justify-center w-7 h-7 rounded-md transition-all duration-200 shrink-0 ${isActive ? 'bg-emerald-500/30' : 'bg-transparent group-hover:bg-white/10'}`}>
-                                <Settings className={`h-4 w-4 transition-colors ${isActive ? 'text-emerald-400' : 'text-sidebar-foreground/50 group-hover:text-white/80'}`} />
-                            </span>
-                            {t('Sozlamalar', language)}
-                            {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
-                        </>)}
-                    </NavLink>
-                    <button
-                        onClick={handleLogout}
-                        className="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] font-medium w-full text-sidebar-foreground hover:text-red-400 hover:bg-red-500/8 border border-transparent transition-all duration-150"
-                    >
-                        <LogOut className="h-4 w-4 shrink-0 text-sidebar-foreground/50 group-hover:text-red-400 transition-colors" />
-                        {t('Chiqish', language)}
+                        <LogOut size={13} /> {t('Chiqish', language)}
                     </button>
                 </div>
             </aside>
 
-            <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
-                <div className="sticky top-0 z-30 lg:hidden bg-background border-b border-border px-4 py-3 flex items-center gap-3 shrink-0">
-                    {!isRoot ? (
-                        <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                            <ArrowLeft className="h-5 w-5" />
-                            Orqaga
-                        </button>
-                    ) : (
-                        <button onClick={() => setSidebarOpen(true)} className="text-foreground">
-                            <Menu className="h-5 w-5" />
-                        </button>
-                    )}
-                    <img src="/LOGO.PNJ.png" alt="Logo" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+            {/* ══ MAIN ══════════════════════════════════════════════════════════ */}
+            <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', overflowY: 'auto' }}>
+
+                {/* Mobile topbar */}
+                <div className="sticky top-0 z-30 lg:hidden flex items-center gap-3 px-4 py-3 shrink-0"
+                    style={{ background: 'hsl(var(--background))', borderBottom: '1px solid hsl(var(--border))' }}>
+                    {!isRoot
+                        ? <button onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 500, color: 'hsl(var(--muted-foreground))', background: 'none', border: 'none', cursor: 'pointer' }}>
+                            <ArrowLeft size={15} /> Orqaga
+                          </button>
+                        : <button onClick={() => setMob(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--foreground))' }}>
+                            <Menu size={18} />
+                          </button>
+                    }
+                    <span style={{ fontSize: 14, fontWeight: 600, color: 'hsl(var(--foreground))' }}>Sohil Choyxonasi</span>
                 </div>
-                <div className="flex-1 p-4 sm:p-6 lg:p-8">
+
+                {/* Content */}
+                <div className="flex-1 p-4 sm:p-6 lg:p-8 page-enter">
                     {!isRoot && (
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="hidden lg:flex items-center gap-2 px-4 py-2 mb-5 rounded-xl border border-blue-200 bg-blue-50 text-sm font-medium text-blue-600 hover:bg-blue-100 hover:border-blue-300 transition-colors shadow-sm"
+                        <button onClick={() => navigate(-1)}
+                            className="hidden lg:inline-flex items-center gap-1.5 mb-6"
+                            style={{ padding: '5px 12px', borderRadius: 8, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))', fontSize: 12, fontWeight: 500, color: 'hsl(var(--muted-foreground))', cursor: 'pointer', transition: 'all 0.15s' }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'hsl(var(--primary))'; e.currentTarget.style.color = 'hsl(var(--primary))'; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'hsl(var(--border))'; e.currentTarget.style.color = 'hsl(var(--muted-foreground))'; }}
                         >
-                            <ArrowLeft className="h-4 w-4" />
-                            Orqaga
+                            <ArrowLeft size={13} /> Orqaga
                         </button>
                     )}
                     <Outlet />
