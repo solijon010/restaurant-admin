@@ -42,7 +42,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { roomService } from "@/services/roomService";
 import { roomCategoryService } from "@/services/roomCategoryService";
 import { useBranch } from "@/contexts/BranchContext";
-import { formatPrice, statusLabels } from "@/lib/mock-data";
+import { formatPrice, statusLabels } from "@/lib/display";
 import {
   Plus,
   Loader2,
