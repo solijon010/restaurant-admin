@@ -43,7 +43,7 @@ import { productService } from "@/services/productService";
 import { categoryService } from "@/services/categoryService";
 import { kitchenService } from "@/services/kitchenService";
 import { useBranch } from "@/contexts/BranchContext";
-import { formatPrice, statusLabels } from "@/lib/mock-data";
+import { formatPrice, statusLabels } from "@/lib/display";
 import api from "@/lib/api";
 import {
     Plus,

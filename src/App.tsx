@@ -46,7 +46,7 @@ const App = () => (
                             {/* SUPERADMIN routes */}
                             <Route
                                 path="/superadmin"
-                                element={<AppLayout requiredRole="SUPERADMIN" />}
+                                element={<BranchProvider><AppLayout requiredRole="SUPERADMIN" /></BranchProvider>}
                             >
                                 <Route index element={<SADashboard />} />
                                 <Route path="companies" element={<SACompanies />} />

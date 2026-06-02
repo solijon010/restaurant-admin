@@ -1,15 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';
 import { t } from '@/lib/i18n';
 import { getRoleBasePath } from '@/lib/auth';
-import { Eye, EyeOff, Phone, Lock, Star, User } from 'lucide-react';
-
-const DEMO_ACCOUNTS = [
-  { label: "Super Admin", phone: "+998335242981", password: "password", icon: 'star' },
-  { label: "Menejer", phone: "+998991234569", password: "12345678", icon: 'user' },
-];
+import { Eye, EyeOff, Phone, Lock } from 'lucide-react';
 
 export default function Login() {
   const [phone, setPhone] = useState('');
@@ -21,10 +16,11 @@ export default function Login() {
   const { language } = useSettings();
   const navigate = useNavigate();
 
-  if (isAuthenticated && user) {
-    navigate(getRoleBasePath(user.role), { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate(getRoleBasePath(user.role), { replace: true });
+    }
+  }, [isAuthenticated, navigate, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,17 +29,10 @@ export default function Login() {
     const result = await login(phone, password);
     setLoading(false);
     if (result.success) {
-      const auth = JSON.parse(localStorage.getItem('rms_auth') || '{}');
-      navigate(getRoleBasePath(auth.user?.role), { replace: true });
+      navigate(getRoleBasePath(result.user!.role), { replace: true });
     } else {
       setError(result.error || 'Xatolik yuz berdi');
     }
-  };
-
-  const fillDemo = (demo: typeof DEMO_ACCOUNTS[0]) => {
-    setPhone(demo.phone);
-    setPassword(demo.password);
-    setError('');
   };
 
   return (
@@ -254,44 +243,6 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Demo divider */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '20px 0 14px' }}>
-            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(212,160,20,0.25))' }} />
-            <span style={{ fontSize: 10, letterSpacing: 3, color: 'rgba(212,160,20,0.5)', textTransform: 'uppercase' }}>Demo</span>
-            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(212,160,20,0.25), transparent)' }} />
-          </div>
-
-          {/* Demo accounts - 2 column */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {DEMO_ACCOUNTS.map((demo) => (
-              <button key={demo.phone} className="demo-btn" type="button" onClick={() => fillDemo(demo)} style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                padding: '12px 10px',
-                background: 'rgba(0,0,0,0.3)',
-                border: '1px solid rgba(212,160,20,0.2)',
-                borderRadius: 12, cursor: 'pointer',
-                transition: 'all 0.2s',
-                boxShadow: 'inset 0 1px 0 rgba(212,160,20,0.05)',
-              }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(212,160,20,0.08)'; e.currentTarget.style.borderColor = 'rgba(212,160,20,0.45)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.3)'; e.currentTarget.style.borderColor = 'rgba(212,160,20,0.2)'; }}>
-                <div style={{
-                  width: 34, height: 34, borderRadius: 10,
-                  background: demo.icon === 'star'
-                    ? 'linear-gradient(135deg, #9a7009, #d4a020)'
-                    : 'linear-gradient(135deg, #1e6b20, #2d8c30)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: demo.icon === 'star' ? '0 2px 8px rgba(212,160,20,0.4)' : '0 2px 8px rgba(45,140,48,0.4)',
-                }}>
-                  {demo.icon === 'star'
-                    ? <Star size={16} color="#fff" fill="#fff" />
-                    : <User size={16} color="#fff" />}
-                </div>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#e8f5e9', fontFamily: 'Georgia, serif' }}>{t(demo.label, language)}</span>
-                <span style={{ fontSize: 10, color: 'rgba(212,160,20,0.7)', fontFamily: 'monospace' }}>{demo.phone}</span>
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Footer */}

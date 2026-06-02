@@ -16,22 +16,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useBranch } from '@/contexts/BranchContext';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { formatPrice } from '@/lib/mock-data';
+import { formatPrice } from '@/lib/display';
+import { filterOrdersByDate } from '@/lib/order-analytics';
+import { BranchOrder, BranchOrdersQuery, getAllBranchOrders, getBranchOrdersPage, getOrderTotal } from '@/lib/orders';
 import { Card } from '@/components/ui/card';
-import api from '@/lib/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type OrderStatus = 'SUCCESS' | 'CANCELED' | 'PENDING';
-
-interface OrderProduct { id: string; name: string; price: string | number; unit?: string; }
-interface OrderItem    { id: string; count: string | number; status: string; product: OrderProduct; }
-interface OrderRoom    { id: string; name: string; }
-interface OrderUser    { id: string; firstName: string; lastName: string; phoneNumer: string; role?: string; }
-interface Order {
-    id: string; status: OrderStatus; type: string;
-    createdAt: string; endAt: string | null;
-    orderItem: OrderItem[]; room: OrderRoom; user: OrderUser;
-}
+type Order = BranchOrder;
+type OrderStatus = BranchOrder['status'];
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STATUS_LABELS: Record<OrderStatus, string> = {
@@ -103,21 +95,6 @@ const QANOT_ORDAK_CATEGORIES = [
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function toArray<T>(raw: unknown): T[] {
-    if (Array.isArray(raw)) return raw as T[];
-    if (raw && typeof raw === 'object') {
-        const obj = raw as Record<string, unknown>;
-        for (const key of ['data', 'items', 'result', 'results', 'content']) {
-            if (Array.isArray(obj[key])) return obj[key] as T[];
-        }
-    }
-    return [];
-}
-
-function getOrderTotal(o: Order) {
-    return o.orderItem.reduce((s, i) => s + Number(i.product.price) * Number(i.count), 0);
-}
-
 function formatTime(d: string | null) {
     if (!d) return '—';
     return new Date(d).toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
@@ -202,63 +179,87 @@ export default function ManagerOrders() {
     useEffect(() => { setPage(1); }, [statusFilter, dateFilter, selectedBranchId]);
 
     // ── Buyurtmalar
-    const { data: ordersRaw, isLoading: ordersLoading, isFetching } = useQuery({
-        queryKey: ['orders', selectedBranchId, page, limit, statusFilter, dateFilter],
+    const { data: ordersResult, isLoading: ordersLoading, isFetching } = useQuery({
+        queryKey: ['orders', selectedBranchId, page, limit, statusFilter, dateFilter, search],
         queryFn: async () => {
-            const params: Record<string, unknown> = { page, limit };
-            if (statusFilter !== 'ALL') params.status = statusFilter;
-            const res = await api.get(`/order/branch/${selectedBranchId}`, { params });
-            return res.data;
+            if (!selectedBranchId) return { items: [] as Order[], total: 0 };
+
+            const params: BranchOrdersQuery = {
+                page,
+                limit,
+                status: statusFilter !== 'ALL' ? statusFilter : undefined,
+            };
+
+            const normalizedSearch = search.trim().toLowerCase();
+            const needsLocalFiltering = !!dateFilter || !!normalizedSearch;
+
+            if (!needsLocalFiltering) {
+                const pageResult = await getBranchOrdersPage(selectedBranchId, params);
+                return { items: pageResult.items, total: pageResult.total };
+            }
+
+            const allOrdersResult = await getAllBranchOrders(selectedBranchId, {
+                limit: 100,
+                status: params.status,
+            });
+
+            const filteredOrders = allOrdersResult.items.filter((order) => {
+                const matchesDate = !dateFilter || order.createdAt?.slice(0, 10) === dateFilter;
+                if (!matchesDate) return false;
+
+                if (!normalizedSearch) return true;
+
+                const haystack = `${order.room?.name || ''} ${order.user?.firstName || ''} ${order.user?.lastName || ''} ${order.orderItem.map(item => item.product?.name || '').join(' ')}`.toLowerCase();
+                return haystack.includes(normalizedSearch);
+            });
+
+            const startIndex = (page - 1) * limit;
+            return {
+                items: filteredOrders.slice(startIndex, startIndex + limit),
+                total: filteredOrders.length,
+            };
         },
         enabled: !!selectedBranchId,
         placeholderData: prev => prev,
     });
 
-    const allOrders = toArray<Order>(ordersRaw);
-    const total     = (ordersRaw as Record<string, unknown>)?.total as number ?? allOrders.length;
+    const allOrders = ordersResult?.items ?? [];
+    const total     = ordersResult?.total ?? allOrders.length;
     const totalPages = Math.max(Math.ceil(total / limit), 1);
     const startItem  = total === 0 ? 0 : (page - 1) * limit + 1;
     const endItem    = Math.min(page * limit, total);
-
-    const filtered = search
-        ? allOrders.filter(o => {
-            const txt = `${o.room?.name || ''} ${o.user?.firstName || ''} ${o.user?.lastName || ''} ${o.orderItem.map(i => i.product?.name || '').join(' ')}`.toLowerCase();
-            return txt.includes(search.toLowerCase());
-        })
-        : allOrders;
+    const filtered = allOrders;
 
     // ── Shashlik hisobi
-    const { data: shRaw, isLoading: shLoading } = useQuery({
+    const { data: shOrders = [], isLoading: shLoading } = useQuery({
         queryKey: ['orders-sh', selectedBranchId, shashlikDate],
         queryFn: async () => {
-            const res = await api.get(`/order/branch/${selectedBranchId}`, {
-                params: { limit: 1000 },
+            const result = await getAllBranchOrders(selectedBranchId, {
+                limit: 100,
+                status: 'SUCCESS',
             });
-            return res.data;
+            return filterOrdersByDate(result.items, shashlikDate);
         },
         enabled: !!selectedBranchId,
         staleTime: 2 * 60 * 1000,
     });
-
-    const shOrders = toArray<Order>(shRaw).filter(o => (o.createdAt ?? '').slice(0, 10) === shashlikDate);
     const stats      = buildStats(shOrders, PREDEFINED_CATEGORIES);
     const grandTotal = stats.reduce((s, i) => s + i.count, 0);
     const grandSum   = stats.reduce((s, i) => s + i.sum, 0);
 
     // ── Qanot va O'rdak hisobi
-    const { data: qoRaw, isLoading: qoLoading } = useQuery({
+    const { data: qoOrders = [], isLoading: qoLoading } = useQuery({
         queryKey: ['orders-qo', selectedBranchId, qanotDate],
         queryFn: async () => {
-            const res = await api.get(`/order/branch/${selectedBranchId}`, {
-                params: { limit: 1000 },
+            const result = await getAllBranchOrders(selectedBranchId, {
+                limit: 100,
+                status: 'SUCCESS',
             });
-            return res.data;
+            return filterOrdersByDate(result.items, qanotDate);
         },
         enabled: !!selectedBranchId,
         staleTime: 2 * 60 * 1000,
     });
-
-    const qoOrders = toArray<Order>(qoRaw).filter(o => (o.createdAt ?? '').slice(0, 10) === qanotDate);
     const qoStats    = buildStats(qoOrders, QANOT_ORDAK_CATEGORIES);
     const qoTotal    = qoStats.reduce((s, i) => s + i.count, 0);
     const qoSum      = qoStats.reduce((s, i) => s + i.sum, 0);

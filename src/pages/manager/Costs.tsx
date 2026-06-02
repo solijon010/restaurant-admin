@@ -17,7 +17,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useBranch } from "@/contexts/BranchContext";
 import api from "@/lib/api";
-import { formatPrice } from "@/lib/mock-data";
+import { formatPrice } from "@/lib/display";
 import {
     Loader2, Plus, Search, GitBranch, Tag, Layers,
     ChevronLeft, ChevronRight, Calendar, MoreVertical, Pencil, Eye, Trash2,

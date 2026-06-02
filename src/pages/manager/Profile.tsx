@@ -9,12 +9,14 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { companyService } from '@/services/companyService';
 import { userService, StaffUpdatePayload } from '@/services/userService';
 import { useBranch } from '@/contexts/BranchContext';
-import { companies as mockCompanies, roleLabels, Company } from '@/lib/mock-data';
+import { roleLabels } from '@/lib/display';
+import { Company } from '@/services/companyService';
+import { extractObject } from '@/lib/api-response';
 import { Pencil, X, Check, Building2, Loader2, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ManagerProfile() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { branches } = useBranch();
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingCompany, setEditingCompany] = useState(false);
@@ -25,13 +27,8 @@ export default function ManagerProfile() {
   const { data: company } = useQuery<Company | null>({
     queryKey: ['my-company'],
     queryFn: async () => {
-      try {
-        const res = await companyService.getMy();
-        const d = res.data ?? res;
-        return (d as Record<string, unknown>)?.data || d || null;
-      } catch {
-        return mockCompanies.find(c => c.id === user?.companyId) || null;
-      }
+      const res = await companyService.getMy();
+      return extractObject<Company>(res.data);
     },
     enabled: !!user,
   });
@@ -44,7 +41,15 @@ export default function ManagerProfile() {
 
   const updateProfileMutation = useMutation({
     mutationFn: (data: StaffUpdatePayload) => userService.update(user!.id, data),
-    onSuccess: () => { toast.success("Profil yangilandi"); setEditingProfile(false); },
+    onSuccess: () => {
+      updateUser({
+        firstName: profileForm.firstName.trim(),
+        lastName: profileForm.lastName.trim(),
+        phone: profileForm.phoneNumber.trim() || undefined,
+      });
+      toast.success("Profil yangilandi");
+      setEditingProfile(false);
+    },
     onError: () => toast.error('Profilni saqlashda xatolik yuz berdi'),
   });
 

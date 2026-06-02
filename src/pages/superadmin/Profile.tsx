@@ -7,42 +7,55 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { companyService } from '@/services/companyService';
-import { companies as mockCompanies, roleLabels, Company } from '@/lib/mock-data';
+import { roleLabels } from '@/lib/display';
+import { Company } from '@/services/companyService';
+import { userService, StaffUpdatePayload } from '@/services/userService';
+import { extractObject } from '@/lib/api-response';
 import { Pencil, X, Check, Building2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SuperAdminProfile() {
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
     const [editingProfile, setEditingProfile] = useState(false);
     const [editingCompany, setEditingCompany] = useState(false);
-    const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', phoneNumber: '' });
+    const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', phoneNumber: '', password: '' });
     const [companyForm, setCompanyForm] = useState({ name: '', founderName: '', phone: '', bio: '' });
     const [logoFile, setLogoFile] = useState<File | null>(null);
 
     const { data: company } = useQuery<Company | null>({
         queryKey: ['my-company'],
         queryFn: async () => {
-            try {
-                const res = await companyService.getMy();
-                const d = res.data ?? res;
-                return (d as any)?.data || d || null;
-            } catch {
-                return mockCompanies.find(c => c.id === user?.companyId) || null;
-            }
+            const res = await companyService.getMy();
+            return extractObject<Company>(res.data);
         },
         enabled: !!user,
     });
 
     const updateCompanyMutation = useMutation({
-        mutationFn: (data: { id: string; payload: any }) => companyService.update(data.id, data.payload),
+        mutationFn: (data: { id: string; payload: Partial<Company> }) => companyService.update(data.id, data.payload),
         onSuccess: () => { toast.success('Kompaniya yangilandi'); setEditingCompany(false); },
         onError: () => toast.error('Xatolik yuz berdi'),
+    });
+
+    const updateProfileMutation = useMutation({
+        mutationFn: (data: StaffUpdatePayload) => userService.updateManager(user!.id, data),
+        onSuccess: () => {
+            updateUser({
+                firstName: profileForm.firstName.trim(),
+                lastName: profileForm.lastName.trim(),
+                phone: profileForm.phoneNumber.trim() || undefined,
+            });
+            setProfileForm((current) => ({ ...current, password: '' }));
+            toast.success("Profil yangilandi");
+            setEditingProfile(false);
+        },
+        onError: () => toast.error("Profilni saqlashda xatolik yuz berdi"),
     });
 
     if (!user) return null;
 
     const startEditProfile = () => {
-        setProfileForm({ firstName: user.firstName, lastName: user.lastName, phoneNumber: user.phone || '' });
+        setProfileForm({ firstName: user.firstName, lastName: user.lastName, phoneNumber: user.phone || '', password: '' });
         setEditingProfile(true);
     };
 
@@ -80,9 +93,22 @@ export default function SuperAdminProfile() {
                                 <div><Label>Familiya</Label><Input value={profileForm.lastName} onChange={e => setProfileForm({ ...profileForm, lastName: e.target.value })} className="mt-1" /></div>
                             </div>
                             <div><Label>Telefon raqam</Label><Input value={profileForm.phoneNumber} onChange={e => setProfileForm({ ...profileForm, phoneNumber: e.target.value })} className="mt-1" /></div>
+                            <div><Label>Yangi parol</Label><Input type="password" value={profileForm.password} onChange={e => setProfileForm({ ...profileForm, password: e.target.value })} className="mt-1" /></div>
                             <div className="flex justify-end gap-2 pt-2">
                                 <Button variant="outline" size="sm" onClick={() => setEditingProfile(false)}>Bekor qilish</Button>
-                                <Button size="sm" onClick={() => setEditingProfile(false)}><Check className="h-3.5 w-3.5 mr-1" />Saqlash</Button>
+                                <Button
+                                    size="sm"
+                                    onClick={() => updateProfileMutation.mutate({
+                                        firstName: profileForm.firstName.trim(),
+                                        lastName: profileForm.lastName.trim(),
+                                        phoneNumer: profileForm.phoneNumber.trim() || undefined,
+                                        password: profileForm.password.trim() || undefined,
+                                    })}
+                                    disabled={updateProfileMutation.isPending}
+                                >
+                                    {updateProfileMutation.isPending ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1" />}
+                                    Saqlash
+                                </Button>
                             </div>
                         </div>
                     ) : (
