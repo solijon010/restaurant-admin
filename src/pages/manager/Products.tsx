@@ -405,7 +405,7 @@ export default function ManagerProducts() {
     const [deleteProdId, setDeleteProdId] = useState<string | null>(null);
     const [viewProdDialog, setViewProdDialog] = useState(false);
     const [viewProd, setViewProd] = useState<Product | null>(null);
-    const [prodViewMode, setProdViewMode] = useState<'table' | 'card'>('table');
+    const prodViewMode = 'card';
     const [prodAdditionalInfo, setProdAdditionalInfo] = useState<string[]>([]);
     const [additionalInfoInput, setAdditionalInfoInput] = useState("");
     const [viewAddInfoInput, setViewAddInfoInput] = useState("");
@@ -972,15 +972,17 @@ export default function ManagerProducts() {
                                     <Loader2 className="h-3 w-3 animate-spin" /> Yangilanmoqda...
                                 </span>
                             )}
-                            {/* View toggle */}
-                            <div className="flex items-center rounded-lg border border-border overflow-hidden">
-                                <button onClick={() => setProdViewMode('table')}
-                                    className={`h-9 px-2.5 flex items-center justify-center transition-colors ${prodViewMode === 'table' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}>
-                                    <List className="h-4 w-4" />
-                                </button>
-                                <button onClick={() => setProdViewMode('card')}
-                                    className={`h-9 px-2.5 flex items-center justify-center transition-colors ${prodViewMode === 'card' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}>
-                                    <LayoutGrid className="h-4 w-4" />
+                            {/* Quick limit buttons */}
+                            <div className="flex items-center gap-1 border border-border rounded-lg overflow-hidden">
+                                {[10, 30, 100].map(n => (
+                                    <button key={n} onClick={() => { setLimit(n); setPage(1); }}
+                                        className={`h-9 px-3 text-sm font-medium transition-colors ${limit === n ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                                        {n}
+                                    </button>
+                                ))}
+                                <button onClick={() => { setLimit(1000); setPage(1); }}
+                                    className={`h-9 px-3 text-sm font-medium transition-colors ${limit === 1000 ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                                    Hammasi
                                 </button>
                             </div>
                             <Button onClick={openAddProd} size="sm" className="h-9" disabled={activeCats.length === 0}>
@@ -998,13 +1000,13 @@ export default function ManagerProducts() {
                         {prodViewMode === 'card' && (
                             <div>
                                 {prodsLoading ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                                         {[...Array(8)].map((_, i) => <div key={i} className="h-52 skeleton rounded-2xl" />)}
                                     </div>
                                 ) : productsList.length === 0 ? (
                                     <div className="text-center py-16 text-muted-foreground text-sm">Mahsulot topilmadi</div>
                                 ) : (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                                         {productsList.map((p) => {
                                             const cat = categories.find(c => c.id === p.productCategoryId);
                                             const isPopular = popularList.some(pop => pop.productId === p.id);
@@ -1015,7 +1017,7 @@ export default function ManagerProducts() {
                                                     onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)')}
                                                 >
                                                     {/* Image */}
-                                                    <div style={{ height: 100, background: 'hsl(var(--muted))', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <div style={{ height: 140, background: 'hsl(var(--muted))', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                                                         {p.photo ? (
                                                             <img
                                                                 src={`${import.meta.env.VITE_API_BASE_URL}/image/${p.photo}`}
@@ -1057,29 +1059,35 @@ export default function ManagerProducts() {
                                                         {/* Stats grid */}
                                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px', marginBottom: 12 }}>
                                                             <div>
-                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Narx</p>
+                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 2px' }}>Narx</p>
                                                                 <p style={{ fontSize: 13, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0 }}>{formatPrice(p.price)}</p>
                                                             </div>
                                                             <div>
-                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Birlik</p>
+                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 2px' }}>Birlik</p>
                                                                 <p style={{ fontSize: 13, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0 }}>{p.unit}</p>
                                                             </div>
-                                                            <div>
-                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Miqdor</p>
-                                                                <p style={{ fontSize: 13, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0 }}>{p.amount}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Holat</p>
-                                                                <p style={{ fontSize: 12, fontWeight: 700, color: isActive ? '#10b981' : '#94a3b8', margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: isActive ? '#10b981' : '#94a3b8', display: 'inline-block' }} />
-                                                                    {isActive ? 'Faol' : 'Nofaol'}
-                                                                </p>
-                                                            </div>
+                                                        </div>
+
+                                                        {/* Toggle + Holat */}
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                                                            <Switch
+                                                                checked={isActive}
+                                                                onCheckedChange={() => toggleProductMutation.mutate(p.id)}
+                                                                disabled={toggleProductMutation.isPending}
+                                                            />
+                                                            <span style={{
+                                                                fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 99,
+                                                                background: isActive ? '#ecfdf5' : '#f8fafc',
+                                                                color: isActive ? '#10b981' : '#94a3b8',
+                                                                border: `1px solid ${isActive ? '#a7f3d0' : '#e2e8f0'}`,
+                                                            }}>
+                                                                {isActive ? 'Faol' : 'Nofaol'}
+                                                            </span>
                                                         </div>
 
                                                         {/* Action button */}
                                                         <button onClick={() => openViewProd(p)}
-                                                            style={{ width: '100%', padding: '8px', borderRadius: 10, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, background: 'hsl(var(--foreground))', color: 'hsl(var(--background))', transition: 'opacity 0.15s' }}
+                                                            style={{ width: '100%', padding: '9px', borderRadius: 10, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, background: 'hsl(var(--foreground))', color: 'hsl(var(--background))', transition: 'opacity 0.15s' }}
                                                             onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
                                                             onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                                                         >
