@@ -406,7 +406,7 @@ export default function ManagerOrders() {
                                     ) : filtered.map(o => {
                                         const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ${oi.count} dona`);
                                         return (
-                                            <TableRow key={o.id} className={`transition-opacity border-b border-border hover:bg-muted/30 ${isFetching ? 'opacity-60' : ''}`} style={{ height: 64 }}>
+                                            <TableRow key={o.id} className={`transition-all border-b border-border hover:bg-sky-50/60 dark:hover:bg-sky-950/20 ${isFetching ? 'opacity-60' : ''}`} style={{ height: 60 }}>
                                                 <TableCell className="font-semibold">{o.room?.name || '—'}</TableCell>
 
                                                 <TableCell>
