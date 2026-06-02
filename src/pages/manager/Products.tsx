@@ -1012,12 +1012,12 @@ export default function ManagerProducts() {
                                             const isPopular = popularList.some(pop => pop.productId === p.id);
                                             const isActive = p.status === 'ACTIVE';
                                             return (
-                                                <div key={p.id} style={{ background: 'hsl(var(--card))', borderRadius: 14, border: '1px solid hsl(var(--border))', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'all 0.18s ease', display: 'flex', flexDirection: 'column' }}
-                                                    onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                                                    onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'none'; }}
+                                                <div key={p.id} style={{ background: 'hsl(var(--card))', borderRadius: 16, border: '1px solid hsl(var(--border))', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', transition: 'all 0.18s ease', display: 'flex', flexDirection: 'column', position: 'relative' }}
+                                                    onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.12)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'none'; }}
                                                 >
                                                     {/* Image */}
-                                                    <div style={{ height: 160, background: '#f8fafc', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderBottom: '1px solid hsl(var(--border))' }}>
+                                                    <div style={{ height: 180, background: '#f8fafc', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderBottom: '1px solid #f1f5f9', borderRadius: '16px 16px 0 0' }}>
                                                         {p.photo ? (
                                                             <img
                                                                 src={`${import.meta.env.VITE_API_BASE_URL}/image/${p.photo}`}
