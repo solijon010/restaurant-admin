@@ -22,7 +22,7 @@ function toArray(raw: unknown): BranchResponse[] {
   if (Array.isArray(raw)) return raw;
   if (raw && typeof raw === 'object') {
     const obj = raw as Record<string, unknown>;
-    for (const k of ['data', 'items']) {
+    for (const k of ['data', 'items', 'value']) {
       if (Array.isArray(obj[k])) return obj[k] as BranchResponse[];
     }
   }
@@ -62,7 +62,9 @@ export function BranchProvider({ children }: { children: ReactNode }) {
     setSelectedBranchIdState(id);
     try {
       localStorage.setItem(STORAGE_KEY, id);
-    } catch {}
+    } catch {
+      // Ignore storage write failures, keep in-memory branch selection.
+    }
   }, []);
 
   return (

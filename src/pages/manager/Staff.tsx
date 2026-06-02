@@ -44,7 +44,8 @@ import {
   UserResponse,
 } from "@/services/userService";
 import { useBranch } from "@/contexts/BranchContext";
-import { roleLabels, statusLabels, UserRole } from "@/lib/mock-data";
+import { roleLabels, statusLabels } from "@/lib/display";
+import type { UserRole } from "@/lib/auth";
 import { Plus, Loader2, MoreVertical, Eye, Pencil, Trash2, Users, KeyRound, Banknote } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
