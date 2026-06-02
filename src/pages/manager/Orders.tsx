@@ -361,76 +361,52 @@ export default function ManagerOrders() {
                             ))}
                         </div>
 
-                        {/* Desktop */}
-                        <div className="hidden md:block overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="hover:bg-muted/40 bg-muted/40 border-border/60">
-                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Xona / Stol</TableHead>
-                                        <TableHead className="text-xs font-bold py-3">
-                                            <span className="flex items-center gap-1.5 text-green-600">
-                                                <LogIn className="h-3.5 w-3.5" />O'tirgan
-                                            </span>
-                                        </TableHead>
-                                        <TableHead className="text-xs font-bold py-3">
-                                            <span className="flex items-center gap-1.5 text-red-500">
-                                                <LogOut className="h-3.5 w-3.5" />Turgan
-                                            </span>
-                                        </TableHead>
-                                        <TableHead className="text-xs font-bold py-3">
-                                            <span className="flex items-center gap-1.5 text-blue-500">
-                                                <Clock className="h-3.5 w-3.5" />Davomiylik
-                                            </span>
-                                        </TableHead>
-                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Mahsulotlar</TableHead>
-                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Summa</TableHead>
-                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Holat</TableHead>
-                                        <TableHead className="text-right text-xs font-bold text-foreground/70 py-3">Amallar</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {ordersLoading ? (
-                                        <TableRow><TableCell colSpan={8} className="text-center py-16">
-                                            <div className="flex flex-col items-center gap-2">
-                                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                                                <span className="text-sm text-muted-foreground">Yuklanmoqda...</span>
+                        {/* Desktop — Card list */}
+                        <div className="hidden md:block">
+                            {/* Header row */}
+                            <div className="grid grid-cols-[120px_140px_140px_110px_1fr_130px_130px_60px] gap-3 px-4 py-2 mb-2">
+                                {['Xona / Stol', "O'tirgan", 'Turgan', 'Davomiylik', 'Mahsulotlar', 'Summa', 'Holat', ''].map((h, i) => (
+                                    <span key={i} className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">{h}</span>
+                                ))}
+                            </div>
+
+                            {ordersLoading ? (
+                                <div className="flex flex-col items-center gap-2 py-16">
+                                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                    <span className="text-sm text-muted-foreground">Yuklanmoqda...</span>
+                                </div>
+                            ) : filtered.length === 0 ? (
+                                <div className="flex flex-col items-center gap-2 py-16 text-muted-foreground">
+                                    <UtensilsCrossed className="h-8 w-8 opacity-30" />
+                                    <span className="text-sm">Buyurtma topilmadi</span>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-3">
+                                {filtered.map(o => {
+                                    const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ${oi.count} dona`);
+                                    return (
+                                        <div key={o.id} className={`grid grid-cols-[120px_140px_140px_110px_1fr_130px_130px_60px] gap-3 items-center bg-card border border-border rounded-2xl px-4 py-3.5 hover:shadow-md hover:border-sky-200 transition-all ${isFetching ? 'opacity-60' : ''}`}>
+                                            <span className="font-semibold text-sm">{o.room?.name || '—'}</span>
+
+                                            <div>
+                                                <p className="font-medium text-sm text-green-600">{formatTime(o.createdAt)}</p>
+                                                <p className="text-xs text-muted-foreground">{formatDate(o.createdAt)}</p>
                                             </div>
-                                        </TableCell></TableRow>
-                                    ) : filtered.length === 0 ? (
-                                        <TableRow><TableCell colSpan={8} className="py-20">
-                                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                                <UtensilsCrossed className="h-8 w-8 opacity-30" />
-                                                <span className="text-sm">Buyurtma topilmadi</span>
+
+                                            <div>
+                                                {o.endAt ? (
+                                                    <>
+                                                        <p className="font-medium text-sm text-red-500">{formatTime(o.endAt)}</p>
+                                                        <p className="text-xs text-muted-foreground">{formatDate(o.endAt)}</p>
+                                                    </>
+                                                ) : (
+                                                    <Badge variant="secondary" className="text-xs">Hali ketmagan</Badge>
+                                                )}
                                             </div>
-                                        </TableCell></TableRow>
-                                    ) : filtered.map(o => {
-                                        const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ${oi.count} dona`);
-                                        return (
-                                            <TableRow key={o.id} className={`transition-all border-b border-border hover:bg-sky-50/60 dark:hover:bg-sky-950/20 ${isFetching ? 'opacity-60' : ''}`} style={{ height: 60 }}>
-                                                <TableCell className="font-semibold">{o.room?.name || '—'}</TableCell>
 
-                                                <TableCell>
-                                                    <p className="font-medium text-sm">{formatTime(o.createdAt)}</p>
-                                                    <p className="text-xs text-muted-foreground">{formatDate(o.createdAt)}</p>
-                                                </TableCell>
+                                            <span className="text-sm text-muted-foreground">{duration(o.createdAt, o.endAt)}</span>
 
-                                                <TableCell>
-                                                    {o.endAt ? (
-                                                        <>
-                                                            <p className="font-medium text-sm">{formatTime(o.endAt)}</p>
-                                                            <p className="text-xs text-muted-foreground">{formatDate(o.endAt)}</p>
-                                                        </>
-                                                    ) : (
-                                                        <Badge variant="secondary" className="text-xs">Hali ketmagan</Badge>
-                                                    )}
-                                                </TableCell>
-
-                                                <TableCell className="text-sm text-muted-foreground">
-                                                    {duration(o.createdAt, o.endAt)}
-                                                </TableCell>
-
-                                                <TableCell className="max-w-[200px]">
-                                                    <div className="flex flex-wrap gap-1">
+                                            <div className="flex flex-wrap gap-1 max-w-[200px]">
                                                         {prodNames.slice(0, 3).map((n, i) => (
                                                             <Badge key={i} variant="outline" className="text-xs">{n}</Badge>
                                                         ))}
@@ -438,24 +414,21 @@ export default function ManagerOrders() {
                                                             <Badge variant="outline" className="text-xs">+{prodNames.length - 3}</Badge>
                                                         )}
                                                     </div>
-                                                </TableCell>
 
-                                                <TableCell className="font-semibold">{formatPrice(getOrderTotal(o))}</TableCell>
+                                            <span className="font-bold text-sm">{formatPrice(getOrderTotal(o))}</span>
 
-                                                <TableCell>
-                                                    <StatusBadge status={o.status} />
-                                                </TableCell>
+                                            <div><StatusBadge status={o.status} /></div>
 
-                                                <TableCell className="text-right">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted" onClick={() => setDetailOrder(o)}>
-                                                        <Eye className="h-4 w-4 text-muted-foreground" />
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                </TableBody>
-                            </Table>
+                                            <div className="flex justify-end">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted rounded-full" onClick={() => setDetailOrder(o)}>
+                                                    <Eye className="h-4 w-4 text-muted-foreground" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                </div>
+                            )}
                         </div>
 
                         {/* Pagination */}
