@@ -972,19 +972,6 @@ export default function ManagerProducts() {
                                     <Loader2 className="h-3 w-3 animate-spin" /> Yangilanmoqda...
                                 </span>
                             )}
-                            {/* Quick limit buttons */}
-                            <div className="flex items-center gap-1 border border-border rounded-lg overflow-hidden">
-                                {[10, 30, 100].map(n => (
-                                    <button key={n} onClick={() => { setLimit(n); setPage(1); }}
-                                        className={`h-9 px-3 text-sm font-medium transition-colors ${limit === n ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
-                                        {n}
-                                    </button>
-                                ))}
-                                <button onClick={() => { setLimit(1000); setPage(1); }}
-                                    className={`h-9 px-3 text-sm font-medium transition-colors ${limit === 1000 ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
-                                    Hammasi
-                                </button>
-                            </div>
                             <Button onClick={openAddProd} size="sm" className="h-9" disabled={activeCats.length === 0}>
                                 <Plus className="h-4 w-4 mr-1" /> Mahsulot qo'shish
                             </Button>
