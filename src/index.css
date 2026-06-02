@@ -181,3 +181,36 @@ button:active:not(:disabled) { transform: scale(0.97); }
 .dark .bg-orange-50  { background-color: hsl(25 40% 13%) !important; }
 .dark .bg-slate-50   { background-color: hsl(215 20% 14%) !important; }
 .dark .bg-purple-50  { background-color: hsl(270 40% 13%) !important; }
+
+/* ── Responsive global fixes ───────────────── */
+@media (max-width: 768px) {
+  /* Tables scroll horizontally */
+  .overflow-x-auto { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  
+  /* Page padding mobile */
+  .lg\:p-8 { padding: 1rem !important; }
+  
+  /* Cards full width on mobile */
+  .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  
+  /* Hide desktop-only elements */
+  .hidden.md\:block { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  /* Single column on small phones */
+  .sm\:grid-cols-2 { grid-template-columns: 1fr !important; }
+  
+  /* Smaller text on small screens */
+  .text-2xl { font-size: 1.25rem !important; }
+  .text-xl  { font-size: 1.1rem !important; }
+}
+
+/* ── Overflow prevention ───────────────────── */
+.max-w-full { max-width: 100%; }
+img { max-width: 100%; height: auto; }
+
+/* ── Touch targets ─────────────────────────── */
+@media (hover: none) {
+  button, a { min-height: 44px; }
+}

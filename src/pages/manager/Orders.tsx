@@ -364,7 +364,7 @@ export default function ManagerOrders() {
                         {/* Desktop — Card list */}
                         <div className="hidden md:block">
                             {/* Header row */}
-                            <div className="grid grid-cols-[120px_140px_140px_110px_1fr_130px_130px_60px] gap-3 px-4 py-2 mb-2">
+                            <div className="grid grid-cols-[100px_130px_130px_100px_1fr_120px_120px_50px] xl:grid-cols-[120px_140px_140px_110px_1fr_130px_130px_60px] gap-2 xl:gap-3 px-4 py-2 mb-2">
                                 {['Xona / Stol', "O'tirgan", 'Turgan', 'Davomiylik', 'Mahsulotlar', 'Summa', 'Holat', ''].map((h, i) => (
                                     <span key={i} className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">{h}</span>
                                 ))}
@@ -385,7 +385,7 @@ export default function ManagerOrders() {
                                 {filtered.map(o => {
                                     const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ${oi.count} dona`);
                                     return (
-                                        <div key={o.id} className={`grid grid-cols-[120px_140px_140px_110px_1fr_130px_130px_60px] gap-3 items-center bg-card border border-border rounded-2xl px-4 py-3.5 hover:shadow-md hover:border-sky-200 transition-all ${isFetching ? 'opacity-60' : ''}`}>
+                                        <div key={o.id} className={`grid grid-cols-[100px_130px_130px_100px_1fr_120px_120px_50px] xl:grid-cols-[120px_140px_140px_110px_1fr_130px_130px_60px] gap-2 xl:gap-3 items-center bg-card border border-border rounded-2xl px-4 py-3.5 hover:shadow-md hover:border-sky-200 transition-all ${isFetching ? 'opacity-60' : ''}`}>
                                             <span className="font-semibold text-sm">{o.room?.name || '—'}</span>
 
                                             <div>
