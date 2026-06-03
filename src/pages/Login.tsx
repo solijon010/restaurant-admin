@@ -68,15 +68,8 @@ export default function Login() {
         {/* Logo + Title */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           {/* Logo */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-            <div style={{
-              width: 64, height: 64, borderRadius: 18,
-              background: 'linear-gradient(135deg, #10b981, #059669)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 8px 24px rgba(16,185,129,0.35)',
-            }}>
-              <span style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}>SC</span>
-            </div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
+            <img src="/LOGO.PNJ.png" alt="Sohil Choyxonasi" style={{ width: 84, height: 84, objectFit: 'contain', filter: 'drop-shadow(0 4px 14px rgba(0,0,0,0.18))' }} />
           </div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
             Sohil Choyxonasi
