@@ -363,12 +363,6 @@ export default function ManagerOrders() {
 
                         {/* Desktop — Card list */}
                         <div className="hidden md:block">
-                            {/* Header row */}
-                            <div className="grid grid-cols-[100px_130px_130px_100px_1fr_120px_120px_50px] xl:grid-cols-[120px_140px_140px_110px_1fr_130px_130px_60px] gap-2 xl:gap-3 px-4 py-2 mb-2">
-                                {['Xona / Stol', "O'tirgan", 'Turgan', 'Davomiylik', 'Mahsulotlar', 'Summa', 'Holat', ''].map((h, i) => (
-                                    <span key={i} className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">{h}</span>
-                                ))}
-                            </div>
 
                             {ordersLoading ? (
                                 <div className="flex flex-col items-center gap-2 py-16">
