@@ -999,82 +999,68 @@ export default function ManagerProducts() {
                                             const isPopular = popularList.some(pop => pop.productId === p.id);
                                             const isActive = p.status === 'ACTIVE';
                                             return (
-                                                <div key={p.id} style={{ background: '#fff', borderRadius: 16, border: '1px solid hsl(var(--border))', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', transition: 'box-shadow 0.2s' }}
-                                                    onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.1)')}
-                                                    onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)')}
+                                                <div key={p.id} className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col"
+                                                    style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)', transition: 'all 0.18s ease' }}
+                                                    onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.12)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'none'; }}
                                                 >
-                                                    {/* Image */}
-                                                    <div style={{ height: 140, background: 'hsl(var(--muted))', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                                                    {/* Image — strictly contained */}
+                                                    <div className="w-full bg-muted/40 border-b border-border" style={{ height: 180, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                         {p.photo ? (
                                                             <img
                                                                 src={`${import.meta.env.VITE_API_BASE_URL}/image/${p.photo}`}
                                                                 alt={p.name}
-                                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                onError={e => { const t = e.target as HTMLImageElement; t.style.display = 'none'; t.parentElement!.style.background = 'hsl(var(--muted))'; }}
+                                                                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                                                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                                             />
                                                         ) : (
-                                                            <Package style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))', opacity: 0.4 }} />
+                                                            <Package className="w-10 h-10 text-muted-foreground opacity-30" />
                                                         )}
                                                     </div>
 
                                                     {/* Content */}
-                                                    <div style={{ padding: '12px 14px' }}>
-                                                        {/* Name + actions row */}
-                                                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
+                                                    <div style={{ padding: '12px 14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                                        {/* Name + actions */}
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
                                                             <p style={{ fontSize: 14, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{p.name}</p>
                                                             <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
-                                                                <button onClick={() => openEditProd(p)}
-                                                                    style={{ width: 26, height: 26, borderRadius: 6, background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.12s' }}
-                                                                    onMouseEnter={e => { e.currentTarget.style.background = '#e0f2fe'; e.currentTarget.style.borderColor = '#0ea5e9'; }}
-                                                                    onMouseLeave={e => { e.currentTarget.style.background = 'hsl(var(--muted))'; e.currentTarget.style.borderColor = 'hsl(var(--border))'; }}>
+                                                                <button onClick={() => openEditProd(p)} className="flex items-center justify-center rounded-md bg-muted border border-border hover:bg-blue-50 hover:border-blue-300 transition-colors" style={{ width: 26, height: 26 }}>
                                                                     <Pencil style={{ width: 11, height: 11, color: '#64748b' }} />
                                                                 </button>
-                                                                <button onClick={() => setDeleteProdId(p.id)}
-                                                                    style={{ width: 26, height: 26, borderRadius: 6, background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.12s' }}
-                                                                    onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.borderColor = '#ef4444'; }}
-                                                                    onMouseLeave={e => { e.currentTarget.style.background = 'hsl(var(--muted))'; e.currentTarget.style.borderColor = 'hsl(var(--border))'; }}>
+                                                                <button onClick={() => setDeleteProdId(p.id)} className="flex items-center justify-center rounded-md bg-muted border border-border hover:bg-red-50 hover:border-red-300 transition-colors" style={{ width: 26, height: 26 }}>
                                                                     <Trash2 style={{ width: 11, height: 11, color: '#ef4444' }} />
                                                                 </button>
                                                             </div>
                                                         </div>
+
                                                         {cat && (
-                                                            <span style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))', background: 'hsl(var(--muted))', padding: '2px 8px', borderRadius: 99, display: 'inline-block', marginBottom: 10 }}>
-                                                                {cat.name}
-                                                            </span>
+                                                            <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5 w-fit mb-3 block">{cat.name}</span>
                                                         )}
 
-                                                        {/* Stats grid */}
-                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px', marginBottom: 12 }}>
+                                                        {/* Narx + Birlik */}
+                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 8px', marginBottom: 10 }}>
                                                             <div>
-                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 2px' }}>Narx</p>
+                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Narx</p>
                                                                 <p style={{ fontSize: 13, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0 }}>{formatPrice(p.price)}</p>
                                                             </div>
                                                             <div>
-                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 2px' }}>Birlik</p>
+                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Birlik</p>
                                                                 <p style={{ fontSize: 13, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0 }}>{p.unit}</p>
                                                             </div>
                                                         </div>
 
-                                                        {/* Toggle + Holat */}
-                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                                                            <Switch
-                                                                checked={isActive}
-                                                                onCheckedChange={() => toggleProductMutation.mutate(p.id)}
-                                                                disabled={toggleProductMutation.isPending}
-                                                            />
-                                                            <span style={{
-                                                                fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 99,
-                                                                background: isActive ? '#ecfdf5' : '#f8fafc',
-                                                                color: isActive ? '#10b981' : '#94a3b8',
-                                                                border: `1px solid ${isActive ? '#a7f3d0' : '#e2e8f0'}`,
-                                                            }}>
+                                                        {/* Toggle + Status */}
+                                                        <div className="flex items-center justify-between mb-3">
+                                                            <Switch checked={isActive} onCheckedChange={() => toggleProductMutation.mutate(p.id)} disabled={toggleProductMutation.isPending} />
+                                                            <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${isActive ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-muted text-muted-foreground border-border'}`}>
                                                                 {isActive ? 'Faol' : 'Nofaol'}
                                                             </span>
                                                         </div>
 
-                                                        {/* Action button */}
+                                                        {/* Ko'rish button */}
                                                         <button onClick={() => openViewProd(p)}
-                                                            style={{ width: '100%', padding: '9px', borderRadius: 10, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, background: 'hsl(var(--foreground))', color: 'hsl(var(--background))', transition: 'opacity 0.15s' }}
+                                                            className="w-full rounded-xl border-none cursor-pointer font-semibold transition-opacity text-sm"
+                                                            style={{ padding: '9px', background: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}
                                                             onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
                                                             onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                                                         >
