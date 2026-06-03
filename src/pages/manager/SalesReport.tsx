@@ -17,7 +17,6 @@ import {
 import {
   ArrowUpRight,
   Banknote,
-  Bird,
   Calendar,
   Home,
   Loader2,
@@ -25,23 +24,22 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { useBranch } from "@/contexts/BranchContext";
 import { useSettings } from "@/contexts/SettingsContext";
-import { t } from "@/lib/i18n";
 import { formatPrice } from "@/lib/display";
-import {
-  buildRevenueSeries,
-  filterOrdersByDate,
-  filterOrdersByRange,
-  getFilterBounds,
-  summarizeOrders,
-  todayStr,
-  yesterdayStr,
-} from "@/lib/order-analytics";
+import { filterOrdersByDate, todayStr, yesterdayStr } from "@/lib/order-analytics";
+import { t } from "@/lib/i18n";
 import { BranchOrder, getAllBranchOrders, getOrderTotal } from "@/lib/orders";
+import {
+  DashboardFilter,
+  DashboardFinanceChartPoint,
+  DashboardRangeParams,
+  dashboardService,
+} from "@/services/dashboardService";
+import { userService } from "@/services/userService";
 
 type FilterType = "today" | "yesterday" | "last7" | "last30" | "custom";
 
@@ -90,7 +88,7 @@ function buildRoomStats(orders: BranchOrder[]): RoomStat[] {
   orders
     .filter((order) => order.status === "SUCCESS")
     .forEach((order) => {
-      const roomName = order.room?.name || "—";
+      const roomName = order.room?.name || "-";
       const current = map.get(roomName) ?? { name: roomName, orders: 0, sum: 0 };
       map.set(roomName, {
         name: roomName,
@@ -100,6 +98,29 @@ function buildRoomStats(orders: BranchOrder[]): RoomStat[] {
     });
 
   return Array.from(map.values()).sort((left, right) => right.sum - left.sum);
+}
+
+function mapFilter(filter: FilterType): DashboardFilter {
+  switch (filter) {
+    case "today":
+      return "today";
+    case "yesterday":
+      return "yesterday";
+    case "last7":
+      return "last7";
+    case "last30":
+      return "last30";
+    case "custom":
+      return "custom";
+  }
+}
+
+function toRevenueChartData(chart: DashboardFinanceChartPoint[]) {
+  return chart.map((point) => ({
+    date: point.date,
+    revenue: Number(point.daromad ?? 0),
+    expense: Number(point.xarajat ?? 0),
+  }));
 }
 
 export default function SalesReport() {
@@ -124,25 +145,35 @@ export default function SalesReport() {
         ? yesterdayStr()
         : appliedFrom;
 
-  const rangeBounds = getFilterBounds(activeFilter, appliedFrom, appliedTo);
   const isCustomReady = activeFilter !== "custom" || (!!appliedFrom && !!appliedTo);
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ["sales-report-analytics", selectedBranchId, activeFilter, appliedFrom, appliedTo],
     queryFn: async () => {
-      if (!selectedBranchId || !rangeBounds) {
+      if (!selectedBranchId) {
         return { revenueData: [], totalRevenue: 0, totalOrders: 0, averageOrder: 0 };
       }
 
-      const branchOrders = await getAllBranchOrders(selectedBranchId, { limit: 100 });
-      const filteredOrders = filterOrdersByRange(branchOrders.items, rangeBounds.start, rangeBounds.end);
-      const summary = summarizeOrders(filteredOrders);
+      const params: DashboardRangeParams =
+        activeFilter === "custom"
+          ? { filter: "custom", from: appliedFrom, to: appliedTo }
+          : { filter: mapFilter(activeFilter) };
+
+      const [financeResponse, waiterResponse] = await Promise.all([
+        dashboardService.getFinance(params),
+        userService.getWaiterInfo(selectedBranchId, params),
+      ]);
+
+      const finance = financeResponse.data;
+      const waiters = waiterResponse.data.data ?? [];
+      const totalRevenue = Number(finance.summary?.totalRevenue ?? 0);
+      const totalOrders = waiters.reduce((sum, waiter) => sum + Number(waiter.totalOrders ?? 0), 0);
 
       return {
-        revenueData: buildRevenueSeries(summary.successfulOrders, rangeBounds.start, rangeBounds.end),
-        totalRevenue: summary.totalRevenue,
-        totalOrders: summary.totalOrders,
-        averageOrder: summary.averageOrder,
+        revenueData: toRevenueChartData(finance.chart ?? []),
+        totalRevenue,
+        totalOrders,
+        averageOrder: totalOrders > 0 ? totalRevenue / totalOrders : 0,
       };
     },
     enabled: !!selectedBranchId && isCustomReady,
@@ -174,7 +205,7 @@ export default function SalesReport() {
         </div>
         <div>
           <h2 className="text-xl font-bold text-foreground">{t("Savdo tahlili", language)}</h2>
-          <p className="text-sm text-muted-foreground">Filial bo'yicha kunlik va davriy savdo hisoboti</p>
+          <p className="text-sm text-muted-foreground">Filial bo&apos;yicha kunlik va davriy savdo hisoboti</p>
         </div>
       </div>
 
@@ -216,7 +247,7 @@ export default function SalesReport() {
             }}
             className="h-9 rounded-xl bg-slate-700 px-4 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-40"
           >
-            Ko'rsatish
+            Ko&apos;rsatish
           </button>
         </div>
       )}
@@ -263,142 +294,67 @@ export default function SalesReport() {
       )}
 
       {!isSingleDay && (
-        <Card className="rounded-2xl border border-border/60 p-4 shadow-sm sm:p-5">
-          <h3 className="mb-4 text-sm font-semibold text-foreground">Daromad grafigi</h3>
-          {analyticsLoading ? (
-            <div className="flex h-[220px] items-center justify-center">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            </div>
-          ) : activeFilter === "custom" && !isCustomReady ? (
-            <div className="flex h-[220px] flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-7 w-7 opacity-20" />
-              <p>Sana oralig'ini tanlang va "Ko'rsatish" ni bosing</p>
-            </div>
-          ) : revenueData.length === 0 ? (
-            <div className="flex h-[220px] flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
-              <TrendingUp className="h-7 w-7 opacity-20" />
-              <p>Ma'lumot topilmadi</p>
-            </div>
-          ) : (
-            <div className="h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueData} barGap={2} barCategoryGap="25%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(222,12%,91%)" vertical={false} />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 11, fill: "hsl(222,10%,50%)" }}
-                    tickLine={false}
-                    axisLine={false}
-                    interval={Math.max(0, Math.floor(revenueData.length / 8))}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: "hsl(222,10%,50%)" }}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) =>
-                      value >= 1_000_000
-                        ? `${(value / 1_000_000).toFixed(1)}M`
-                        : value >= 1_000
-                          ? `${(value / 1_000).toFixed(0)}K`
-                          : String(value)
-                    }
-                  />
-                  <Tooltip
-                    formatter={(value: number) => formatPrice(value)}
-                    contentStyle={{
-                      background: "hsl(var(--card))",
-                      border: "1px solid hsl(222,12%,90%)",
-                      borderRadius: "10px",
-                      fontSize: "12px",
-                    }}
-                  />
-                  <Bar dataKey="revenue" fill="hsl(32,95%,52%)" name="Daromad" radius={[5, 5, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </Card>
-      )}
-
-      {isSingleDay && (
-        <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm">
-          <div className="flex items-center gap-3 border-b border-border/60 px-4 py-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50">
-              <Home className="h-3.5 w-3.5 text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Xonalar bo'yicha savdo</p>
-              {!dayLoading && dayOrderCount > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  {dayOrderCount} ta buyurtma · {formatPrice(dayTotal)}
-                </p>
-              )}
-            </div>
-            <div className="ml-auto">
-              <Badge variant="outline" className="text-xs">
-                {singleDate}
-              </Badge>
-            </div>
-          </div>
-
-          {dayLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            </div>
-          ) : roomStats.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted/50">
-                <Home className="h-6 w-6 opacity-30" />
-              </div>
-              <p className="text-sm">Bu kunda yakunlangan buyurtma yo'q</p>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
-                {roomStats.map((room, index) => (
-                  <div
-                    key={room.name}
-                    className="flex items-center gap-3 rounded-xl border border-border/60 bg-muted/20 p-3 transition-colors hover:bg-muted/40"
-                  >
-                    <div
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
-                        index === 0
-                          ? "bg-amber-100 text-amber-700"
-                          : index === 1
-                            ? "bg-slate-100 text-slate-600"
-                            : "bg-emerald-50 text-emerald-600"
-                      }`}
-                    >
-                      {index + 1}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-foreground">{room.name}</p>
-                      <span className="text-xs text-muted-foreground">{room.orders} ta buyurtma</span>
-                    </div>
-                    <p className="shrink-0 text-sm font-bold text-foreground">{formatPrice(room.sum)}</p>
-                  </div>
-                ))}
-              </div>
-              {roomStats.length > 1 && (
-                <div className="flex items-center justify-between border-t border-border/60 bg-muted/30 px-4 py-3">
-                  <span className="text-sm font-medium text-muted-foreground">Jami</span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-xs text-muted-foreground">{dayOrderCount} ta buyurtma</span>
-                    <span className="text-sm font-bold text-foreground">{formatPrice(dayTotal)}</span>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </Card>
-      )}
-
-      {revenueData.length > 0 && (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <Card className="rounded-2xl border border-border/60 p-4 shadow-sm sm:p-5">
+            <h3 className="mb-4 text-sm font-semibold text-foreground">Daromad grafigi</h3>
+            {analyticsLoading ? (
+              <div className="flex h-[220px] items-center justify-center">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : activeFilter === "custom" && !isCustomReady ? (
+              <div className="flex h-[220px] flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="h-7 w-7 opacity-20" />
+                <p>Sana oralig&apos;ini tanlang va ko&apos;rsatishni bosing</p>
+              </div>
+            ) : revenueData.length === 0 ? (
+              <div className="flex h-[220px] flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
+                <TrendingUp className="h-7 w-7 opacity-20" />
+                <p>Ma&apos;lumot topilmadi</p>
+              </div>
+            ) : (
+              <div className="h-[220px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={revenueData} barGap={2} barCategoryGap="25%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(222,12%,91%)" vertical={false} />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 11, fill: "hsl(222,10%,50%)" }}
+                      tickLine={false}
+                      axisLine={false}
+                      interval={Math.max(0, Math.floor(revenueData.length / 8))}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 11, fill: "hsl(222,10%,50%)" }}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) =>
+                        value >= 1_000_000
+                          ? `${(value / 1_000_000).toFixed(1)}M`
+                          : value >= 1_000
+                            ? `${(value / 1_000).toFixed(0)}K`
+                            : String(value)
+                      }
+                    />
+                    <Tooltip
+                      formatter={(value: number) => formatPrice(value)}
+                      contentStyle={{
+                        background: "hsl(var(--card))",
+                        border: "1px solid hsl(222,12%,90%)",
+                        borderRadius: "10px",
+                        fontSize: "12px",
+                      }}
+                    />
+                    <Bar dataKey="revenue" fill="hsl(32,95%,52%)" name="Daromad" radius={[5, 5, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </Card>
+
           <Card className="rounded-2xl border border-border/60 p-5 shadow-sm">
             <p className="mb-1 text-sm font-semibold text-foreground">Daromad dinamikasi</p>
             <p className="mb-4 text-xs text-muted-foreground">{formatPrice(totalRevenue)} jami daromad</p>
-            <div style={{ height: 200 }}>
+            <div style={{ height: 220 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={revenueData} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
                   <defs>
@@ -450,48 +406,86 @@ export default function SalesReport() {
               </ResponsiveContainer>
             </div>
           </Card>
-
-          <Card className="rounded-2xl border border-border/60 p-5 shadow-sm">
-            <p className="mb-1 text-sm font-semibold text-foreground">Oxirgi kunlar taqsimoti</p>
-            <p className="mb-4 text-xs text-muted-foreground">So'nggi 7 kunlik daromad</p>
-            <div style={{ height: 200 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueData.slice(-7)} margin={{ top: 5, right: 5, bottom: 0, left: 0 }} barCategoryGap="35%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" vertical={false} />
-                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#64748b" }} tickLine={false} axisLine={false} />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: "#64748b" }}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) =>
-                      value >= 1_000_000
-                        ? `${(value / 1_000_000).toFixed(1)}M`
-                        : value >= 1_000
-                          ? `${(value / 1_000).toFixed(0)}K`
-                          : String(value)
-                    }
-                  />
-                  <Tooltip
-                    formatter={(value: number) => formatPrice(value)}
-                    contentStyle={{
-                      background: "#fff",
-                      border: "1px solid hsl(214,32%,91%)",
-                      borderRadius: 10,
-                      fontSize: 12,
-                    }}
-                  />
-                  <Bar dataKey="revenue" fill="#0EA5E9" radius={[6, 6, 0, 0]} name="Daromad" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
         </div>
+      )}
+
+      {isSingleDay && (
+        <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm">
+          <div className="flex items-center gap-3 border-b border-border/60 px-4 py-3">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50">
+              <Home className="h-3.5 w-3.5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Xonalar bo&apos;yicha savdo</p>
+              {!dayLoading && dayOrderCount > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {dayOrderCount} ta buyurtma · {formatPrice(dayTotal)}
+                </p>
+              )}
+            </div>
+            <div className="ml-auto">
+              <Badge variant="outline" className="text-xs">
+                {singleDate}
+              </Badge>
+            </div>
+          </div>
+
+          {dayLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : roomStats.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted/50">
+                <Home className="h-6 w-6 opacity-30" />
+              </div>
+              <p className="text-sm">Bu kunda yakunlangan buyurtma yo&apos;q</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+                {roomStats.map((room, index) => (
+                  <div
+                    key={room.name}
+                    className="flex items-center gap-3 rounded-xl border border-border/60 bg-muted/20 p-3 transition-colors hover:bg-muted/40"
+                  >
+                    <div
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
+                        index === 0
+                          ? "bg-amber-100 text-amber-700"
+                          : index === 1
+                            ? "bg-slate-100 text-slate-600"
+                            : "bg-emerald-50 text-emerald-600"
+                      }`}
+                    >
+                      {index + 1}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-foreground">{room.name}</p>
+                      <span className="text-xs text-muted-foreground">{room.orders} ta buyurtma</span>
+                    </div>
+                    <p className="shrink-0 text-sm font-bold text-foreground">{formatPrice(room.sum)}</p>
+                  </div>
+                ))}
+              </div>
+              {roomStats.length > 1 && (
+                <div className="flex items-center justify-between border-t border-border/60 bg-muted/30 px-4 py-3">
+                  <span className="text-sm font-medium text-muted-foreground">Jami</span>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs text-muted-foreground">{dayOrderCount} ta buyurtma</span>
+                    <span className="text-sm font-bold text-foreground">{formatPrice(dayTotal)}</span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </Card>
       )}
 
       {roomStats.length > 1 && (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           <Card className="rounded-2xl border border-border/60 p-5 shadow-sm">
-            <p className="mb-1 text-sm font-semibold text-foreground">Xona bo'yicha ulush</p>
+            <p className="mb-1 text-sm font-semibold text-foreground">Xona bo&apos;yicha ulush</p>
             <p className="mb-4 text-xs text-muted-foreground">Har bir xonaning daromad ulushi</p>
             <div style={{ height: 220 }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -508,10 +502,7 @@ export default function SalesReport() {
                     fontSize={11}
                   >
                     {roomStats.slice(0, 5).map((_, index) => (
-                      <Cell
-                        key={index}
-                        fill={["#0EA5E9", "#10B981", "#8B5CF6", "#F59E0B", "#EF4444"][index % 5]}
-                      />
+                      <Cell key={index} fill={["#0EA5E9", "#10B981", "#8B5CF6", "#F59E0B", "#EF4444"][index % 5]} />
                     ))}
                   </Pie>
                   <Tooltip
@@ -528,90 +519,48 @@ export default function SalesReport() {
             </div>
           </Card>
 
-                    {/* Bar chart — xona bo'yicha */}
-                    <Card className="p-5 shadow-sm border border-border/60 rounded-2xl">
-                        <p className="text-sm font-semibold text-foreground mb-1">Xona bo'yicha savdo</p>
-                        <p className="text-xs text-muted-foreground mb-4">Har bir xona daromadi</p>
-                        <div style={{ height: 220 }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={roomStats.slice(0, 8)} layout="vertical" margin={{ top: 0, right: 10, bottom: 0, left: 60 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" horizontal={false} />
-                                    <XAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} tickLine={false} axisLine={false}
-                                        tickFormatter={v => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}K` : String(v)} />
-                                    <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} tickLine={false} axisLine={false} width={55} />
-                                    <Tooltip formatter={(v: number) => formatPrice(v)} contentStyle={{ background: '#fff', border: '1px solid hsl(214,32%,91%)', borderRadius: 10, fontSize: 12 }} />
-                                    <Bar dataKey="sum" fill="#0EA5E9" radius={[0, 6, 6, 0]} name="Daromad" />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </Card>
-                </div>
-            )}
-
-            {/* ── Kunlik daromad dinamikasi + Kategoriya bar chart ── */}
-            {true && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-                    {/* Line chart — Kunlik daromad dinamikasi */}
-                    <div style={{ background: 'hsl(var(--card))', borderRadius: 16, border: '1px solid hsl(var(--border))', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-                        <p style={{ fontSize: 15, fontWeight: 600, color: 'hsl(var(--foreground))', margin: '0 0 16px' }}>Kunlik daromad dinamikasi</p>
-                        <div style={{ height: 240 }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart
-                                    data={revenueData.length > 0 ? revenueData : [
-                                        { date: '01.05', revenue: 0 }, { date: '02.05', revenue: 0 },
-                                        { date: '03.05', revenue: 0 }, { date: '04.05', revenue: 0 },
-                                        { date: '05.05', revenue: 0 }, { date: '06.05', revenue: 0 },
-                                        { date: '07.05', revenue: 0 },
-                                    ]}
-                                    margin={{ top: 10, right: 10, bottom: 0, left: 0 }}
-                                >
-                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false}
-                                        interval={Math.max(0, Math.floor(revenueData.length / 7))} />
-                                    <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false}
-                                        tickFormatter={v => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}K` : String(v)} />
-                                    <Tooltip
-                                        formatter={(v: number) => [formatPrice(v), 'Daromad']}
-                                        contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 10, fontSize: 12 }}
-                                    />
-                                    <Line type="monotone" dataKey="revenue" stroke="#0EA5E9" strokeWidth={2.5}
-                                        dot={{ r: 4, fill: '#0EA5E9', stroke: '#fff', strokeWidth: 2 }}
-                                        activeDot={{ r: 6 }} />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-
-                    {/* Bar chart — Kategoriya bo'yicha savdo */}
-                    <div style={{ background: 'hsl(var(--card))', borderRadius: 16, border: '1px solid hsl(var(--border))', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-                        <p style={{ fontSize: 15, fontWeight: 600, color: 'hsl(var(--foreground))', margin: '0 0 16px' }}>Kategoriya bo'yicha savdo</p>
-                        <div style={{ height: 240 }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart
-                                    data={[
-                                        { name: 'Milliy taomlar', value: Math.round(totalRevenue * 0.45) },
-                                        { name: 'Ichimliklar',    value: Math.round(totalRevenue * 0.20) },
-                                        { name: 'Desert',         value: Math.round(totalRevenue * 0.15) },
-                                        { name: 'Salatlar',       value: Math.round(totalRevenue * 0.12) },
-                                        { name: 'Boshqa',         value: Math.round(totalRevenue * 0.08) },
-                                    ]}
-                                    margin={{ top: 10, right: 10, bottom: 0, left: 0 }}
-                                    barCategoryGap="35%"
-                                >
-                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
-                                    <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false}
-                                        tickFormatter={v => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}K` : String(v)} />
-                                    <Tooltip formatter={(v: number) => [formatPrice(v), 'Savdo']}
-                                        contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 10, fontSize: 12 }} />
-                                    <Bar dataKey="value" fill="#0EA5E9" radius={[6, 6, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                </div>
-            )}
+          <Card className="rounded-2xl border border-border/60 p-5 shadow-sm">
+            <p className="mb-1 text-sm font-semibold text-foreground">Xona bo&apos;yicha savdo</p>
+            <p className="mb-4 text-xs text-muted-foreground">Daromad bo&apos;yicha TOP xonalar</p>
+            <div style={{ height: 220 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={roomStats.slice(0, 8)} layout="vertical" margin={{ top: 0, right: 10, bottom: 0, left: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" horizontal={false} />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 10, fill: "#64748b" }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) =>
+                      value >= 1_000_000
+                        ? `${(value / 1_000_000).toFixed(1)}M`
+                        : value >= 1_000
+                          ? `${(value / 1_000).toFixed(0)}K`
+                          : String(value)
+                    }
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    tickLine={false}
+                    axisLine={false}
+                    width={55}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => formatPrice(value)}
+                    contentStyle={{
+                      background: "#fff",
+                      border: "1px solid hsl(214,32%,91%)",
+                      borderRadius: 10,
+                      fontSize: 12,
+                    }}
+                  />
+                  <Bar dataKey="sum" fill="#0EA5E9" radius={[0, 6, 6, 0]} name="Daromad" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
         </div>
       )}
     </div>

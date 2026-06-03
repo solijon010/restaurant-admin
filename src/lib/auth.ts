@@ -90,3 +90,7 @@ export function getRoleBasePath(role: UserRole): string {
     default: return '/login';
   }
 }
+
+export function hasImplementedDashboard(role: UserRole): boolean {
+  return role === 'SUPERADMIN' || role === 'MANAGER';
+}
