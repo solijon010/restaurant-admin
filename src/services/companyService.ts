@@ -20,16 +20,23 @@ export interface Company {
   updatedAt: string;
 }
 
+export interface CompanyListParams {
+  offcet?: number;
+  limit?: number;
+  search?: string;
+}
+
 export const companyService = {
   // Get all companies (SUPERADMIN)
-  getAll: (): Promise<{ data: Company[] }> => api.get("/company/all"),
+  getAll: (params?: CompanyListParams): Promise<{ data: unknown }> =>
+    api.get("/company/all", { params }),
 
   // Get my company (SUPERADMIN, MANAGER)
   getMy: (): Promise<{ data: Company }> => api.get("/company/my"),
 
   // Get company by ID (SUPERADMIN)
   getById: (id: string): Promise<{ data: Company }> =>
-    api.get(`/company/${id}`),
+    api.get(`/company/one/${id}`),
 
   // Create company (SUPERADMIN)
   create: (data: CompanyPayload): Promise<{ data: Company }> => {

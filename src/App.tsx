@@ -10,6 +10,7 @@ import { BranchProvider } from "@/contexts/BranchContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import RoleUnavailable from "./pages/RoleUnavailable";
 import Settings from "./pages/Settings";
 
 // SUPERADMIN pages
@@ -46,7 +47,7 @@ const App = () => (
                             {/* SUPERADMIN routes */}
                             <Route
                                 path="/superadmin"
-                                element={<AppLayout requiredRole="SUPERADMIN" />}
+                                element={<BranchProvider><AppLayout requiredRole="SUPERADMIN" /></BranchProvider>}
                             >
                                 <Route index element={<SADashboard />} />
                                 <Route path="companies" element={<SACompanies />} />
@@ -70,6 +71,10 @@ const App = () => (
                                 <Route path="profile" element={<MProfile />} />
                                 <Route path="settings" element={<Settings />} />
                             </Route>
+
+                            <Route path="/waiter" element={<RoleUnavailable />} />
+                            <Route path="/kitchen" element={<RoleUnavailable />} />
+                            <Route path="/cashier" element={<RoleUnavailable />} />
 
                             <Route path="*" element={<NotFound />} />
                         </Routes>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -10,28 +10,24 @@ import {
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { useBranch } from '@/contexts/BranchContext';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { formatPrice } from '@/lib/mock-data';
+import { extractArray } from '@/lib/api-response';
+import { formatPrice } from '@/lib/display';
+import { filterOrdersByDate, getOrderDateKey, todayStr } from '@/lib/order-analytics';
+import { BIRD_REPORT_GROUPS, buildMenuGroupStats, isTrackedMenuProduct, MenuCategoryRecord, SHASHLIK_REPORT_GROUPS } from '@/lib/menu-report';
+import { BranchOrder, BranchOrdersQuery, getAllBranchOrders, getBranchOrdersPage, getOrderTotal } from '@/lib/orders';
 import { Card } from '@/components/ui/card';
-import api from '@/lib/api';
+import { categoryService } from '@/services/categoryService';
+import { ProductRecord, productService } from '@/services/productService';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type OrderStatus = 'SUCCESS' | 'CANCELED' | 'PENDING';
-
-interface OrderProduct { id: string; name: string; price: string | number; unit?: string; }
-interface OrderItem    { id: string; count: string | number; status: string; product: OrderProduct; }
-interface OrderRoom    { id: string; name: string; }
-interface OrderUser    { id: string; firstName: string; lastName: string; phoneNumer: string; role?: string; }
-interface Order {
-    id: string; status: OrderStatus; type: string;
-    createdAt: string; endAt: string | null;
-    orderItem: OrderItem[]; room: OrderRoom; user: OrderUser;
-}
+type Order = BranchOrder;
+type OrderStatus = BranchOrder['status'];
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STATUS_LABELS: Record<OrderStatus, string> = {
@@ -103,21 +99,6 @@ const QANOT_ORDAK_CATEGORIES = [
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function toArray<T>(raw: unknown): T[] {
-    if (Array.isArray(raw)) return raw as T[];
-    if (raw && typeof raw === 'object') {
-        const obj = raw as Record<string, unknown>;
-        for (const key of ['data', 'items', 'result', 'results', 'content']) {
-            if (Array.isArray(obj[key])) return obj[key] as T[];
-        }
-    }
-    return [];
-}
-
-function getOrderTotal(o: Order) {
-    return o.orderItem.reduce((s, i) => s + Number(i.product.price) * Number(i.count), 0);
-}
-
 function formatTime(d: string | null) {
     if (!d) return '—';
     return new Date(d).toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
@@ -144,10 +125,6 @@ function norm(s: string) {
 function isSpecialProduct(productName: string) {
     const n = norm(productName);
     return PREDEFINED_CATEGORIES.some(cat => cat.match(n));
-}
-
-function todayStr() {
-    return new Date().toISOString().slice(0, 10);
 }
 
 type Category = { id: string; label: string; match: (n: string) => boolean; dot: string; badge: string };
@@ -202,66 +179,120 @@ export default function ManagerOrders() {
     useEffect(() => { setPage(1); }, [statusFilter, dateFilter, selectedBranchId]);
 
     // ── Buyurtmalar
-    const { data: ordersRaw, isLoading: ordersLoading, isFetching } = useQuery({
-        queryKey: ['orders', selectedBranchId, page, limit, statusFilter, dateFilter],
+    const { data: ordersResult, isLoading: ordersLoading, isFetching } = useQuery({
+        queryKey: ['orders', selectedBranchId, page, limit, statusFilter, dateFilter, search],
         queryFn: async () => {
-            const params: Record<string, unknown> = { page, limit };
-            if (statusFilter !== 'ALL') params.status = statusFilter;
-            const res = await api.get(`/order/branch/${selectedBranchId}`, { params });
-            return res.data;
+            if (!selectedBranchId) return { items: [] as Order[], total: 0 };
+
+            const params: BranchOrdersQuery = {
+                page,
+                limit,
+            };
+
+            const normalizedSearch = search.trim().toLowerCase();
+            const needsLocalFiltering = !!dateFilter || !!normalizedSearch || statusFilter !== 'ALL';
+
+            if (!needsLocalFiltering) {
+                const pageResult = await getBranchOrdersPage(selectedBranchId, params);
+                return { items: pageResult.items, total: pageResult.total };
+            }
+
+            const allOrdersResult = await getAllBranchOrders(selectedBranchId, { limit: 100 });
+
+            const filteredOrders = allOrdersResult.items.filter((order) => {
+                const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
+                if (!matchesStatus) return false;
+
+                const matchesDate = !dateFilter || getOrderDateKey(order.createdAt) === dateFilter;
+                if (!matchesDate) return false;
+
+                if (!normalizedSearch) return true;
+
+                const haystack = `${order.room?.name || ''} ${order.user?.firstName || ''} ${order.user?.lastName || ''} ${order.orderItem.map(item => item.product?.name || '').join(' ')}`.toLowerCase();
+                return haystack.includes(normalizedSearch);
+            });
+
+            const startIndex = (page - 1) * limit;
+            return {
+                items: filteredOrders.slice(startIndex, startIndex + limit),
+                total: filteredOrders.length,
+            };
         },
         enabled: !!selectedBranchId,
         placeholderData: prev => prev,
     });
 
-    const allOrders = toArray<Order>(ordersRaw);
-    const total     = (ordersRaw as Record<string, unknown>)?.total as number ?? allOrders.length;
+    const allOrders = ordersResult?.items ?? [];
+    const total     = ordersResult?.total ?? allOrders.length;
     const totalPages = Math.max(Math.ceil(total / limit), 1);
     const startItem  = total === 0 ? 0 : (page - 1) * limit + 1;
     const endItem    = Math.min(page * limit, total);
+    const filtered = allOrders;
 
-    const filtered = search
-        ? allOrders.filter(o => {
-            const txt = `${o.room?.name || ''} ${o.user?.firstName || ''} ${o.user?.lastName || ''} ${o.orderItem.map(i => i.product?.name || '').join(' ')}`.toLowerCase();
-            return txt.includes(search.toLowerCase());
-        })
-        : allOrders;
+    const { data: reportCatalog } = useQuery({
+        queryKey: ['orders-report-catalog', selectedBranchId],
+        queryFn: async () => {
+            const [categoriesResponse, productsResult] = await Promise.all([
+                categoryService.getByBranch(selectedBranchId),
+                productService.getAllByBranch(selectedBranchId, { limit: 100 }),
+            ]);
+
+            return {
+                categories: extractArray<MenuCategoryRecord>(categoriesResponse.data),
+                products: productsResult.items,
+            };
+        },
+        enabled: !!selectedBranchId,
+        staleTime: 5 * 60 * 1000,
+    });
 
     // ── Shashlik hisobi
-    const { data: shRaw, isLoading: shLoading } = useQuery({
+    const { data: shOrders = [], isLoading: shLoading } = useQuery({
         queryKey: ['orders-sh', selectedBranchId, shashlikDate],
         queryFn: async () => {
-            const res = await api.get(`/order/branch/${selectedBranchId}`, {
-                params: { limit: 1000 },
-            });
-            return res.data;
+            const result = await getAllBranchOrders(selectedBranchId, { limit: 100 });
+            return filterOrdersByDate(result.items.filter((order) => order.status === 'SUCCESS'), shashlikDate);
         },
         enabled: !!selectedBranchId,
         staleTime: 2 * 60 * 1000,
     });
-
-    const shOrders = toArray<Order>(shRaw).filter(o => (o.createdAt ?? '').slice(0, 10) === shashlikDate);
-    const stats      = buildStats(shOrders, PREDEFINED_CATEGORIES);
-    const grandTotal = stats.reduce((s, i) => s + i.count, 0);
-    const grandSum   = stats.reduce((s, i) => s + i.sum, 0);
 
     // ── Qanot va O'rdak hisobi
-    const { data: qoRaw, isLoading: qoLoading } = useQuery({
+    const { data: qoOrders = [], isLoading: qoLoading } = useQuery({
         queryKey: ['orders-qo', selectedBranchId, qanotDate],
         queryFn: async () => {
-            const res = await api.get(`/order/branch/${selectedBranchId}`, {
-                params: { limit: 1000 },
-            });
-            return res.data;
+            const result = await getAllBranchOrders(selectedBranchId, { limit: 100 });
+            return filterOrdersByDate(result.items.filter((order) => order.status === 'SUCCESS'), qanotDate);
         },
         enabled: !!selectedBranchId,
         staleTime: 2 * 60 * 1000,
     });
 
-    const qoOrders = toArray<Order>(qoRaw).filter(o => (o.createdAt ?? '').slice(0, 10) === qanotDate);
-    const qoStats    = buildStats(qoOrders, QANOT_ORDAK_CATEGORIES);
-    const qoTotal    = qoStats.reduce((s, i) => s + i.count, 0);
-    const qoSum      = qoStats.reduce((s, i) => s + i.sum, 0);
+    const reportCategories = useMemo(
+        () => reportCatalog?.categories ?? [],
+        [reportCatalog?.categories],
+    );
+    const reportProducts = useMemo(
+        () => reportCatalog?.products ?? [],
+        [reportCatalog?.products],
+    );
+
+    const stats = useMemo(
+        () => buildMenuGroupStats(shOrders, reportProducts, reportCategories, SHASHLIK_REPORT_GROUPS),
+        [reportCategories, reportProducts, shOrders],
+    );
+    const qoStats = useMemo(
+        () => buildMenuGroupStats(qoOrders, reportProducts, reportCategories, BIRD_REPORT_GROUPS),
+        [qoOrders, reportCategories, reportProducts],
+    );
+
+    const grandOrders = stats.reduce((sum, item) => sum + item.orderCount, 0);
+    const grandQuantity = stats.reduce((sum, item) => sum + item.quantity, 0);
+    const grandSum = stats.reduce((sum, item) => sum + item.sum, 0);
+
+    const qoOrderTotal = qoStats.reduce((sum, item) => sum + item.orderCount, 0);
+    const qoQuantity = qoStats.reduce((sum, item) => sum + item.quantity, 0);
+    const qoSum = qoStats.reduce((sum, item) => sum + item.sum, 0);
 
     // ─── Render ───────────────────────────────────────────────────────────────
     return (
@@ -471,10 +502,13 @@ export default function ManagerOrders() {
                         <div className="flex flex-wrap items-center gap-3 mb-1">
                             <Input type="date" value={shashlikDate}
                                 onChange={e => setShashlikDate(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
-                            {!shLoading && grandTotal > 0 && (
+                            {!shLoading && grandQuantity > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
                                     <span className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full">
-                                        <Flame className="h-3.5 w-3.5" />{grandTotal} ta porsiya
+                                        <Flame className="h-3.5 w-3.5" />{grandOrders} ta zakaz
+                                    </span>
+                                    <span className="text-sm font-semibold text-foreground bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full">
+                                        {grandQuantity} ta porsiya
                                     </span>
                                     <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">
                                         {formatPrice(grandSum)}
@@ -499,7 +533,10 @@ export default function ManagerOrders() {
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <span className={`inline-flex items-center rounded-full border px-3 py-0.5 text-sm font-bold ${item.badge}`}>
-                                                    {item.count} ta porsiya
+                                                    {item.orderCount} ta zakaz
+                                                </span>
+                                                <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-0.5 rounded-full">
+                                                    {item.quantity} ta porsiya
                                                 </span>
                                                 <span className="text-sm font-semibold text-muted-foreground">
                                                     {item.sum > 0 ? formatPrice(item.sum) : '—'}
@@ -517,7 +554,8 @@ export default function ManagerOrders() {
                                                 <TableHeader>
                                                     <TableRow className="bg-muted/10 hover:bg-muted/10">
                                                         <TableHead className="text-xs font-semibold pl-5">Stol / Xona</TableHead>
-                                                        <TableHead className="text-xs font-semibold">Soni</TableHead>
+                                                        <TableHead className="text-xs font-semibold">Zakaz</TableHead>
+                                                        <TableHead className="text-xs font-semibold">Porsiya</TableHead>
                                                         <TableHead className="text-xs font-semibold text-right pr-5">Summa</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
@@ -527,9 +565,10 @@ export default function ManagerOrders() {
                                                             <TableCell className="font-medium pl-5">{row.table}</TableCell>
                                                             <TableCell>
                                                                 <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${item.badge}`}>
-                                                                    {row.count} ta
+                                                                    {row.orderCount} ta
                                                                 </span>
                                                             </TableCell>
+                                                            <TableCell className="font-medium">{row.quantity} ta</TableCell>
                                                             <TableCell className="text-right font-semibold pr-5">
                                                                 {formatPrice(row.sum)}
                                                             </TableCell>
@@ -540,9 +579,10 @@ export default function ManagerOrders() {
                                                             <TableCell className="pl-5 text-sm">Jami</TableCell>
                                                             <TableCell>
                                                                 <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold ${item.badge}`}>
-                                                                    {item.count} ta
+                                                                    {item.orderCount} ta
                                                                 </span>
                                                             </TableCell>
+                                                            <TableCell>{item.quantity} ta</TableCell>
                                                             <TableCell className="text-right pr-5">{formatPrice(item.sum)}</TableCell>
                                                         </TableRow>
                                                     )}
@@ -562,10 +602,13 @@ export default function ManagerOrders() {
                         <div className="flex flex-wrap items-center gap-3 mb-1">
                             <Input type="date" value={qanotDate}
                                 onChange={e => setQanotDate(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
-                            {!qoLoading && qoTotal > 0 && (
+                            {!qoLoading && qoQuantity > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
                                     <span className="flex items-center gap-1.5 text-sm font-semibold text-yellow-600 bg-yellow-50 border border-yellow-200 px-3 py-1.5 rounded-full">
-                                        <Bird className="h-3.5 w-3.5" />{qoTotal} ta porsiya
+                                        <Bird className="h-3.5 w-3.5" />{qoOrderTotal} ta zakaz
+                                    </span>
+                                    <span className="text-sm font-semibold text-foreground bg-yellow-50 border border-yellow-200 px-3 py-1.5 rounded-full">
+                                        {qoQuantity} ta porsiya
                                     </span>
                                     <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">
                                         {formatPrice(qoSum)}
@@ -590,7 +633,10 @@ export default function ManagerOrders() {
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <span className={`inline-flex items-center rounded-full border px-3 py-0.5 text-sm font-bold ${item.badge}`}>
-                                                    {item.count} ta porsiya
+                                                    {item.orderCount} ta zakaz
+                                                </span>
+                                                <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-0.5 rounded-full">
+                                                    {item.quantity} ta porsiya
                                                 </span>
                                                 <span className="text-sm font-semibold text-muted-foreground">
                                                     {item.sum > 0 ? formatPrice(item.sum) : '—'}
@@ -608,7 +654,8 @@ export default function ManagerOrders() {
                                                 <TableHeader>
                                                     <TableRow className="bg-muted/10 hover:bg-muted/10">
                                                         <TableHead className="text-xs font-semibold pl-5">Stol / Xona</TableHead>
-                                                        <TableHead className="text-xs font-semibold">Soni</TableHead>
+                                                        <TableHead className="text-xs font-semibold">Zakaz</TableHead>
+                                                        <TableHead className="text-xs font-semibold">Porsiya</TableHead>
                                                         <TableHead className="text-xs font-semibold text-right pr-5">Summa</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
@@ -618,9 +665,10 @@ export default function ManagerOrders() {
                                                             <TableCell className="font-medium pl-5">{row.table}</TableCell>
                                                             <TableCell>
                                                                 <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${item.badge}`}>
-                                                                    {row.count} ta
+                                                                    {row.orderCount} ta
                                                                 </span>
                                                             </TableCell>
+                                                            <TableCell className="font-medium">{row.quantity} ta</TableCell>
                                                             <TableCell className="text-right font-semibold pr-5">
                                                                 {formatPrice(row.sum)}
                                                             </TableCell>
@@ -631,9 +679,10 @@ export default function ManagerOrders() {
                                                             <TableCell className="pl-5 text-sm">Jami</TableCell>
                                                             <TableCell>
                                                                 <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold ${item.badge}`}>
-                                                                    {item.count} ta
+                                                                    {item.orderCount} ta
                                                                 </span>
                                                             </TableCell>
+                                                            <TableCell>{item.quantity} ta</TableCell>
                                                             <TableCell className="text-right pr-5">{formatPrice(item.sum)}</TableCell>
                                                         </TableRow>
                                                     )}
@@ -653,6 +702,12 @@ export default function ManagerOrders() {
                 <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto p-0 gap-0 [&>button]:hidden">
                     {detailOrder && (
                         <div>
+                            <DialogHeader className="sr-only">
+                                <DialogTitle>Buyurtma tafsilotlari</DialogTitle>
+                                <DialogDescription>
+                                    Tanlangan buyurtmaning xona, vaqt, mahsulot va summa tafsilotlari.
+                                </DialogDescription>
+                            </DialogHeader>
                             {/* Header */}
                             <div className="sticky top-0 bg-card border-b border-border px-6 py-4 z-10">
                                 <div className="flex items-center justify-between">
@@ -712,7 +767,7 @@ export default function ManagerOrders() {
                                     </p>
                                     <div className="rounded-xl border border-border overflow-hidden">
                                         {detailOrder.orderItem.map((oi, i) => {
-                                            const isSpecial = isSpecialProduct(oi.product?.name || '');
+                                            const isSpecial = isTrackedMenuProduct(oi.product, reportProducts, reportCategories);
                                             return (
                                                 <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < detailOrder.orderItem.length - 1 ? 'border-b border-border' : ''} ${isSpecial ? 'bg-amber-50' : i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}`}>
                                                     <div className="flex items-center gap-3 min-w-0">
