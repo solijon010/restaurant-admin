@@ -8,14 +8,32 @@ export interface RevenuePoint {
   expense: number;
 }
 
+function toLocalDateString(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export function getOrderDateKey(value?: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return toLocalDateString(date);
+}
+
 export function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  return toLocalDateString(new Date());
 }
 
 export function yesterdayStr() {
   const date = new Date();
   date.setDate(date.getDate() - 1);
-  return date.toISOString().slice(0, 10);
+  return toLocalDateString(date);
 }
 
 function formatShortDate(value: string) {
@@ -32,7 +50,7 @@ function shiftDays(base: Date, days: number) {
 }
 
 function toDateString(date: Date) {
-  return date.toISOString().slice(0, 10);
+  return toLocalDateString(date);
 }
 
 export function getFilterBounds(filter: AnalyticsFilter, from?: string, to?: string) {
@@ -62,12 +80,12 @@ export function getFilterBounds(filter: AnalyticsFilter, from?: string, to?: str
 }
 
 export function filterOrdersByDate(orders: BranchOrder[], date: string) {
-  return orders.filter((order) => order.createdAt?.slice(0, 10) === date);
+  return orders.filter((order) => getOrderDateKey(order.createdAt) === date);
 }
 
 export function filterOrdersByRange(orders: BranchOrder[], start: string, end: string) {
   return orders.filter((order) => {
-    const date = order.createdAt?.slice(0, 10);
+    const date = getOrderDateKey(order.createdAt);
     return !!date && date >= start && date <= end;
   });
 }
@@ -97,7 +115,7 @@ export function buildRevenueSeries(orders: BranchOrder[], start: string, end: st
   orders
     .filter((order) => order.status === "SUCCESS")
     .forEach((order) => {
-      const key = order.createdAt?.slice(0, 10);
+      const key = getOrderDateKey(order.createdAt);
       if (!key || !values.has(key)) return;
       values.set(key, (values.get(key) ?? 0) + getOrderTotal(order));
     });

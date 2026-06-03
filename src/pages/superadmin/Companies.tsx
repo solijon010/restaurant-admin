@@ -40,8 +40,8 @@ import { UserResponse, userService } from "@/services/userService";
 
 async function fetchAllManagers() {
   const [activeResponse, inactiveResponse] = await Promise.all([
-    userService.getManagers({ status: "ACTIVE", offcet: 0, limit: 1000 }),
-    userService.getManagers({ status: "INACTIVE", offcet: 0, limit: 1000 }),
+    userService.getManagers({ status: "ACTIVE" }),
+    userService.getManagers({ status: "INACTIVE" }),
   ]);
 
   const merged = [
@@ -77,7 +77,7 @@ export default function Companies() {
     queryKey: ["companies", search],
     queryFn: async () =>
       extractPaginated<Company>(
-        (await companyService.getAll({ offcet: 0, limit: 1000, search: search.trim() || undefined })).data,
+        (await companyService.getAll({ search: search.trim() || undefined })).data,
       ).items,
   });
 

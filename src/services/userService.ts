@@ -1,4 +1,5 @@
 import api from "@/lib/api";
+import { DashboardFilter } from "@/services/dashboardService";
 
 export interface StaffPayload {
     firstName: string;
@@ -69,6 +70,30 @@ export interface ManagerListParams {
     limit?: number;
 }
 
+export interface WaiterInfoItem {
+    waiterId: string;
+    fullName: string;
+    salary: string | number;
+    totalOrders: number;
+    totalSum: number;
+    kpiPercent: number;
+    kpiAmount: number;
+}
+
+export interface WaiterInfoResponse {
+    filter: DashboardFilter;
+    from: string;
+    to: string;
+    totalWaiters: number;
+    data: WaiterInfoItem[];
+}
+
+export interface WaiterInfoParams {
+    filter: DashboardFilter;
+    from?: string;
+    to?: string;
+}
+
 export const userService = {
     getAll: () => api.get("/user"),
 
@@ -96,4 +121,13 @@ export const userService = {
         api.patch(`/user/manager/${id}`, data),
 
     deleteManager: (id: string) => api.delete(`/user/manager/${id}`),
+
+    getWaiterInfo: (branchId: string, params: WaiterInfoParams) =>
+        api.get<WaiterInfoResponse>(`/user/waiter/info/${branchId}`, {
+            params: {
+                filter: params.filter,
+                ...(params.filter === "custom" && params.from ? { from: params.from } : {}),
+                ...(params.filter === "custom" && params.to ? { to: params.to } : {}),
+            },
+        }),
 };

@@ -68,8 +68,6 @@ type FormState = {
 async function fetchManagers(statusFilter: StatusFilter, search: string) {
   const params = {
     search: search.trim() || undefined,
-    offcet: 0,
-    limit: 1000,
   };
 
   if (statusFilter === "ALL") {
@@ -136,7 +134,7 @@ export default function Managers() {
     queryKey: ["companies", "manager-options"],
     queryFn: async () =>
       extractPaginated<Company>(
-        (await companyService.getAll({ offcet: 0, limit: 1000 })).data,
+        (await companyService.getAll()).data,
       ).items,
   });
 
