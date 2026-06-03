@@ -94,7 +94,7 @@ export function AppLayout({ requiredRole }: { requiredRole: UserRole }) {
                 </div>
 
                 {/* Nav */}
-                <nav style={{ flex: 1, padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
+                <nav style={{ flex: 1, padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: 8, overflow: 'auto', overflowX: 'hidden' }}>
 
                     {entries.map((entry) => {
                         if (isGroup(entry)) {
