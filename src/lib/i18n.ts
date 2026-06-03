@@ -1,6 +1,4 @@
-// Latin -> Cyrillic translation map for UI strings
 const translations: Record<string, Record<string, string>> = {
-  // Common
   "Bosh sahifa": { cyrillic: "Бош саҳифа" },
   Profil: { cyrillic: "Профил" },
   Sozlamalar: { cyrillic: "Созламалар" },
@@ -13,22 +11,22 @@ const translations: Record<string, Record<string, string>> = {
   "Tizimga kirish": { cyrillic: "Тизимга кириш" },
   "Telefon raqam": { cyrillic: "Телефон рақам" },
   Parol: { cyrillic: "Парол" },
-  "Demo foydalanuvchilar": { cyrillic: "Демо фойдаланувчилар" },
   "Super Admin": { cyrillic: "Супер Админ" },
   Menejer: { cyrillic: "Менежер" },
 
-  // SuperAdmin
   Kompaniyalar: { cyrillic: "Компаниялар" },
   Menejerlar: { cyrillic: "Менежерлар" },
   "Jami kompaniyalar": { cyrillic: "Жами компаниялар" },
   "Jami filiallar": { cyrillic: "Жами филиаллар" },
   "Jami xodimlar": { cyrillic: "Жами ходимлар" },
+  "Jami foydalanuvchilar": { cyrillic: "Жами фойдаланувчилар" },
   "Sotilgan kompaniyalar": { cyrillic: "Сотилган компаниялар" },
   "Filiallar holati": { cyrillic: "Филиаллар ҳолати" },
   Faol: { cyrillic: "Фаол" },
+  Nofaol: { cyrillic: "Нофаол" },
   Arxiv: { cyrillic: "Архив" },
+  Boshqa: { cyrillic: "Бошқа" },
 
-  // Manager
   Filiallar: { cyrillic: "Филиаллар" },
   Xodimlar: { cyrillic: "Ходимлар" },
   Mahsulotlar: { cyrillic: "Маҳсулотлар" },
@@ -36,12 +34,17 @@ const translations: Record<string, Record<string, string>> = {
   "Moliyaviy ko'rsatkichlar": { cyrillic: "Молиявий кўрсаткичлар" },
   Daromad: { cyrillic: "Даромад" },
   Xarajat: { cyrillic: "Харажат" },
-  "Xonalar va zal": { cyrillic: "кабина ва зал" },
+  "Xonalar va zal": { cyrillic: "Хоналар ва зал" },
   Foyda: { cyrillic: "Фойда" },
   "O'rtacha kunlik daromad": { cyrillic: "Ўртача кунлик даромад" },
   "Oxirgi buyurtmalar": { cyrillic: "Охирги буюртмалар" },
+  Bugun: { cyrillic: "Бугун" },
+  Kecha: { cyrillic: "Кеча" },
+  "7 kun": { cyrillic: "7 кун" },
+  "30 kun": { cyrillic: "30 кун" },
+  "Jami daromad": { cyrillic: "Жами даромад" },
+  "O'rtacha buyurtma": { cyrillic: "Ўртача буюртма" },
 
-  // Settings
   Mavzu: { cyrillic: "Мавзу" },
   "Yorug'": { cyrillic: "Ёруғ" },
   "Qorong'u": { cyrillic: "Қоронғу" },
@@ -53,7 +56,6 @@ const translations: Record<string, Record<string, string>> = {
   "O'rta": { cyrillic: "Ўрта" },
   Katta: { cyrillic: "Катта" },
 
-  // Profile
   "Shaxsiy ma'lumotlar": { cyrillic: "Шахсий маълумотлар" },
   "Ism familiya": { cyrillic: "Исм фамилия" },
   Lavozim: { cyrillic: "Лавозим" },
@@ -67,7 +69,6 @@ const translations: Record<string, Record<string, string>> = {
   "Logo yuklash": { cyrillic: "Лого юклаш" },
   Filial: { cyrillic: "Филиал" },
 
-  // Nav items
   "Umumiy hisobot": { cyrillic: "Умумий ҳисобот" },
   "Xona yaratish": { cyrillic: "Хона яратиш" },
   "Ofitsiant hisoboti": { cyrillic: "Официант ҳисоботи" },
@@ -84,7 +85,6 @@ const translations: Record<string, Record<string, string>> = {
   "Profil sozlamalari": { cyrillic: "Профил созламалари" },
   "Shaxsiy ma'lumotlarni ko'rish": { cyrillic: "Шахсий маълумотларни кўриш" },
 
-  // Ranges
   "1 hafta": { cyrillic: "1 ҳафта" },
   "1 oy": { cyrillic: "1 ой" },
   "3 oy": { cyrillic: "3 ой" },

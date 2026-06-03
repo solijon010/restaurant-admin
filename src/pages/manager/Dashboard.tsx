@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-    ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell,
-} from 'recharts';
-import { useQuery } from '@tanstack/react-query';
-import { dashboardService } from '@/services/dashboardService';
-import api from '@/lib/api';
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   ArrowUpRight,
   Banknote,
@@ -17,23 +19,20 @@ import {
   Users,
 } from "lucide-react";
 
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBranch } from "@/contexts/BranchContext";
 import { useSettings } from "@/contexts/SettingsContext";
-import { extractPaginated } from "@/lib/api-response";
-import {
-  buildRevenueSeries,
-  filterOrdersByDate,
-  filterOrdersByRange,
-  getFilterBounds,
-  summarizeOrders,
-  todayStr,
-} from "@/lib/order-analytics";
+import { filterOrdersByDate, todayStr } from "@/lib/order-analytics";
 import { formatPrice } from "@/lib/display";
 import { getAllBranchOrders } from "@/lib/orders";
 import { t } from "@/lib/i18n";
+import {
+  DashboardFilter,
+  DashboardFinanceChartPoint,
+  DashboardRangeParams,
+  dashboardService,
+} from "@/services/dashboardService";
 import { UserResponse, userService } from "@/services/userService";
 
 type FilterType = "today" | "yesterday" | "last7" | "last30" | "custom";
@@ -54,7 +53,7 @@ function buildRoomStats(dateOrders: Awaited<ReturnType<typeof getAllBranchOrders
   dateOrders
     .filter((order) => order.status === "SUCCESS")
     .forEach((order) => {
-      const roomName = order.room?.name || "—";
+      const roomName = order.room?.name || "-";
       const orderTotal = order.orderItem.reduce(
         (sum, item) => sum + Number(item.product?.price ?? 0) * Number(item.count ?? 0),
         0,
@@ -71,6 +70,29 @@ function buildRoomStats(dateOrders: Awaited<ReturnType<typeof getAllBranchOrders
   return Array.from(rooms.values()).sort((left, right) => right.sum - left.sum);
 }
 
+function mapFilter(filter: FilterType): DashboardFilter {
+  switch (filter) {
+    case "today":
+      return "today";
+    case "yesterday":
+      return "yesterday";
+    case "last7":
+      return "last7";
+    case "last30":
+      return "last30";
+    case "custom":
+      return "custom";
+  }
+}
+
+function toRevenueChartData(chart: DashboardFinanceChartPoint[]) {
+  return chart.map((point) => ({
+    date: point.date,
+    revenue: Number(point.daromad ?? 0),
+    expense: Number(point.xarajat ?? 0),
+  }));
+}
+
 export default function ManagerDashboard() {
   const { language } = useSettings();
   const { selectedBranchId } = useBranch();
@@ -82,32 +104,45 @@ export default function ManagerDashboard() {
   const [appliedTo, setAppliedTo] = useState("");
   const [dayDate, setDayDate] = useState(todayStr);
 
-  const rangeBounds = getFilterBounds(activeFilter, appliedFrom, appliedTo);
   const isCustomReady = activeFilter !== "custom" || (!!appliedFrom && !!appliedTo);
 
   const { data: staff = [], isLoading: staffLoading } = useQuery({
     queryKey: ["branch-staff", selectedBranchId],
-    queryFn: async () =>
-      extractPaginated<UserResponse>((await userService.getStaffByBranch(selectedBranchId)).data).items,
+    queryFn: async () => {
+      const response = await userService.getStaffByBranch(selectedBranchId);
+      const payload = response.data as { data?: UserResponse[]; value?: UserResponse[] };
+      return payload.data ?? payload.value ?? [];
+    },
     enabled: !!selectedBranchId,
   });
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ["dashboard-analytics", selectedBranchId, activeFilter, appliedFrom, appliedTo],
     queryFn: async () => {
-      if (!selectedBranchId || !rangeBounds) {
+      if (!selectedBranchId) {
         return { revenueData: [], totalRevenue: 0, totalOrders: 0, averageOrder: 0 };
       }
 
-      const branchOrders = await getAllBranchOrders(selectedBranchId, { limit: 100 });
-      const filteredOrders = filterOrdersByRange(branchOrders.items, rangeBounds.start, rangeBounds.end);
-      const summary = summarizeOrders(filteredOrders);
+      const params: DashboardRangeParams =
+        activeFilter === "custom"
+          ? { filter: "custom", from: appliedFrom, to: appliedTo }
+          : { filter: mapFilter(activeFilter) };
+
+      const [financeResponse, waiterResponse] = await Promise.all([
+        dashboardService.getFinance(params),
+        userService.getWaiterInfo(selectedBranchId, params),
+      ]);
+
+      const finance = financeResponse.data;
+      const waiters = waiterResponse.data.data ?? [];
+      const totalRevenue = Number(finance.summary?.totalRevenue ?? 0);
+      const totalOrders = waiters.reduce((sum, waiter) => sum + Number(waiter.totalOrders ?? 0), 0);
 
       return {
-        revenueData: buildRevenueSeries(summary.successfulOrders, rangeBounds.start, rangeBounds.end),
-        totalRevenue: summary.totalRevenue,
-        totalOrders: summary.totalOrders,
-        averageOrder: summary.averageOrder,
+        revenueData: toRevenueChartData(finance.chart ?? []),
+        totalRevenue,
+        totalOrders,
+        averageOrder: totalOrders > 0 ? totalRevenue / totalOrders : 0,
       };
     },
     enabled: !!selectedBranchId && isCustomReady,
@@ -140,7 +175,7 @@ export default function ManagerDashboard() {
             {t("Bosh sahifa", language)}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Filial bo'yicha savdo tahlili va kunlik statistika
+            Filial bo&apos;yicha savdo tahlili va kunlik statistika
           </p>
         </div>
       </div>
@@ -251,7 +286,7 @@ export default function ManagerDashboard() {
       <div className="overflow-hidden rounded-xl border border-border bg-card">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
           <div>
-            <p className="text-sm font-semibold">Kunlik savdo - xona bo'yicha</p>
+            <p className="text-sm font-semibold">Kunlik savdo - xona bo&apos;yicha</p>
             {!dayLoading && dayOrdersCount > 0 && (
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {dayOrdersCount} ta yakunlangan buyurtma ·{" "}
@@ -279,7 +314,7 @@ export default function ManagerDashboard() {
         ) : roomStats.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
             <Home className="h-8 w-8 opacity-20" />
-            <p className="text-sm">Bu kunda yakunlangan buyurtma yo'q</p>
+            <p className="text-sm">Bu kunda yakunlangan buyurtma yo&apos;q</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -360,7 +395,7 @@ export default function ManagerDashboard() {
                     setAppliedTo(toDate);
                   }}
                 >
-                  Qo'llash
+                  Qo&apos;llash
                 </Button>
               </div>
             )}
@@ -373,83 +408,58 @@ export default function ManagerDashboard() {
               <Home className="h-8 w-8 opacity-20" />
               <p className="text-sm">Filial tanlang</p>
             </div>
-
-            {/* ── Haftalik daromad + Kategoriya pie ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-                {/* Line chart — Haftalik daromad */}
-                <div style={{ background: '#fff', borderRadius: 16, border: '1px solid hsl(var(--border))', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-                    <p style={{ fontSize: 15, fontWeight: 600, color: 'hsl(var(--foreground))', margin: '0 0 16px' }}>Haftalik daromad</p>
-                    <div style={{ height: 220 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <LineChart
-                                data={[
-                                    { name: 'Dush', revenue: revenueData.find(d => d.date?.includes('Mon'))?.revenue ?? (totalRevenue * 0.12) },
-                                    { name: 'Sesh', revenue: revenueData.find(d => d.date?.includes('Tue'))?.revenue ?? (totalRevenue * 0.10) },
-                                    { name: 'Chor', revenue: revenueData.find(d => d.date?.includes('Wed'))?.revenue ?? (totalRevenue * 0.14) },
-                                    { name: 'Pay',  revenue: revenueData.find(d => d.date?.includes('Thu'))?.revenue ?? (totalRevenue * 0.11) },
-                                    { name: 'Jum',  revenue: revenueData.find(d => d.date?.includes('Fri'))?.revenue ?? (totalRevenue * 0.18) },
-                                    { name: 'Shan', revenue: revenueData.find(d => d.date?.includes('Sat'))?.revenue ?? (totalRevenue * 0.21) },
-                                    { name: 'Yak',  revenue: revenueData.find(d => d.date?.includes('Sun'))?.revenue ?? (totalRevenue * 0.14) },
-                                ].map(d => ({ ...d, revenue: d.revenue || Math.round(totalRevenue / 7) }))}
-                                margin={{ top: 10, right: 10, bottom: 0, left: 0 }}
-                            >
-                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
-                                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false}
-                                    tickFormatter={v => v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v/1_000).toFixed(0)}K` : String(v)} />
-                                <Tooltip
-                                    formatter={(v: number) => [`${(v/1_000_000).toFixed(2)} so'm`, 'revenue']}
-                                    labelStyle={{ color: '#0f172a', fontWeight: 600 }}
-                                    contentStyle={{ border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 13 }}
-                                />
-                                <Line type="monotone" dataKey="revenue" stroke="#0EA5E9" strokeWidth={2.5}
-                                    dot={{ r: 4, fill: '#0EA5E9', stroke: '#fff', strokeWidth: 2 }}
-                                    activeDot={{ r: 6, fill: '#0EA5E9' }} />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                {/* Pie chart — Kategoriya bo'yicha savdo */}
-                <div style={{ background: '#fff', borderRadius: 16, border: '1px solid hsl(var(--border))', padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-                    <p style={{ fontSize: 15, fontWeight: 600, color: 'hsl(var(--foreground))', margin: '0 0 16px' }}>Kategoriya bo'yicha savdo</p>
-                    <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={[
-                                        { name: 'Milliy taomlar', value: 45, color: '#4F81BD' },
-                                        { name: 'Ichimliklar',    value: 20, color: '#70AD47' },
-                                        { name: 'Salatlar',       value: 20, color: '#9B59B6' },
-                                        { name: 'Desert',         value: 15, color: '#F4A460' },
-                                    ]}
-                                    cx="40%" cy="50%"
-                                    outerRadius={90}
-                                    dataKey="value"
-                                    label={({ name, value, cx, x, y }) => (
-                                        <text x={x} y={y} textAnchor={x > cx ? 'start' : 'end'} fill="#64748b" fontSize={12}>
-                                            {`${name} ${value}%`}
-                                        </text>
-                                    )}
-                                    labelLine={{ stroke: '#cbd5e1' }}
-                                >
-                                    {[
-                                        { name: 'Milliy taomlar', value: 45, color: '#4F81BD' },
-                                        { name: 'Ichimliklar',    value: 20, color: '#70AD47' },
-                                        { name: 'Salatlar',       value: 20, color: '#9B59B6' },
-                                        { name: 'Desert',         value: 15, color: '#F4A460' },
-                                    ].map((entry, i) => (
-                                        <Cell key={i} fill={entry.color} stroke="#fff" strokeWidth={2} />
-                                    ))}
-                                </Pie>
-                                <Tooltip formatter={(v: number) => [`${v}%`, '']} contentStyle={{ border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 13 }} />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
+          ) : analyticsLoading ? (
+            <div className="flex h-56 items-center justify-center">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
-
+          ) : activeFilter === "custom" && !isCustomReady ? (
+            <div className="flex h-56 flex-col items-center justify-center gap-2 text-muted-foreground">
+              <Calendar className="h-8 w-8 opacity-20" />
+              <p className="text-sm">Sana oralig&apos;ini tanlang</p>
+            </div>
+          ) : revenueData.length === 0 ? (
+            <div className="flex h-56 flex-col items-center justify-center gap-2 text-muted-foreground">
+              <Banknote className="h-8 w-8 opacity-20" />
+              <p className="text-sm">Ma&apos;lumot topilmadi</p>
+            </div>
+          ) : (
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={revenueData} barCategoryGap="30%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                    tickLine={false}
+                    axisLine={false}
+                    interval={Math.max(0, Math.floor(revenueData.length / 8))}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) =>
+                      value >= 1_000_000
+                        ? `${(value / 1_000_000).toFixed(1)}M`
+                        : value >= 1_000
+                          ? `${(value / 1_000).toFixed(0)}K`
+                          : String(value)
+                    }
+                  />
+                  <Tooltip
+                    formatter={(value: number) => formatPrice(value)}
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                    }}
+                  />
+                  <Bar dataKey="revenue" fill="#0EA5E9" name={t("Daromad", language)} radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,7 +1,6 @@
-import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { AuthData, AuthUser, getAuth, saveAuth, clearAuth, extractUserFromResponse, UserRole } from '@/lib/auth';
+import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { AuthData, AuthUser, getAuth, saveAuth, clearAuth, extractUserFromResponse } from '@/lib/auth';
 import { authService } from '@/services/authService';
-import { userService } from '@/services/userService';
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -20,8 +19,6 @@ const defaultValue: AuthContextType = {
 };
 
 const AuthContext = createContext<AuthContextType>(defaultValue);
-const SUPERADMIN_REPAIR_KEY = 'rms_superadmin_seed_sync_v1';
-const SUPERADMIN_REPAIR_ID = '2b022e30-925a-4454-a6ed-917aa9db529e';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [authData, setAuthData] = useState<AuthData | null>(getAuth);
@@ -58,62 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return next;
     });
   }, []);
-
-  useEffect(() => {
-    if (!authData?.user || authData.user.id !== SUPERADMIN_REPAIR_ID) return;
-
-    try {
-      if (localStorage.getItem(SUPERADMIN_REPAIR_KEY) === 'done') return;
-    } catch {
-      // Ignore storage read failures and continue with in-memory auth data.
-    }
-
-    let active = true;
-
-    // Temporary repair for the seeded backend superadmin account.
-    userService
-      .updateManager(authData.user.id, {
-        firstName: 'Ikromov',
-        lastName: 'Solijon',
-        phoneNumer: '+998995560004',
-        password: 'password',
-      })
-      .then(() => {
-        if (!active) return;
-
-        const next: AuthData = {
-          ...authData,
-          user: {
-            ...authData.user,
-            firstName: 'Ikromov',
-            lastName: 'Solijon',
-            phone: '+998995560004',
-          },
-        };
-
-        saveAuth(next);
-        setAuthData(next);
-
-        try {
-          localStorage.setItem(SUPERADMIN_REPAIR_KEY, 'done');
-        } catch {
-          // Ignore storage write failures after repair.
-        }
-      })
-      .catch(() => {
-        if (!active) return;
-
-        try {
-          localStorage.removeItem(SUPERADMIN_REPAIR_KEY);
-        } catch {
-          // Ignore cleanup failures.
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [authData]);
 
   return (
     <AuthContext.Provider value={{

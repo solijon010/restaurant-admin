@@ -100,7 +100,7 @@ export default function SuperAdminDashboard() {
     queryKey: ["superadmin-dashboard-companies"],
     queryFn: async () =>
       extractPaginated<Company>(
-        (await companyService.getAll({ offcet: 0, limit: 1000 })).data,
+        (await companyService.getAll()).data,
       ),
   });
 

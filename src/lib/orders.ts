@@ -45,7 +45,6 @@ export interface BranchOrdersQuery {
   page?: number;
   limit?: number;
   search?: string;
-  status?: string;
 }
 
 export async function getBranchOrdersPage(
