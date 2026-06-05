@@ -8,10 +8,10 @@ import { getRoleBasePath, hasImplementedDashboard } from '@/lib/auth';
 import { t } from '@/lib/i18n';
 
 export default function Login() {
-  const [phone, setPhone]     = useState('');
-  const [pass, setPass]       = useState('');
-  const [show, setShow]       = useState(false);
-  const [error, setError]     = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, isAuthenticated, user } = useAuth();
   const { language } = useSettings();
@@ -336,7 +336,6 @@ export default function Login() {
                 />
               </div>
             </div>
-          </div>
 
             <div>
               <label
@@ -423,30 +422,6 @@ export default function Login() {
                 </button>
               </div>
             </div>
-          )}
-
-          <button type="submit" disabled={loading} style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            padding: '13px', borderRadius: 12, border: 'none', marginTop: 4,
-            background: loading ? '#d1fae5' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            color: loading ? '#6b7280' : '#fff',
-            fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer',
-            boxShadow: loading ? 'none' : '0 6px 20px rgba(16,185,129,0.4)',
-            transition: 'all 0.15s',
-          }}
-            onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(16,185,129,0.5)'; } }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = loading ? 'none' : '0 6px 20px rgba(16,185,129,0.4)'; }}
-          >
-            {loading ? 'Kirmoqda...' : <>{t('Kirish', language)} <ArrowRight size={17} /></>}
-          </button>
-        </form>
-
-        {/* Divider */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '24px 0 16px' }}>
-          <div style={{ flex: 1, height: 1, background: '#f1f5f9' }} />
-          <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.1em' }}>DEMO</span>
-          <div style={{ flex: 1, height: 1, background: '#f1f5f9' }} />
-        </div>
 
             {error && (
               <p

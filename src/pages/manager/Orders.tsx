@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
     Loader2, Search, MoreVertical, Eye, X,
     ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-    Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart,
+    Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart, Settings2,
 } from 'lucide-react';
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { extractArray } from '@/lib/api-response';
 import { formatPrice } from '@/lib/display';
 import { filterOrdersByDate, getOrderDateKey, todayStr } from '@/lib/order-analytics';
-import { BIRD_REPORT_GROUPS, buildMenuGroupStats, isTrackedMenuProduct, MenuCategoryRecord, SHASHLIK_REPORT_GROUPS } from '@/lib/menu-report';
+import { BIRD_REPORT_GROUPS, buildMenuGroupStats, buildSuggestedMenuAssignments, isTrackedMenuProduct, MenuCategoryRecord, MenuGroupAssignments, MenuReportGroup, SHASHLIK_REPORT_GROUPS } from '@/lib/menu-report';
 import { BranchOrder, BranchOrdersQuery, getAllBranchOrders, getBranchOrdersPage, getOrderTotal } from '@/lib/orders';
 import { Card } from '@/components/ui/card';
 import { categoryService } from '@/services/categoryService';
@@ -28,8 +28,13 @@ import { ProductRecord, productService } from '@/services/productService';
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Order = BranchOrder;
 type OrderStatus = BranchOrder['status'];
+type BranchReportAssignments = Record<string, MenuGroupAssignments>;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
+const REPORT_GROUP_STORAGE_KEY = 'rms_report_group_assignments_v1';
+const UNASSIGNED_GROUP = '__unassigned__';
+const ALL_REPORT_GROUPS = [...SHASHLIK_REPORT_GROUPS, ...BIRD_REPORT_GROUPS];
+
 const STATUS_LABELS: Record<OrderStatus, string> = {
     SUCCESS: 'Yakunlangan', PENDING: 'Kutilmoqda', CANCELED: 'Bekor qilingan',
 };
@@ -164,6 +169,32 @@ function buildStats(orders: Order[], categories: Category[]) {
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
+function loadStoredAssignments(): BranchReportAssignments {
+    if (typeof window === 'undefined') return {};
+
+    try {
+        const raw = window.localStorage.getItem(REPORT_GROUP_STORAGE_KEY);
+        if (!raw) return {};
+
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+        return {};
+    }
+}
+
+function persistAssignments(value: BranchReportAssignments) {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(REPORT_GROUP_STORAGE_KEY, JSON.stringify(value));
+}
+
+function buildAssignmentDraft(products: ProductRecord[], assignments: MenuGroupAssignments) {
+    return products.reduce<MenuGroupAssignments>((acc, product) => {
+        acc[product.id] = assignments[product.id] ?? '';
+        return acc;
+    }, {});
+}
+
 export default function ManagerOrders() {
     const { selectedBranchId } = useBranch();
 
@@ -175,6 +206,10 @@ export default function ManagerOrders() {
     const [detailOrder, setDetailOrder]   = useState<Order | null>(null);
     const [shashlikDate, setShashlikDate] = useState(todayStr);
     const [qanotDate, setQanotDate]       = useState(todayStr);
+    const [isMappingDialogOpen, setIsMappingDialogOpen] = useState(false);
+    const [mappingSearch, setMappingSearch] = useState('');
+    const [storedAssignments, setStoredAssignments] = useState<BranchReportAssignments>(() => loadStoredAssignments());
+    const [draftAssignments, setDraftAssignments] = useState<MenuGroupAssignments>({});
 
     useEffect(() => { setPage(1); }, [statusFilter, dateFilter, selectedBranchId]);
 
@@ -276,14 +311,89 @@ export default function ManagerOrders() {
         () => reportCatalog?.products ?? [],
         [reportCatalog?.products],
     );
+    const reportCategoryMap = useMemo(
+        () => new Map(reportCategories.map((category) => [category.id, category.name])),
+        [reportCategories],
+    );
+    const storedBranchAssignments = selectedBranchId ? storedAssignments[selectedBranchId] ?? null : null;
+    const suggestedAssignments = useMemo(
+        () => buildSuggestedMenuAssignments(reportProducts, reportCategories, ALL_REPORT_GROUPS),
+        [reportCategories, reportProducts],
+    );
+    const effectiveAssignments = useMemo(
+        () => ({ ...suggestedAssignments, ...(storedBranchAssignments ?? {}) }),
+        [storedBranchAssignments, suggestedAssignments],
+    );
+    const mappingCounts = useMemo(
+        () => ALL_REPORT_GROUPS.reduce<Record<string, number>>((acc, group) => {
+            acc[group.id] = Object.values(draftAssignments).filter((value) => value === group.id).length;
+            return acc;
+        }, {}),
+        [draftAssignments],
+    );
+    const filteredMappingProducts = useMemo(() => {
+        const term = mappingSearch.trim().toLowerCase();
+        const assignments = isMappingDialogOpen ? draftAssignments : effectiveAssignments;
+
+        return [...reportProducts]
+            .sort((left, right) => {
+                const leftAssigned = assignments[left.id] ? 1 : 0;
+                const rightAssigned = assignments[right.id] ? 1 : 0;
+                if (leftAssigned !== rightAssigned) return rightAssigned - leftAssigned;
+                return left.name.localeCompare(right.name, 'uz');
+            })
+            .filter((product) => {
+                if (!term) return true;
+
+                const categoryName = reportCategoryMap.get(product.productCategoryId) ?? '';
+                const haystack = `${product.name} ${categoryName}`.toLowerCase();
+                return haystack.includes(term);
+            });
+    }, [draftAssignments, effectiveAssignments, isMappingDialogOpen, mappingSearch, reportCategoryMap, reportProducts]);
+
+    useEffect(() => {
+        if (!isMappingDialogOpen) return;
+        setMappingSearch('');
+        setDraftAssignments(buildAssignmentDraft(reportProducts, effectiveAssignments));
+    }, [effectiveAssignments, isMappingDialogOpen, reportProducts]);
+
+    const openMappingDialog = () => {
+        setDraftAssignments(buildAssignmentDraft(reportProducts, effectiveAssignments));
+        setMappingSearch('');
+        setIsMappingDialogOpen(true);
+    };
+
+    const updateDraftAssignment = (productId: string, value: string) => {
+        setDraftAssignments((prev) => ({
+            ...prev,
+            [productId]: value === UNASSIGNED_GROUP ? '' : value,
+        }));
+    };
+
+    const resetDraftAssignments = () => {
+        setDraftAssignments(buildAssignmentDraft(reportProducts, suggestedAssignments));
+    };
+
+    const saveDraftAssignments = () => {
+        if (!selectedBranchId) return;
+
+        const nextAssignments = {
+            ...storedAssignments,
+            [selectedBranchId]: buildAssignmentDraft(reportProducts, draftAssignments),
+        };
+
+        setStoredAssignments(nextAssignments);
+        persistAssignments(nextAssignments);
+        setIsMappingDialogOpen(false);
+    };
 
     const stats = useMemo(
-        () => buildMenuGroupStats(shOrders, reportProducts, reportCategories, SHASHLIK_REPORT_GROUPS),
-        [reportCategories, reportProducts, shOrders],
+        () => buildMenuGroupStats(shOrders, reportProducts, reportCategories, SHASHLIK_REPORT_GROUPS, effectiveAssignments),
+        [effectiveAssignments, reportCategories, reportProducts, shOrders],
     );
     const qoStats = useMemo(
-        () => buildMenuGroupStats(qoOrders, reportProducts, reportCategories, BIRD_REPORT_GROUPS),
-        [qoOrders, reportCategories, reportProducts],
+        () => buildMenuGroupStats(qoOrders, reportProducts, reportCategories, BIRD_REPORT_GROUPS, effectiveAssignments),
+        [effectiveAssignments, qoOrders, reportCategories, reportProducts],
     );
 
     const grandOrders = stats.reduce((sum, item) => sum + item.orderCount, 0);
@@ -502,6 +612,10 @@ export default function ManagerOrders() {
                         <div className="flex flex-wrap items-center gap-3 mb-1">
                             <Input type="date" value={shashlikDate}
                                 onChange={e => setShashlikDate(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
+                            <Button type="button" variant="outline" className="h-9 gap-2" onClick={openMappingDialog}>
+                                <Settings2 className="h-4 w-4" />
+                                Guruhlarni sozlash
+                            </Button>
                             {!shLoading && grandQuantity > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
                                     <span className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full">
@@ -602,6 +716,10 @@ export default function ManagerOrders() {
                         <div className="flex flex-wrap items-center gap-3 mb-1">
                             <Input type="date" value={qanotDate}
                                 onChange={e => setQanotDate(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
+                            <Button type="button" variant="outline" className="h-9 gap-2" onClick={openMappingDialog}>
+                                <Settings2 className="h-4 w-4" />
+                                Guruhlarni sozlash
+                            </Button>
                             {!qoLoading && qoQuantity > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
                                     <span className="flex items-center gap-1.5 text-sm font-semibold text-yellow-600 bg-yellow-50 border border-yellow-200 px-3 py-1.5 rounded-full">
@@ -698,6 +816,100 @@ export default function ManagerOrders() {
             </Tabs>
 
             {/* ═══ DETAIL SHEET ═══ */}
+            <Dialog open={isMappingDialogOpen} onOpenChange={setIsMappingDialogOpen}>
+                <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden">
+                    <DialogHeader>
+                        <DialogTitle>Hisobot guruhlarini sozlash</DialogTitle>
+                        <DialogDescription>
+                            Har bir filial uchun mahsulotlarni kerakli hisobot guruhiga biriktiring. Hisobot endi nomga emas, tanlangan mahsulotga qarab hisoblanadi.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 overflow-hidden">
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    value={mappingSearch}
+                                    onChange={(event) => setMappingSearch(event.target.value)}
+                                    placeholder="Mahsulot yoki kategoriya bo'yicha qidiring"
+                                    className="pl-9"
+                                />
+                            </div>
+                            <Button type="button" variant="outline" onClick={resetDraftAssignments}>
+                                Standart taklifni qayta yuklash
+                            </Button>
+                            <Button type="button" onClick={saveDraftAssignments}>
+                                Saqlash
+                            </Button>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                            {ALL_REPORT_GROUPS.map((group: MenuReportGroup) => (
+                                <span
+                                    key={group.id}
+                                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${group.badge}`}
+                                >
+                                    <span className={`h-2.5 w-2.5 rounded-full ${group.dot}`} />
+                                    {group.label}: {mappingCounts[group.id] ?? 0} ta mahsulot
+                                </span>
+                            ))}
+                        </div>
+
+                        <div className="overflow-auto rounded-xl border border-border/60">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-muted/30">
+                                        <TableHead className="min-w-[220px]">Mahsulot</TableHead>
+                                        <TableHead className="min-w-[180px]">Kategoriya</TableHead>
+                                        <TableHead className="min-w-[220px]">Hisobot guruhi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredMappingProducts.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="py-10 text-center text-sm text-muted-foreground">
+                                                Mos mahsulot topilmadi
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : filteredMappingProducts.map((product) => (
+                                        <TableRow key={product.id}>
+                                            <TableCell>
+                                                <div className="space-y-1">
+                                                    <p className="font-medium">{product.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{formatPrice(Number(product.price ?? 0))}</p>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-sm text-muted-foreground">
+                                                {reportCategoryMap.get(product.productCategoryId) ?? '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Select
+                                                    value={draftAssignments[product.id] || UNASSIGNED_GROUP}
+                                                    onValueChange={(value) => updateDraftAssignment(product.id, value)}
+                                                >
+                                                    <SelectTrigger className="w-full">
+                                                        <SelectValue placeholder="Ajratilmagan" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value={UNASSIGNED_GROUP}>Ajratilmagan</SelectItem>
+                                                        {ALL_REPORT_GROUPS.map((group: MenuReportGroup) => (
+                                                            <SelectItem key={group.id} value={group.id}>
+                                                                {group.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             <Dialog open={!!detailOrder} onOpenChange={() => setDetailOrder(null)}>
                 <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto p-0 gap-0 [&>button]:hidden">
                     {detailOrder && (
@@ -767,7 +979,7 @@ export default function ManagerOrders() {
                                     </p>
                                     <div className="rounded-xl border border-border overflow-hidden">
                                         {detailOrder.orderItem.map((oi, i) => {
-                                            const isSpecial = isTrackedMenuProduct(oi.product, reportProducts, reportCategories);
+                                            const isSpecial = isTrackedMenuProduct(oi.product, reportProducts, reportCategories, effectiveAssignments);
                                             return (
                                                 <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < detailOrder.orderItem.length - 1 ? 'border-b border-border' : ''} ${isSpecial ? 'bg-amber-50' : i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}`}>
                                                     <div className="flex items-center gap-3 min-w-0">

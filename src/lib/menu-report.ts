@@ -34,6 +34,8 @@ export interface MenuGroupStat {
   tables: MenuTableStat[];
 }
 
+export type MenuGroupAssignments = Record<string, string>;
+
 interface ProductMeta {
   id: string;
   normalizedName: string;
@@ -43,6 +45,7 @@ interface ProductMeta {
 interface GroupLookup {
   byId: Map<string, string>;
   byName: Map<string, string>;
+  ignoredIds: Set<string>;
 }
 
 export const SHASHLIK_REPORT_GROUPS: MenuReportGroup[] = [
@@ -135,10 +138,13 @@ function buildLookup(
   products: ProductRecord[],
   categories: MenuCategoryRecord[],
   groups: MenuReportGroup[],
+  assignments: MenuGroupAssignments = {},
 ): GroupLookup {
   const categoryMap = new Map(categories.map((category) => [category.id, normalizeText(category.name)]));
   const byId = new Map<string, string>();
   const byName = new Map<string, string>();
+  const ignoredIds = new Set<string>();
+  const groupIds = new Set(groups.map((group) => group.id));
 
   products.forEach((product) => {
     const meta: ProductMeta = {
@@ -147,6 +153,19 @@ function buildLookup(
       normalizedCategoryName: categoryMap.get(product.productCategoryId) ?? "",
     };
 
+    if (Object.prototype.hasOwnProperty.call(assignments, product.id)) {
+      const assignedGroupId = assignments[product.id];
+
+      if (!assignedGroupId || !groupIds.has(assignedGroupId)) {
+        ignoredIds.add(product.id);
+        return;
+      }
+
+      byId.set(product.id, assignedGroupId);
+      byName.set(meta.normalizedName, assignedGroupId);
+      return;
+    }
+
     const matchedGroup = groups.find((group) => resolveGroupId(meta, group));
     if (!matchedGroup) return;
 
@@ -154,7 +173,7 @@ function buildLookup(
     byName.set(meta.normalizedName, matchedGroup.id);
   });
 
-  return { byId, byName };
+  return { byId, byName, ignoredIds };
 }
 
 function resolveOrderItemGroup(
@@ -162,6 +181,10 @@ function resolveOrderItemGroup(
   lookup: GroupLookup,
 ) {
   const productId = item.product?.id;
+  if (productId && lookup.ignoredIds.has(productId)) {
+    return null;
+  }
+
   if (productId && lookup.byId.has(productId)) {
     return lookup.byId.get(productId) ?? null;
   }
@@ -175,9 +198,14 @@ export function isTrackedMenuProduct(
   product: { id?: string; name?: string } | null | undefined,
   products: ProductRecord[],
   categories: MenuCategoryRecord[],
+  assignments: MenuGroupAssignments = {},
 ) {
   if (!product) return false;
-  const lookup = buildLookup(products, categories, [...SHASHLIK_REPORT_GROUPS, ...BIRD_REPORT_GROUPS]);
+  const lookup = buildLookup(products, categories, [...SHASHLIK_REPORT_GROUPS, ...BIRD_REPORT_GROUPS], assignments);
+
+  if (product.id && lookup.ignoredIds.has(product.id)) {
+    return false;
+  }
 
   if (product.id && lookup.byId.has(product.id)) {
     return true;
@@ -186,13 +214,23 @@ export function isTrackedMenuProduct(
   return lookup.byName.has(normalizeText(product.name));
 }
 
+export function buildSuggestedMenuAssignments(
+  products: ProductRecord[],
+  categories: MenuCategoryRecord[],
+  groups: MenuReportGroup[],
+): MenuGroupAssignments {
+  const lookup = buildLookup(products, categories, groups);
+  return Object.fromEntries(lookup.byId.entries());
+}
+
 export function buildMenuGroupStats(
   orders: BranchOrder[],
   products: ProductRecord[],
   categories: MenuCategoryRecord[],
   groups: MenuReportGroup[],
+  assignments: MenuGroupAssignments = {},
 ): MenuGroupStat[] {
-  const lookup = buildLookup(products, categories, groups);
+  const lookup = buildLookup(products, categories, groups, assignments);
 
   return groups.map((group) => {
     const tableMap = new Map<string, MenuTableStat>();
