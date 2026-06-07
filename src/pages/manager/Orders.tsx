@@ -62,21 +62,21 @@ const PREDEFINED_CATEGORIES = [
         label: 'Qiyma shashlik',
         match: (n: string) => n.includes('qiyma'),
         dot: 'bg-orange-500',
-        badge: 'bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800',
+        badge: 'bg-orange-50 dark:bg-muted/60 text-orange-700 dark:text-foreground border-orange-200 dark:border-border',
     },
     {
         id: 'gosht-shashlik',
         label: "Go'sht shashlik",
         match: (n: string) => n.includes('shashlik') && !n.includes('qiyma') && !n.includes("qo'y") && !n.includes('qoy'),
         dot: 'bg-red-500',
-        badge: 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800',
+        badge: 'bg-red-50 dark:bg-muted/60 text-red-700 dark:text-foreground border-red-200 dark:border-border',
     },
     {
         id: 'qoy-shashlik',
         label: "Qo'y go'shtidan shashlik",
         match: (n: string) => n.includes("qo'y") || n.includes('qoy'),
         dot: 'bg-amber-500',
-        badge: 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
+        badge: 'bg-amber-50 dark:bg-muted/60 text-amber-700 dark:text-foreground border-amber-200 dark:border-border',
     },
 ];
 
@@ -87,14 +87,14 @@ const QANOT_ORDAK_CATEGORIES = [
         label: 'Qanot',
         match: (n: string) => n.includes('qanot'),
         dot: 'bg-yellow-500',
-        badge: 'bg-yellow-50 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800',
+        badge: 'bg-yellow-50 dark:bg-muted/60 text-yellow-700 dark:text-foreground border-yellow-200 dark:border-border',
     },
     {
         id: 'ordak',
         label: "O'rdak",
         match: (n: string) => n.includes("o'rdak") || n.includes('ordak'),
         dot: 'bg-lime-600',
-        badge: 'bg-lime-50 dark:bg-lime-950/30 text-lime-700 dark:text-lime-400 border-lime-200 dark:border-lime-800',
+        badge: 'bg-lime-50 dark:bg-muted/60 text-lime-700 dark:text-foreground border-lime-200 dark:border-border',
     },
 ];
 
@@ -504,10 +504,10 @@ export default function ManagerOrders() {
                                 onChange={e => setShashlikDate(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
                             {!shLoading && grandQuantity > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
-                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 px-3 py-1.5 rounded-full">
+                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 dark:text-foreground bg-orange-50 dark:bg-muted/60 border border-orange-200 dark:border-border px-3 py-1.5 rounded-full">
                                         <Flame className="h-3.5 w-3.5" />{grandOrders} ta zakaz
                                     </span>
-                                    <span className="text-sm font-semibold text-foreground bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 px-3 py-1.5 rounded-full">
+                                    <span className="text-sm font-semibold text-foreground bg-orange-50 dark:bg-muted/60 border border-orange-200 dark:border-border px-3 py-1.5 rounded-full">
                                         {grandQuantity} ta porsiya
                                     </span>
                                     <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">
@@ -604,10 +604,10 @@ export default function ManagerOrders() {
                                 onChange={e => setQanotDate(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
                             {!qoLoading && qoQuantity > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
-                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 px-3 py-1.5 rounded-full">
+                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-yellow-600 dark:text-foreground bg-yellow-50 dark:bg-muted/60 border border-yellow-200 dark:border-border px-3 py-1.5 rounded-full">
                                         <Bird className="h-3.5 w-3.5" />{qoOrderTotal} ta zakaz
                                     </span>
-                                    <span className="text-sm font-semibold text-foreground bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 px-3 py-1.5 rounded-full">
+                                    <span className="text-sm font-semibold text-foreground bg-yellow-50 dark:bg-muted/60 border border-yellow-200 dark:border-border px-3 py-1.5 rounded-full">
                                         {qoQuantity} ta porsiya
                                     </span>
                                     <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">

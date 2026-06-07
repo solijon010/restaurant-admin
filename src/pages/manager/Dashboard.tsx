@@ -449,6 +449,7 @@ export default function ManagerDashboard() {
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "8px",
                       fontSize: "12px",
+                      color: "hsl(var(--foreground))",
                     }}
                   />
                   <Bar dataKey="revenue" fill="#0EA5E9" name={t("Daromad", language)} radius={[6, 6, 0, 0]} />

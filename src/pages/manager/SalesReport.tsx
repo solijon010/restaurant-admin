@@ -339,9 +339,10 @@ export default function SalesReport() {
                       formatter={(value: number) => formatPrice(value)}
                       contentStyle={{
                         background: "hsl(var(--card))",
-                        border: "1px solid hsl(222,12%,90%)",
+                        border: "1px solid hsl(var(--border))",
                         borderRadius: "10px",
                         fontSize: "12px",
+                        color: "hsl(var(--foreground))",
                       }}
                     />
                     <Bar dataKey="revenue" fill="hsl(32,95%,52%)" name="Daromad" radius={[5, 5, 0, 0]} />
@@ -390,6 +391,7 @@ export default function SalesReport() {
                       border: "1px solid hsl(var(--border))",
                       borderRadius: 10,
                       fontSize: 12,
+                      color: "hsl(var(--foreground))",
                     }}
                   />
                   <Area
@@ -512,6 +514,7 @@ export default function SalesReport() {
                       border: "1px solid hsl(var(--border))",
                       borderRadius: 10,
                       fontSize: 12,
+                      color: "hsl(var(--foreground))",
                     }}
                   />
                 </PieChart>
@@ -554,6 +557,7 @@ export default function SalesReport() {
                       border: "1px solid hsl(var(--border))",
                       borderRadius: 10,
                       fontSize: 12,
+                      color: "hsl(var(--foreground))",
                     }}
                   />
                   <Bar dataKey="sum" fill="#0EA5E9" radius={[0, 6, 6, 0]} name="Daromad" />
