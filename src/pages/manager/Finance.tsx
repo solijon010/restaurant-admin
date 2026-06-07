@@ -268,21 +268,21 @@ export default function Finance() {
   const { data: expandedOrders = [], isLoading: expandedLoading } = useQuery({
     queryKey: ["waiter-room-breakdown", selectedBranchId, expandedWaiter, timeType, fromDate, toDate],
     queryFn: async () => {
-      const result = await getAllBranchOrders(selectedBranchId, { limit: 200 });
+      const result = await getAllBranchOrders(selectedBranchId, { limit: 500 });
       const bounds = getDateBounds(timeType, fromDate, toDate);
       const waiter = waitersRaw.find((w) => w.waiterId === expandedWaiter);
+      const isAllWaiters = !waiter || waiter.fullName.toLowerCase().includes("barcha");
       return result.items.filter((order) => {
         if (order.status !== "SUCCESS") return false;
         if (bounds) {
           const d = new Date(order.createdAt);
           if (d < bounds.start || d > bounds.end) return false;
         }
-        if (waiter) {
-          const nameParts = waiter.fullName.toLowerCase().split(" ");
+        if (!isAllWaiters && waiter) {
+          const nameParts = waiter.fullName.toLowerCase().split(" ").filter(Boolean);
           const orderName = `${order.user?.firstName ?? ""} ${order.user?.lastName ?? ""}`.toLowerCase();
-          if (order.user?.id && order.user.id !== expandedWaiter &&
-              !nameParts.some((p) => orderName.includes(p))) return false;
-          if (!order.user?.id && !nameParts.some((p) => orderName.includes(p))) return false;
+          if (order.user?.id === expandedWaiter) return true;
+          if (!nameParts.some((p) => p.length > 2 && orderName.includes(p))) return false;
         }
         return true;
       });
