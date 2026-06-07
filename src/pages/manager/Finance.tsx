@@ -130,7 +130,7 @@ function RoomBreakdown({ roomStats, totalKpi, orders }: {
                 <span className="text-sm font-semibold">{room.name}</span>
               </div>
               <div className="flex justify-center">
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/40 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-400">
                   {room.orders} ta
                 </span>
               </div>
@@ -194,7 +194,7 @@ function RoomBreakdown({ roomStats, totalKpi, orders }: {
                         >
                           <span className="text-base font-semibold">{product.name}</span>
                           <div className="flex justify-center">
-                            <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700">
+                            <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/40 px-3 py-1 text-sm font-bold text-emerald-700 dark:text-emerald-400">
                               {product.count} ta
                             </span>
                           </div>
@@ -211,7 +211,7 @@ function RoomBreakdown({ roomStats, totalKpi, orders }: {
                         </div>
                       );
                     })}
-                    <div className="mt-1 grid grid-cols-4 items-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5">
+                    <div className="mt-1 grid grid-cols-4 items-center rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 px-4 py-3.5">
                       <span className="text-base font-bold">Jami</span>
                       <div className="flex justify-center">
                         <span className="rounded-full bg-emerald-600 px-3 py-1 text-sm font-bold text-white">
@@ -325,7 +325,7 @@ export default function Finance() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-50">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-50 dark:bg-green-950/30">
             <Wallet className="h-5 w-5 text-green-600" />
           </div>
           <div>
@@ -338,31 +338,31 @@ export default function Finance() {
 
       {!waitersLoading && waitersList.length > 0 && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50 p-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100">
+          <div className="flex items-center gap-3 rounded-xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/20 p-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/40">
               <ShoppingBag className="h-4 w-4 text-emerald-600" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Jami buyurtma</p>
-              <p className="text-lg font-bold text-emerald-700">{totalOrders}</p>
+              <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{totalOrders}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 rounded-xl border border-green-100 bg-green-50 p-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100">
+          <div className="flex items-center gap-3 rounded-xl border border-green-100 dark:border-green-900/40 bg-green-50 dark:bg-green-950/20 p-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/40">
               <TrendingUp className="h-4 w-4 text-green-600" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Jami summa</p>
-              <p className="text-lg font-bold text-green-700">{formatPrice(totalSum)}</p>
+              <p className="text-lg font-bold text-green-700 dark:text-green-400">{formatPrice(totalSum)}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50 p-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100">
+          <div className="flex items-center gap-3 rounded-xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20 p-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/40">
               <Wallet className="h-4 w-4 text-amber-600" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Jami KPI</p>
-              <p className="text-lg font-bold text-amber-700">{formatPrice(totalKpi)}</p>
+              <p className="text-lg font-bold text-amber-700 dark:text-amber-400">{formatPrice(totalKpi)}</p>
             </div>
           </div>
         </div>
@@ -486,7 +486,7 @@ export default function Finance() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="border-emerald-200 bg-emerald-100 text-emerald-700">
+                        <Badge variant="outline" className="border-emerald-200 dark:border-emerald-800 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400">
                           {waiter.totalOrders} ta
                         </Badge>
                       </TableCell>

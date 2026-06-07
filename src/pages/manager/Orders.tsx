@@ -39,17 +39,17 @@ const STATUS_VARIANT: Record<OrderStatus, 'default' | 'secondary' | 'destructive
 
 const StatusBadge = ({ status }: { status: OrderStatus }) => {
     if (status === 'SUCCESS') return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
             Yakunlangan
         </span>
     );
     if (status === 'CANCELED') return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">
             Bekor qilingan
         </span>
     );
     return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
             Kutilmoqda
         </span>
     );
@@ -62,21 +62,21 @@ const PREDEFINED_CATEGORIES = [
         label: 'Qiyma shashlik',
         match: (n: string) => n.includes('qiyma'),
         dot: 'bg-orange-500',
-        badge: 'bg-orange-50 text-orange-700 border-orange-200',
+        badge: 'bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800',
     },
     {
         id: 'gosht-shashlik',
         label: "Go'sht shashlik",
         match: (n: string) => n.includes('shashlik') && !n.includes('qiyma') && !n.includes("qo'y") && !n.includes('qoy'),
         dot: 'bg-red-500',
-        badge: 'bg-red-50 text-red-700 border-red-200',
+        badge: 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800',
     },
     {
         id: 'qoy-shashlik',
         label: "Qo'y go'shtidan shashlik",
         match: (n: string) => n.includes("qo'y") || n.includes('qoy'),
         dot: 'bg-amber-500',
-        badge: 'bg-amber-50 text-amber-700 border-amber-200',
+        badge: 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
     },
 ];
 
@@ -87,14 +87,14 @@ const QANOT_ORDAK_CATEGORIES = [
         label: 'Qanot',
         match: (n: string) => n.includes('qanot'),
         dot: 'bg-yellow-500',
-        badge: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+        badge: 'bg-yellow-50 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800',
     },
     {
         id: 'ordak',
         label: "O'rdak",
         match: (n: string) => n.includes("o'rdak") || n.includes('ordak'),
         dot: 'bg-lime-600',
-        badge: 'bg-lime-50 text-lime-700 border-lime-200',
+        badge: 'bg-lime-50 dark:bg-lime-950/30 text-lime-700 dark:text-lime-400 border-lime-200 dark:border-lime-800',
     },
 ];
 
@@ -308,7 +308,7 @@ export default function ManagerOrders() {
                         value="orders"
                         className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
                             data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm
-                            data-[state=inactive]:bg-background data-[state=inactive]:text-blue-600 data-[state=inactive]:border-blue-200 data-[state=inactive]:hover:bg-blue-50"
+                            data-[state=inactive]:bg-background data-[state=inactive]:text-blue-600 data-[state=inactive]:border-blue-200 data-[state=inactive]:hover:bg-blue-50 dark:data-[state=inactive]:hover:bg-blue-950/30"
                     >
                         <ShoppingCart className="h-4 w-4 shrink-0" />
                         Buyurtmalar tarixi
@@ -317,7 +317,7 @@ export default function ManagerOrders() {
                         value="shashlik"
                         className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
                             data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 data-[state=active]:shadow-sm
-                            data-[state=inactive]:bg-background data-[state=inactive]:text-emerald-600 data-[state=inactive]:border-emerald-200 data-[state=inactive]:hover:bg-emerald-50"
+                            data-[state=inactive]:bg-background data-[state=inactive]:text-emerald-600 data-[state=inactive]:border-emerald-200 data-[state=inactive]:hover:bg-emerald-50 dark:data-[state=inactive]:hover:bg-emerald-950/30"
                     >
                         <Flame className="h-4 w-4 shrink-0" />
                         Shashlik hisobi
@@ -326,7 +326,7 @@ export default function ManagerOrders() {
                         value="qanot-ordak"
                         className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
                             data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:border-amber-500 data-[state=active]:shadow-sm
-                            data-[state=inactive]:bg-background data-[state=inactive]:text-amber-600 data-[state=inactive]:border-amber-200 data-[state=inactive]:hover:bg-amber-50"
+                            data-[state=inactive]:bg-background data-[state=inactive]:text-amber-600 data-[state=inactive]:border-amber-200 data-[state=inactive]:hover:bg-amber-50 dark:data-[state=inactive]:hover:bg-amber-950/30"
                     >
                         <Bird className="h-4 w-4 shrink-0" />
                         Qanot va O'rdak
@@ -504,10 +504,10 @@ export default function ManagerOrders() {
                                 onChange={e => setShashlikDate(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
                             {!shLoading && grandQuantity > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
-                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full">
+                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 px-3 py-1.5 rounded-full">
                                         <Flame className="h-3.5 w-3.5" />{grandOrders} ta zakaz
                                     </span>
-                                    <span className="text-sm font-semibold text-foreground bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full">
+                                    <span className="text-sm font-semibold text-foreground bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 px-3 py-1.5 rounded-full">
                                         {grandQuantity} ta porsiya
                                     </span>
                                     <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">
@@ -604,10 +604,10 @@ export default function ManagerOrders() {
                                 onChange={e => setQanotDate(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
                             {!qoLoading && qoQuantity > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
-                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-yellow-600 bg-yellow-50 border border-yellow-200 px-3 py-1.5 rounded-full">
+                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 px-3 py-1.5 rounded-full">
                                         <Bird className="h-3.5 w-3.5" />{qoOrderTotal} ta zakaz
                                     </span>
-                                    <span className="text-sm font-semibold text-foreground bg-yellow-50 border border-yellow-200 px-3 py-1.5 rounded-full">
+                                    <span className="text-sm font-semibold text-foreground bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 px-3 py-1.5 rounded-full">
                                         {qoQuantity} ta porsiya
                                     </span>
                                     <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">
@@ -730,15 +730,15 @@ export default function ManagerOrders() {
                             <div className="px-6 py-5 space-y-5">
                                 {/* Vaqt va davomiylik */}
                                 <div className="grid grid-cols-3 gap-3">
-                                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-                                        <p className="text-xs text-emerald-600 font-medium mb-1 flex items-center gap-1"><LogIn className="h-3 w-3" /> Kirdi</p>
-                                        <p className="text-base font-bold text-emerald-800">{formatTime(detailOrder.createdAt)}</p>
-                                        <p className="text-xs text-emerald-600 mt-0.5">{formatDate(detailOrder.createdAt)}</p>
+                                    <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-3">
+                                        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-1 flex items-center gap-1"><LogIn className="h-3 w-3" /> Kirdi</p>
+                                        <p className="text-base font-bold text-emerald-800 dark:text-emerald-300">{formatTime(detailOrder.createdAt)}</p>
+                                        <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">{formatDate(detailOrder.createdAt)}</p>
                                     </div>
-                                    <div className="rounded-xl border border-red-200 bg-red-50 p-3">
-                                        <p className="text-xs text-red-600 font-medium mb-1 flex items-center gap-1"><LogOut className="h-3 w-3" /> Chiqdi</p>
-                                        <p className="text-base font-bold text-red-800">{formatTime(detailOrder.endAt)}</p>
-                                        {detailOrder.endAt && <p className="text-xs text-red-600 mt-0.5">{formatDate(detailOrder.endAt)}</p>}
+                                    <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-3">
+                                        <p className="text-xs text-red-600 dark:text-red-400 font-medium mb-1 flex items-center gap-1"><LogOut className="h-3 w-3" /> Chiqdi</p>
+                                        <p className="text-base font-bold text-red-800 dark:text-red-300">{formatTime(detailOrder.endAt)}</p>
+                                        {detailOrder.endAt && <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">{formatDate(detailOrder.endAt)}</p>}
                                     </div>
                                     <div className="rounded-xl border border-border bg-muted/40 p-3">
                                         <p className="text-xs text-muted-foreground font-medium mb-1 flex items-center gap-1"><Clock className="h-3 w-3" /> Davomiylik</p>
@@ -769,13 +769,13 @@ export default function ManagerOrders() {
                                         {detailOrder.orderItem.map((oi, i) => {
                                             const isSpecial = isTrackedMenuProduct(oi.product, reportProducts, reportCategories);
                                             return (
-                                                <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < detailOrder.orderItem.length - 1 ? 'border-b border-border' : ''} ${isSpecial ? 'bg-amber-50' : i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}`}>
+                                                <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < detailOrder.orderItem.length - 1 ? 'border-b border-border' : ''} ${isSpecial ? 'bg-amber-50 dark:bg-amber-950/20' : i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}`}>
                                                     <div className="flex items-center gap-3 min-w-0">
-                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold shrink-0 ${isSpecial ? 'bg-amber-200 text-amber-800' : 'bg-muted text-muted-foreground'}`}>
+                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold shrink-0 ${isSpecial ? 'bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-300' : 'bg-muted text-muted-foreground'}`}>
                                                             {i + 1}
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <p className={`text-sm font-medium truncate ${isSpecial ? 'text-amber-800' : ''}`}>{oi.product?.name || '?'}</p>
+                                                            <p className={`text-sm font-medium truncate ${isSpecial ? 'text-amber-800 dark:text-amber-300' : ''}`}>{oi.product?.name || '?'}</p>
                                                             {oi.product?.unit && <p className="text-xs text-muted-foreground">{oi.product.unit}</p>}
                                                         </div>
                                                     </div>

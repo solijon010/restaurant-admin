@@ -319,7 +319,7 @@ export default function ManagerDashboard() {
                 key={room.name}
                 className="group flex items-center gap-3 rounded-lg border border-border p-3.5 transition-colors hover:bg-muted/30"
               >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold text-muted-foreground transition-colors group-hover:bg-emerald-50 group-hover:text-emerald-600">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold text-muted-foreground transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-950/30 group-hover:text-emerald-600">
                   {index + 1}
                 </div>
                 <div className="min-w-0 flex-1">
