@@ -396,12 +396,15 @@ export default function Finance() {
             </div>
 
             {getDateRangeLabel(timeType, fromDate, toDate) && (
-              <div className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-background px-3 py-1.5">
+              <button
+                onClick={() => setTimeType("custom")}
+                className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-background px-3 py-1.5 transition-colors hover:bg-muted hover:border-emerald-400 hover:text-emerald-600"
+              >
                 <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="text-xs font-medium text-muted-foreground">
                   {getDateRangeLabel(timeType, fromDate, toDate)}
                 </span>
-              </div>
+              </button>
             )}
           </div>
 
