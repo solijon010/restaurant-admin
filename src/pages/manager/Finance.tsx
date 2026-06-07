@@ -29,15 +29,34 @@ const TIME_OPTIONS: { value: TimeType; label: string }[] = [
 
 function mapTimeType(value: TimeType): DashboardFilter {
   switch (value) {
-    case "today":
-      return "today";
-    case "weekly":
-      return "last7";
-    case "monthly":
-      return "last30";
-    case "custom":
-      return "custom";
+    case "today":   return "today";
+    case "weekly":  return "last7";
+    case "monthly": return "last30";
+    case "custom":  return "custom";
   }
+}
+
+function fmt(dateStr: string) {
+  const [y, m, d] = dateStr.split("-");
+  return `${d}.${m}.${y}`;
+}
+
+function getDateRangeLabel(type: TimeType, fromDate: string, toDate: string): string | null {
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  if (type === "today") return fmt(todayStr);
+  if (type === "weekly") {
+    const from = new Date(today); from.setDate(today.getDate() - 6);
+    return `${fmt(from.toISOString().slice(0, 10))} — ${fmt(todayStr)}`;
+  }
+  if (type === "monthly") {
+    const from = new Date(today); from.setDate(today.getDate() - 29);
+    return `${fmt(from.toISOString().slice(0, 10))} — ${fmt(todayStr)}`;
+  }
+  if (type === "custom" && fromDate && toDate) {
+    return `${fmt(fromDate)} — ${fmt(toDate)}`;
+  }
+  return null;
 }
 
 export default function Finance() {
@@ -156,6 +175,15 @@ export default function Finance() {
                 </button>
               ))}
             </div>
+
+            {getDateRangeLabel(timeType, fromDate, toDate) && (
+              <div className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-background px-3 py-1.5">
+                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground">
+                  {getDateRangeLabel(timeType, fromDate, toDate)}
+                </span>
+              </div>
+            )}
           </div>
 
           {timeType === "custom" && (
@@ -167,7 +195,7 @@ export default function Finance() {
                 onChange={(event) => setFromDate(event.target.value)}
                 className="h-9 w-40 bg-background"
               />
-              <span className="text-sm text-muted-foreground">-</span>
+              <span className="text-sm text-muted-foreground">—</span>
               <Input
                 type="date"
                 value={toDate}
