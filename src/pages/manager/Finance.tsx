@@ -79,6 +79,51 @@ function getDateRangeLabel(type: TimeType, fromDate: string, toDate: string): st
   return null;
 }
 
+function RoomBreakdown({ roomStats, totalKpi }: {
+  roomStats: { name: string; orders: number; sum: number }[];
+  totalKpi: number;
+}) {
+  const totalSum = roomStats.reduce((s, r) => s + r.sum, 0);
+  const totalOrders = roomStats.reduce((s, r) => s + r.orders, 0);
+  return (
+    <div className="space-y-1">
+      <div className="mb-2 grid grid-cols-3 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <span>Xona / Stol</span>
+        <span className="text-center">Buyurtma</span>
+        <span className="text-right">KPI</span>
+      </div>
+      {roomStats.map((room) => {
+        const roomKpi = totalSum > 0 ? (room.sum / totalSum) * totalKpi : 0;
+        return (
+          <div key={room.name} className="grid grid-cols-3 items-center rounded-lg px-3 py-2 hover:bg-muted/50">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+              <span className="text-sm font-medium">{room.name}</span>
+            </div>
+            <div className="flex justify-center">
+              <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                {room.orders} ta
+              </span>
+            </div>
+            <div className="flex justify-end">
+              <span className="text-xs font-semibold text-amber-600">{formatPrice(Math.round(roomKpi))}</span>
+            </div>
+          </div>
+        );
+      })}
+      <div className="mt-2 grid grid-cols-3 items-center border-t border-border/60 px-3 pt-2">
+        <span className="text-xs font-semibold text-muted-foreground">Jami</span>
+        <div className="flex justify-center">
+          <span className="rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-bold text-white">{totalOrders} ta</span>
+        </div>
+        <div className="flex justify-end">
+          <span className="text-xs font-bold text-amber-600">{formatPrice(totalKpi)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Finance() {
   const { selectedBranchId } = useBranch();
 
@@ -345,55 +390,10 @@ export default function Finance() {
                             ) : expandedRoomStats.length === 0 ? (
                               <p className="py-2 text-sm text-muted-foreground">Bu davrda yakunlangan buyurtma topilmadi</p>
                             ) : (
-                              {(() => {
-                                const waiter = waitersList.find((w) => w.waiterId === expandedWaiter);
-                                const totalKpi = Number(waiter?.kpiAmount ?? 0);
-                                const totalSum = expandedRoomStats.reduce((s, r) => s + r.sum, 0);
-                                const totalOrders = expandedRoomStats.reduce((s, r) => s + r.orders, 0);
-                                return (
-                                  <div className="space-y-1">
-                                    <div className="mb-2 flex items-center justify-between">
-                                      <div className="grid grid-cols-3 w-full text-xs font-semibold uppercase tracking-wide text-muted-foreground px-3">
-                                        <span>Xona / Stol</span>
-                                        <span className="text-center">Buyurtma</span>
-                                        <span className="text-right">KPI</span>
-                                      </div>
-                                    </div>
-                                    {expandedRoomStats.map((room) => {
-                                      const roomKpi = totalSum > 0 ? (room.sum / totalSum) * totalKpi : 0;
-                                      return (
-                                        <div key={room.name} className="grid grid-cols-3 items-center rounded-lg px-3 py-2 hover:bg-muted/50">
-                                          <div className="flex items-center gap-2">
-                                            <div className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
-                                            <span className="text-sm font-medium">{room.name}</span>
-                                          </div>
-                                          <div className="flex justify-center">
-                                            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
-                                              {room.orders} ta
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-end">
-                                            <span className="text-xs font-semibold text-amber-600">
-                                              {formatPrice(Math.round(roomKpi))}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
-                                    <div className="mt-2 grid grid-cols-3 items-center border-t border-border/60 pt-2 px-3">
-                                      <span className="text-xs font-semibold text-muted-foreground">Jami</span>
-                                      <div className="flex justify-center">
-                                        <span className="rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-bold text-white">
-                                          {totalOrders} ta
-                                        </span>
-                                      </div>
-                                      <div className="flex justify-end">
-                                        <span className="text-xs font-bold text-amber-600">{formatPrice(totalKpi)}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              })()}
+                              <RoomBreakdown
+                                roomStats={expandedRoomStats}
+                                totalKpi={Number(waiter.kpiAmount ?? 0)}
+                              />
                             )}
                           </div>
                         </TableCell>
