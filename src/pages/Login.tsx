@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Phone } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Lock, Phone } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';
@@ -28,7 +28,7 @@ export default function Login() {
     setError('');
     setLoading(true);
 
-    const result = await login(phone, password);
+    const result = await login(phone, pass);
 
     setLoading(false);
 
@@ -336,7 +336,6 @@ export default function Login() {
                 />
               </div>
             </div>
-          </div>
 
             <div>
               <label
@@ -387,16 +386,16 @@ export default function Login() {
                 </div>
                 <input
                   className="input-field"
-                  type={showPassword ? 'text' : 'password'}
+                  type={show ? 'text' : 'password'}
                   name="password"
                   autoComplete="new-password"
                   autoCorrect="off"
                   autoCapitalize="none"
                   spellCheck={false}
                   placeholder="********"
-                  value={password}
+                  value={pass}
                   required
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(event) => setPass(event.target.value)}
                   style={{
                     flex: 1,
                     background: 'none',
@@ -409,7 +408,7 @@ export default function Login() {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShow(!show)}
                   style={{
                     background: 'none',
                     border: 'none',
@@ -419,34 +418,10 @@ export default function Login() {
                     display: 'flex',
                   }}
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {show ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
-          )}
-
-          <button type="submit" disabled={loading} style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            padding: '13px', borderRadius: 12, border: 'none', marginTop: 4,
-            background: loading ? '#d1fae5' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            color: loading ? '#6b7280' : '#fff',
-            fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer',
-            boxShadow: loading ? 'none' : '0 6px 20px rgba(16,185,129,0.4)',
-            transition: 'all 0.15s',
-          }}
-            onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(16,185,129,0.5)'; } }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = loading ? 'none' : '0 6px 20px rgba(16,185,129,0.4)'; }}
-          >
-            {loading ? 'Kirmoqda...' : <>{t('Kirish', language)} <ArrowRight size={17} /></>}
-          </button>
-        </form>
-
-        {/* Divider */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '24px 0 16px' }}>
-          <div style={{ flex: 1, height: 1, background: '#f1f5f9' }} />
-          <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.1em' }}>DEMO</span>
-          <div style={{ flex: 1, height: 1, background: '#f1f5f9' }} />
-        </div>
 
             {error && (
               <p

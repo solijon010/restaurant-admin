@@ -194,35 +194,31 @@ export default function ManagerDashboard() {
               value: staff.length,
               icon: Users,
               color: "#0EA5E9",
-              bg: "#EFF6FF",
             },
             {
               label: "Buyurtmalar",
               value: totalOrders,
               icon: ShoppingCart,
               color: "#F59E0B",
-              bg: "#FFFBEB",
             },
             {
               label: "Jami daromad",
               value: formatPrice(totalRevenue),
               icon: Banknote,
               color: "#10B981",
-              bg: "#ECFDF5",
             },
             {
               label: "O'rtacha buyurtma",
               value: formatPrice(averageOrder),
               icon: ArrowUpRight,
               color: "#8B5CF6",
-              bg: "#F5F3FF",
             },
           ].map((item, index) => (
             <div
               key={index}
               className="card-hover"
               style={{
-                background: "#fff",
+                background: "hsl(var(--card))",
                 borderRadius: 16,
                 border: "1px solid hsl(var(--border))",
                 padding: "20px",
@@ -244,7 +240,7 @@ export default function ManagerDashboard() {
                     width: 40,
                     height: 40,
                     borderRadius: 10,
-                    background: item.bg,
+                    background: `${item.color}20`,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",

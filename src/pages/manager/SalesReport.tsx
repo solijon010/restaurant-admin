@@ -53,32 +53,32 @@ const FILTERS: { label: string; filter: FilterType; active: string; inactive: st
   {
     label: "Bugun",
     filter: "today",
-    active: "border-emerald-500 bg-emerald-500 text-white",
-    inactive: "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
+    active: "border-emerald-600 bg-emerald-600 text-white",
+    inactive: "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
   },
   {
     label: "Kecha",
     filter: "yesterday",
-    active: "border-blue-500 bg-blue-500 text-white",
-    inactive: "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100",
+    active: "border-emerald-600 bg-emerald-600 text-white",
+    inactive: "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
   },
   {
     label: "7 kun",
     filter: "last7",
-    active: "border-violet-500 bg-violet-500 text-white",
-    inactive: "border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100",
+    active: "border-emerald-600 bg-emerald-600 text-white",
+    inactive: "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
   },
   {
     label: "30 kun",
     filter: "last30",
-    active: "border-orange-500 bg-orange-500 text-white",
-    inactive: "border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100",
+    active: "border-emerald-600 bg-emerald-600 text-white",
+    inactive: "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
   },
   {
     label: "Boshqa",
     filter: "custom",
-    active: "border-slate-700 bg-slate-700 text-white",
-    inactive: "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100",
+    active: "border-emerald-600 bg-emerald-600 text-white",
+    inactive: "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
   },
 ];
 
@@ -200,7 +200,7 @@ export default function SalesReport() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600/10">
           <TrendingUp className="h-5 w-5 text-emerald-600" />
         </div>
         <div>
@@ -366,13 +366,13 @@ export default function SalesReport() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" vertical={false} />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                     tickLine={false}
                     axisLine={false}
                     interval={Math.max(0, Math.floor(revenueData.length / 6))}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) =>
@@ -386,8 +386,8 @@ export default function SalesReport() {
                   <Tooltip
                     formatter={(value: number) => formatPrice(value)}
                     contentStyle={{
-                      background: "#fff",
-                      border: "1px solid hsl(214,32%,91%)",
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
                       borderRadius: 10,
                       fontSize: 12,
                     }}
@@ -508,8 +508,8 @@ export default function SalesReport() {
                   <Tooltip
                     formatter={(value: number) => formatPrice(value)}
                     contentStyle={{
-                      background: "#fff",
-                      border: "1px solid hsl(214,32%,91%)",
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
                       borderRadius: 10,
                       fontSize: 12,
                     }}
@@ -528,7 +528,7 @@ export default function SalesReport() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" horizontal={false} />
                   <XAxis
                     type="number"
-                    tick={{ fontSize: 10, fill: "#64748b" }}
+                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) =>
@@ -542,7 +542,7 @@ export default function SalesReport() {
                   <YAxis
                     type="category"
                     dataKey="name"
-                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                     tickLine={false}
                     axisLine={false}
                     width={55}
@@ -550,8 +550,8 @@ export default function SalesReport() {
                   <Tooltip
                     formatter={(value: number) => formatPrice(value)}
                     contentStyle={{
-                      background: "#fff",
-                      border: "1px solid hsl(214,32%,91%)",
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
                       borderRadius: 10,
                       fontSize: 12,
                     }}
