@@ -87,15 +87,16 @@ function RoomBreakdown({ roomStats, totalKpi }: {
   const totalOrders = roomStats.reduce((s, r) => s + r.orders, 0);
   return (
     <div className="space-y-1">
-      <div className="mb-2 grid grid-cols-3 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <div className="mb-2 grid grid-cols-4 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         <span>Xona / Stol</span>
         <span className="text-center">Buyurtma</span>
+        <span className="text-right">Summa</span>
         <span className="text-right">KPI</span>
       </div>
       {roomStats.map((room) => {
         const roomKpi = totalSum > 0 ? (room.sum / totalSum) * totalKpi : 0;
         return (
-          <div key={room.name} className="grid grid-cols-3 items-center rounded-lg px-3 py-2 hover:bg-muted/50">
+          <div key={room.name} className="grid grid-cols-4 items-center rounded-lg px-3 py-2 hover:bg-muted/50">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
               <span className="text-sm font-medium">{room.name}</span>
@@ -106,15 +107,21 @@ function RoomBreakdown({ roomStats, totalKpi }: {
               </span>
             </div>
             <div className="flex justify-end">
+              <span className="text-xs font-semibold text-green-700">{formatPrice(room.sum)}</span>
+            </div>
+            <div className="flex justify-end">
               <span className="text-xs font-semibold text-amber-600">{formatPrice(Math.round(roomKpi))}</span>
             </div>
           </div>
         );
       })}
-      <div className="mt-2 grid grid-cols-3 items-center border-t border-border/60 px-3 pt-2">
+      <div className="mt-2 grid grid-cols-4 items-center border-t border-border/60 px-3 pt-2">
         <span className="text-xs font-semibold text-muted-foreground">Jami</span>
         <div className="flex justify-center">
           <span className="rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-bold text-white">{totalOrders} ta</span>
+        </div>
+        <div className="flex justify-end">
+          <span className="text-xs font-bold text-green-700">{formatPrice(totalSum)}</span>
         </div>
         <div className="flex justify-end">
           <span className="text-xs font-bold text-amber-600">{formatPrice(totalKpi)}</span>
