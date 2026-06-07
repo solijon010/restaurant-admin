@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Phone } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Lock, Phone } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';
@@ -28,7 +28,7 @@ export default function Login() {
     setError('');
     setLoading(true);
 
-    const result = await login(phone, password);
+    const result = await login(phone, pass);
 
     setLoading(false);
 
@@ -386,16 +386,16 @@ export default function Login() {
                 </div>
                 <input
                   className="input-field"
-                  type={showPassword ? 'text' : 'password'}
+                  type={show ? 'text' : 'password'}
                   name="password"
                   autoComplete="new-password"
                   autoCorrect="off"
                   autoCapitalize="none"
                   spellCheck={false}
                   placeholder="********"
-                  value={password}
+                  value={pass}
                   required
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(event) => setPass(event.target.value)}
                   style={{
                     flex: 1,
                     background: 'none',
@@ -408,7 +408,7 @@ export default function Login() {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShow(!show)}
                   style={{
                     background: 'none',
                     border: 'none',
@@ -418,7 +418,7 @@ export default function Login() {
                     display: 'flex',
                   }}
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {show ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
