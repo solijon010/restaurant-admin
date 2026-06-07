@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, ChevronDown, ChevronRight, Loader2, Search, ShoppingBag, TrendingUp, Wallet } from "lucide-react";
+import { Calendar, ChevronDown, ChevronRight, Loader2, Package, Search, ShoppingBag, TrendingUp, Wallet } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { useBranch } from "@/contexts/BranchContext";
 import { formatPrice } from "@/lib/display";
-import { getAllBranchOrders, getOrderTotal } from "@/lib/orders";
+import { BranchOrder, getAllBranchOrders, getOrderTotal } from "@/lib/orders";
 import { DashboardFilter } from "@/services/dashboardService";
 import { WaiterInfoItem, userService } from "@/services/userService";
 
@@ -79,55 +80,163 @@ function getDateRangeLabel(type: TimeType, fromDate: string, toDate: string): st
   return null;
 }
 
-function RoomBreakdown({ roomStats, totalKpi }: {
+function RoomBreakdown({ roomStats, totalKpi, orders }: {
   roomStats: { name: string; orders: number; sum: number }[];
   totalKpi: number;
+  orders: BranchOrder[];
 }) {
+  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
+
+  const roomProducts = useMemo(() => {
+    if (!selectedRoom) return [];
+    const productMap = new Map<string, { name: string; count: number; price: number }>();
+    orders
+      .filter((o) => (o.room?.name || "—") === selectedRoom)
+      .forEach((order) => {
+        order.orderItem.forEach((item) => {
+          const name = item.product?.name || "Noma'lum";
+          const price = Number(item.product?.price ?? 0);
+          const count = Number(item.count ?? 0);
+          const prev = productMap.get(name) ?? { name, count: 0, price };
+          productMap.set(name, { ...prev, count: prev.count + count });
+        });
+      });
+    return Array.from(productMap.values()).sort((a, b) => b.count * b.price - a.count * a.price);
+  }, [selectedRoom, orders]);
+
   const totalSum = roomStats.reduce((s, r) => s + r.sum, 0);
   const totalOrders = roomStats.reduce((s, r) => s + r.orders, 0);
+
   return (
-    <div className="space-y-1">
-      <div className="mb-2 grid grid-cols-4 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+    <>
+      <div className="mb-3 grid grid-cols-4 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         <span>Xona / Stol</span>
         <span className="text-center">Buyurtma</span>
         <span className="text-right">Summa</span>
         <span className="text-right">KPI</span>
       </div>
-      {roomStats.map((room) => {
-        const roomKpi = totalSum > 0 ? (room.sum / totalSum) * totalKpi : 0;
-        return (
-          <div key={room.name} className="grid grid-cols-4 items-center rounded-lg px-3 py-2 hover:bg-muted/50">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
-              <span className="text-sm font-medium">{room.name}</span>
+
+      <div className="space-y-2">
+        {roomStats.map((room) => {
+          const roomKpi = totalSum > 0 ? (room.sum / totalSum) * totalKpi : 0;
+          return (
+            <div
+              key={room.name}
+              onClick={() => setSelectedRoom(room.name)}
+              className="grid cursor-pointer grid-cols-4 items-center rounded-xl border border-border/50 bg-background px-4 py-3 shadow-sm transition-all duration-200 hover:border-emerald-300 hover:bg-emerald-50/40 hover:shadow-md"
+            >
+              <div className="flex items-center gap-2">
+                <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" />
+                <span className="text-sm font-semibold">{room.name}</span>
+              </div>
+              <div className="flex justify-center">
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                  {room.orders} ta
+                </span>
+              </div>
+              <div className="flex justify-end">
+                <span className="text-sm font-bold text-green-700">{formatPrice(room.sum)}</span>
+              </div>
+              <div className="flex justify-end">
+                <span className="text-sm font-bold text-amber-600">{formatPrice(Math.round(roomKpi))}</span>
+              </div>
             </div>
-            <div className="flex justify-center">
-              <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
-                {room.orders} ta
-              </span>
-            </div>
-            <div className="flex justify-end">
-              <span className="text-xs font-semibold text-green-700">{formatPrice(room.sum)}</span>
-            </div>
-            <div className="flex justify-end">
-              <span className="text-xs font-semibold text-amber-600">{formatPrice(Math.round(roomKpi))}</span>
-            </div>
-          </div>
-        );
-      })}
-      <div className="mt-2 grid grid-cols-4 items-center border-t border-border/60 px-3 pt-2">
-        <span className="text-xs font-semibold text-muted-foreground">Jami</span>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 grid grid-cols-4 items-center rounded-xl border border-border/40 bg-muted/40 px-4 py-3">
+        <span className="text-sm font-bold text-muted-foreground">Jami</span>
         <div className="flex justify-center">
-          <span className="rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-bold text-white">{totalOrders} ta</span>
+          <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white">{totalOrders} ta</span>
         </div>
         <div className="flex justify-end">
-          <span className="text-xs font-bold text-green-700">{formatPrice(totalSum)}</span>
+          <span className="text-sm font-bold text-green-700">{formatPrice(totalSum)}</span>
         </div>
         <div className="flex justify-end">
-          <span className="text-xs font-bold text-amber-600">{formatPrice(totalKpi)}</span>
+          <span className="text-sm font-bold text-amber-600">{formatPrice(totalKpi)}</span>
         </div>
       </div>
-    </div>
+
+      <Dialog open={!!selectedRoom} onOpenChange={() => setSelectedRoom(null)}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100">
+                <Package className="h-5 w-5 text-emerald-600" />
+              </div>
+              {selectedRoom} — Mahsulotlar
+            </DialogTitle>
+          </DialogHeader>
+          {(() => {
+            const roomStat = roomStats.find((r) => r.name === selectedRoom);
+            const roomKpi = roomStat && totalSum > 0 ? (roomStat.sum / totalSum) * totalKpi : 0;
+            const roomProductSum = roomProducts.reduce((s, p) => s + p.count * p.price, 0);
+            return (
+              <div className="mt-2 space-y-2">
+                {roomProducts.length === 0 ? (
+                  <p className="py-4 text-center text-base text-muted-foreground">Mahsulot topilmadi</p>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-4 border-b px-4 pb-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      <span>Mahsulot</span>
+                      <span className="text-center">Miqdor</span>
+                      <span className="text-right">Summa</span>
+                      <span className="text-right">KPI</span>
+                    </div>
+                    {roomProducts.map((product) => {
+                      const productSum = product.count * product.price;
+                      const productKpi = roomProductSum > 0 ? (productSum / roomProductSum) * roomKpi : 0;
+                      return (
+                        <div
+                          key={product.name}
+                          className="grid grid-cols-4 items-center rounded-xl border border-border/40 bg-muted/20 px-4 py-3.5"
+                        >
+                          <span className="text-base font-semibold">{product.name}</span>
+                          <div className="flex justify-center">
+                            <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700">
+                              {product.count} ta
+                            </span>
+                          </div>
+                          <div className="flex justify-end">
+                            <span className="text-base font-bold text-green-700">
+                              {formatPrice(productSum)}
+                            </span>
+                          </div>
+                          <div className="flex justify-end">
+                            <span className="text-base font-bold text-amber-600">
+                              {formatPrice(Math.round(productKpi))}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div className="mt-1 grid grid-cols-4 items-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5">
+                      <span className="text-base font-bold">Jami</span>
+                      <div className="flex justify-center">
+                        <span className="rounded-full bg-emerald-600 px-3 py-1 text-sm font-bold text-white">
+                          {roomProducts.reduce((s, p) => s + p.count, 0)} ta
+                        </span>
+                      </div>
+                      <div className="flex justify-end">
+                        <span className="text-base font-bold text-green-700">
+                          {formatPrice(roomProductSum)}
+                        </span>
+                      </div>
+                      <div className="flex justify-end">
+                        <span className="text-base font-bold text-amber-600">
+                          {formatPrice(Math.round(roomKpi))}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -400,6 +509,7 @@ export default function Finance() {
                               <RoomBreakdown
                                 roomStats={expandedRoomStats}
                                 totalKpi={Number(waiter.kpiAmount ?? 0)}
+                                orders={expandedOrders}
                               />
                             )}
                           </div>
