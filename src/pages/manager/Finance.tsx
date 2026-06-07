@@ -123,7 +123,7 @@ function RoomBreakdown({ roomStats, totalKpi, orders }: {
             <div
               key={room.name}
               onClick={() => setSelectedRoom(room.name)}
-              className="grid cursor-pointer grid-cols-4 items-center rounded-xl border border-border/50 bg-background px-4 py-3 shadow-sm transition-all duration-200 hover:border-emerald-300 hover:bg-emerald-50/40 hover:shadow-md"
+              className="grid cursor-pointer grid-cols-4 items-center rounded-xl border border-border/50 bg-background px-4 py-3 shadow-sm transition-all duration-200 hover:border-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/30 dark:hover:border-emerald-700 hover:shadow-md"
             >
               <div className="flex items-center gap-2">
                 <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" />

@@ -344,6 +344,7 @@ export default function SalesReport() {
                         fontSize: "12px",
                         color: "hsl(var(--foreground))",
                       }}
+                      wrapperStyle={{ outline: "none" }}
                     />
                     <Bar dataKey="revenue" fill="hsl(32,95%,52%)" name="Daromad" radius={[5, 5, 0, 0]} />
                   </BarChart>
@@ -516,6 +517,7 @@ export default function SalesReport() {
                       fontSize: 12,
                       color: "hsl(var(--foreground))",
                     }}
+                    wrapperStyle={{ outline: "none" }}
                   />
                 </PieChart>
               </ResponsiveContainer>

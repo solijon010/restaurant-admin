@@ -451,6 +451,7 @@ export default function ManagerDashboard() {
                       fontSize: "12px",
                       color: "hsl(var(--foreground))",
                     }}
+                    wrapperStyle={{ outline: "none" }}
                   />
                   <Bar dataKey="revenue" fill="#0EA5E9" name={t("Daromad", language)} radius={[6, 6, 0, 0]} />
                 </BarChart>
