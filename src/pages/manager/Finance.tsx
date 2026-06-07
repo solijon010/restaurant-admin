@@ -357,33 +357,16 @@ export default function Finance() {
                                     </span>
                                   )}
                                 </div>
-                                {(() => {
-                                  const grandTotal = expandedRoomStats.reduce((s, r) => s + r.sum, 0);
-                                  return expandedRoomStats.map((room) => {
-                                    const pct = grandTotal > 0 ? (room.sum / grandTotal) * 100 : 0;
-                                    return (
-                                      <div key={room.name} className="rounded-lg px-3 py-2 hover:bg-muted/50">
-                                        <div className="flex items-center justify-between mb-1">
-                                          <div className="flex items-center gap-2">
-                                            <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                                            <span className="text-sm font-medium">{room.name}</span>
-                                            <span className="text-xs text-muted-foreground">{room.orders} ta buyurtma</span>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            <span className="text-xs font-semibold text-muted-foreground">{pct.toFixed(1)}%</span>
-                                            <span className="text-sm font-semibold text-emerald-700">{formatPrice(room.sum)}</span>
-                                          </div>
-                                        </div>
-                                        <div className="ml-4 h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                                          <div
-                                            className="h-full rounded-full bg-emerald-500 transition-all"
-                                            style={{ width: `${pct}%` }}
-                                          />
-                                        </div>
-                                      </div>
-                                    );
-                                  });
-                                })()}
+                                {expandedRoomStats.map((room) => (
+                                  <div key={room.name} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-muted/50">
+                                    <div className="flex items-center gap-2">
+                                      <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                                      <span className="text-sm font-medium">{room.name}</span>
+                                      <span className="text-xs text-muted-foreground">{room.orders} ta buyurtma</span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-emerald-700">{formatPrice(room.sum)}</span>
+                                  </div>
+                                ))}
                                 <div className="mt-2 flex items-center justify-between border-t border-border/60 pt-2 px-3">
                                   <span className="text-xs font-semibold text-muted-foreground">Jami</span>
                                   <span className="text-sm font-bold text-emerald-700">
