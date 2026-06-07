@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, Loader2, Search, ShoppingBag, TrendingUp, Wallet } from "lucide-react";
+import { Calendar, ChevronDown, ChevronRight, Loader2, Search, ShoppingBag, TrendingUp, Wallet } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { useBranch } from "@/contexts/BranchContext";
 import { formatPrice } from "@/lib/display";
+import { getAllBranchOrders, getOrderTotal } from "@/lib/orders";
 import { DashboardFilter } from "@/services/dashboardService";
 import { WaiterInfoItem, userService } from "@/services/userService";
 
@@ -39,6 +40,25 @@ function mapTimeType(value: TimeType): DashboardFilter {
 function fmt(dateStr: string) {
   const [y, m, d] = dateStr.split("-");
   return `${d}.${m}.${y}`;
+}
+
+function getDateBounds(type: TimeType, fromDate: string, toDate: string) {
+  const today = new Date(); today.setHours(23, 59, 59, 999);
+  if (type === "today") {
+    const s = new Date(); s.setHours(0, 0, 0, 0); return { start: s, end: today };
+  }
+  if (type === "weekly") {
+    const s = new Date(); s.setDate(today.getDate() - 6); s.setHours(0, 0, 0, 0); return { start: s, end: today };
+  }
+  if (type === "monthly") {
+    const s = new Date(); s.setDate(today.getDate() - 29); s.setHours(0, 0, 0, 0); return { start: s, end: today };
+  }
+  if (type === "custom" && fromDate && toDate) {
+    const s = new Date(fromDate); s.setHours(0, 0, 0, 0);
+    const e = new Date(toDate); e.setHours(23, 59, 59, 999);
+    return { start: s, end: e };
+  }
+  return null;
 }
 
 function getDateRangeLabel(type: TimeType, fromDate: string, toDate: string): string | null {
@@ -66,6 +86,7 @@ export default function Finance() {
   const [timeType, setTimeType] = useState<TimeType>("today");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [expandedWaiter, setExpandedWaiter] = useState<string | null>(null);
 
   const waiterQueryKey = ["waiters-finance", selectedBranchId, timeType, fromDate, toDate];
 
@@ -82,6 +103,43 @@ export default function Finance() {
     },
     enabled: !!selectedBranchId && (timeType !== "custom" || (!!fromDate && !!toDate)),
   });
+
+  const { data: expandedOrders = [], isLoading: expandedLoading } = useQuery({
+    queryKey: ["waiter-room-breakdown", selectedBranchId, expandedWaiter, timeType, fromDate, toDate],
+    queryFn: async () => {
+      const result = await getAllBranchOrders(selectedBranchId, { limit: 200 });
+      const bounds = getDateBounds(timeType, fromDate, toDate);
+      const waiter = waitersRaw.find((w) => w.waiterId === expandedWaiter);
+      return result.items.filter((order) => {
+        if (order.status !== "SUCCESS") return false;
+        if (bounds) {
+          const d = new Date(order.createdAt);
+          if (d < bounds.start || d > bounds.end) return false;
+        }
+        if (waiter) {
+          const nameParts = waiter.fullName.toLowerCase().split(" ");
+          const orderName = `${order.user?.firstName ?? ""} ${order.user?.lastName ?? ""}`.toLowerCase();
+          if (order.user?.id && order.user.id !== expandedWaiter &&
+              !nameParts.some((p) => orderName.includes(p))) return false;
+          if (!order.user?.id && !nameParts.some((p) => orderName.includes(p))) return false;
+        }
+        return true;
+      });
+    },
+    enabled: !!expandedWaiter && !!selectedBranchId,
+  });
+
+  const expandedRoomStats = useMemo(() => {
+    const map = new Map<string, { orders: number; sum: number }>();
+    expandedOrders.forEach((order) => {
+      const room = order.room?.name || "—";
+      const prev = map.get(room) ?? { orders: 0, sum: 0 };
+      map.set(room, { orders: prev.orders + 1, sum: prev.sum + getOrderTotal(order) });
+    });
+    return Array.from(map.entries())
+      .map(([name, d]) => ({ name, ...d }))
+      .sort((a, b) => b.sum - a.sum);
+  }, [expandedOrders]);
 
   const waitersList = useMemo(() => {
     const term = waiterSearch.trim().toLowerCase();
@@ -247,19 +305,75 @@ export default function Finance() {
                 </TableCell>
               </TableRow>
             ) : (
-              waitersList.map((waiter: WaiterInfoItem, index) => (
-                <TableRow key={waiter.waiterId} className={index % 2 === 0 ? "bg-background" : "bg-muted/20"}>
-                  <TableCell className="w-10 text-sm text-muted-foreground">{index + 1}</TableCell>
-                  <TableCell className="font-medium">{waiter.fullName}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="border-emerald-200 bg-emerald-100 text-emerald-700">
-                      {waiter.totalOrders} ta
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="font-semibold text-green-700">{formatPrice(waiter.totalSum)}</TableCell>
-                  <TableCell className="font-semibold text-amber-700">{formatPrice(waiter.kpiAmount)}</TableCell>
-                </TableRow>
-              ))
+              waitersList.map((waiter: WaiterInfoItem, index) => {
+                const isExpanded = expandedWaiter === waiter.waiterId;
+                return (
+                  <>
+                    <TableRow
+                      key={waiter.waiterId}
+                      className={`cursor-pointer transition-colors ${isExpanded ? "bg-emerald-50/50 dark:bg-emerald-950/20" : index % 2 === 0 ? "bg-background" : "bg-muted/20"} hover:bg-muted/40`}
+                      onClick={() => setExpandedWaiter(isExpanded ? null : waiter.waiterId)}
+                    >
+                      <TableCell className="w-10 text-sm text-muted-foreground">{index + 1}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {isExpanded
+                            ? <ChevronDown className="h-4 w-4 text-emerald-600 shrink-0" />
+                            : <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                          }
+                          {waiter.fullName}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="border-emerald-200 bg-emerald-100 text-emerald-700">
+                          {waiter.totalOrders} ta
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-semibold text-green-700">{formatPrice(waiter.totalSum)}</TableCell>
+                      <TableCell className="font-semibold text-amber-700">{formatPrice(waiter.kpiAmount)}</TableCell>
+                    </TableRow>
+
+                    {isExpanded && (
+                      <TableRow key={`${waiter.waiterId}-detail`}>
+                        <TableCell colSpan={5} className="p-0">
+                          <div className="border-t border-emerald-100 bg-muted/30 px-8 py-3">
+                            {expandedLoading ? (
+                              <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Yuklanmoqda...
+                              </div>
+                            ) : expandedRoomStats.length === 0 ? (
+                              <p className="py-2 text-sm text-muted-foreground">Bu davrda yakunlangan buyurtma topilmadi</p>
+                            ) : (
+                              <div className="space-y-1">
+                                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                  Xona / Stol bo'yicha breakdown
+                                </p>
+                                {expandedRoomStats.map((room) => (
+                                  <div key={room.name} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-muted/50">
+                                    <div className="flex items-center gap-2">
+                                      <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                                      <span className="text-sm font-medium">{room.name}</span>
+                                      <span className="text-xs text-muted-foreground">{room.orders} ta buyurtma</span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-emerald-700">{formatPrice(room.sum)}</span>
+                                  </div>
+                                ))}
+                                <div className="mt-2 flex items-center justify-between border-t border-border/60 pt-2 px-3">
+                                  <span className="text-xs font-semibold text-muted-foreground">Jami</span>
+                                  <span className="text-sm font-bold text-emerald-700">
+                                    {formatPrice(expandedRoomStats.reduce((s, r) => s + r.sum, 0))}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
+                );
+              })
             )}
           </TableBody>
         </Table>
