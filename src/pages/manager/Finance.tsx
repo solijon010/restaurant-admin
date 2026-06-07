@@ -346,9 +346,17 @@ export default function Finance() {
                               <p className="py-2 text-sm text-muted-foreground">Bu davrda yakunlangan buyurtma topilmadi</p>
                             ) : (
                               <div className="space-y-1">
-                                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                  Xona / Stol bo'yicha breakdown
-                                </p>
+                                <div className="mb-3 flex items-center justify-between">
+                                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                    Xona / Stol bo'yicha
+                                  </p>
+                                  {getDateRangeLabel(timeType, fromDate, toDate) && (
+                                    <span className="flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
+                                      <Calendar className="h-3 w-3" />
+                                      {getDateRangeLabel(timeType, fromDate, toDate)}
+                                    </span>
+                                  )}
+                                </div>
                                 {expandedRoomStats.map((room) => (
                                   <div key={room.name} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-muted/50">
                                     <div className="flex items-center gap-2">
