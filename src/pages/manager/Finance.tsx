@@ -362,15 +362,16 @@ export default function Finance() {
                                     <div className="flex items-center gap-2">
                                       <div className="h-2 w-2 rounded-full bg-emerald-500" />
                                       <span className="text-sm font-medium">{room.name}</span>
-                                      <span className="text-xs text-muted-foreground">{room.orders} ta buyurtma</span>
                                     </div>
-                                    <span className="text-sm font-semibold text-emerald-700">{formatPrice(room.sum)}</span>
+                                    <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                                      {room.orders} ta
+                                    </span>
                                   </div>
                                 ))}
                                 <div className="mt-2 flex items-center justify-between border-t border-border/60 pt-2 px-3">
-                                  <span className="text-xs font-semibold text-muted-foreground">Jami</span>
-                                  <span className="text-sm font-bold text-emerald-700">
-                                    {formatPrice(expandedRoomStats.reduce((s, r) => s + r.sum, 0))}
+                                  <span className="text-xs font-semibold text-muted-foreground">Jami buyurtma</span>
+                                  <span className="rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-bold text-white">
+                                    {expandedRoomStats.reduce((s, r) => s + r.orders, 0)} ta
                                   </span>
                                 </div>
                               </div>
