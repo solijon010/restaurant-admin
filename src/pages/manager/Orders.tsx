@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { extractArray } from '@/lib/api-response';
 import { formatPrice } from '@/lib/display';
 import { filterOrdersByDate, getFilterBounds, getOrderDateKey, todayStr } from '@/lib/order-analytics';
-import { BIRD_REPORT_GROUPS, buildMenuGroupStats, isTrackedMenuProduct, MenuCategoryRecord, SHASHLIK_REPORT_GROUPS } from '@/lib/menu-report';
+import { BIRD_REPORT_GROUPS, buildMenuGroupStats, buildSuggestedMenuAssignments, isTrackedMenuProduct, MenuCategoryRecord, MenuGroupAssignments, MenuReportGroup, SHASHLIK_REPORT_GROUPS } from '@/lib/menu-report';
 import { BranchOrder, getAllBranchOrders, getOrderTotal } from '@/lib/orders';
 import { Card } from '@/components/ui/card';
 import { categoryService } from '@/services/categoryService';
