@@ -8,10 +8,10 @@ import { getRoleBasePath, hasImplementedDashboard } from '@/lib/auth';
 import { t } from '@/lib/i18n';
 
 export default function Login() {
-  const [phone, setPhone]     = useState('');
-  const [pass, setPass]       = useState('');
-  const [show, setShow]       = useState(false);
-  const [error, setError]     = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, isAuthenticated, user } = useAuth();
   const { language } = useSettings();
