@@ -4,8 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
     Loader2, Search, MoreVertical, Eye, X,
-    ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-    Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart, Settings2,
+    Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart,
 } from 'lucide-react';
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -18,9 +17,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { extractArray } from '@/lib/api-response';
 import { formatPrice } from '@/lib/display';
-import { filterOrdersByDate, getOrderDateKey, todayStr } from '@/lib/order-analytics';
-import { BIRD_REPORT_GROUPS, buildMenuGroupStats, buildSuggestedMenuAssignments, isTrackedMenuProduct, MenuCategoryRecord, MenuGroupAssignments, MenuReportGroup, SHASHLIK_REPORT_GROUPS } from '@/lib/menu-report';
-import { BranchOrder, BranchOrdersQuery, getAllBranchOrders, getBranchOrdersPage, getOrderTotal } from '@/lib/orders';
+import { filterOrdersByDate, getFilterBounds, getOrderDateKey, todayStr } from '@/lib/order-analytics';
+import { BIRD_REPORT_GROUPS, buildMenuGroupStats, isTrackedMenuProduct, MenuCategoryRecord, SHASHLIK_REPORT_GROUPS } from '@/lib/menu-report';
+import { BranchOrder, getAllBranchOrders, getOrderTotal } from '@/lib/orders';
 import { Card } from '@/components/ui/card';
 import { categoryService } from '@/services/categoryService';
 import { ProductRecord, productService } from '@/services/productService';
@@ -201,8 +200,7 @@ export default function ManagerOrders() {
     const [search, setSearch]             = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('ALL');
     const [dateFilter, setDateFilter]     = useState('');
-    const [page, setPage]                 = useState(1);
-    const [limit, setLimit]               = useState(10);
+    const [quickFilter, setQuickFilter]   = useState<'all' | 'today' | 'weekly' | 'monthly'>('all');
     const [detailOrder, setDetailOrder]   = useState<Order | null>(null);
     const [shashlikDate, setShashlikDate] = useState(todayStr);
     const [qanotDate, setQanotDate]       = useState(todayStr);
@@ -211,26 +209,16 @@ export default function ManagerOrders() {
     const [storedAssignments, setStoredAssignments] = useState<BranchReportAssignments>(() => loadStoredAssignments());
     const [draftAssignments, setDraftAssignments] = useState<MenuGroupAssignments>({});
 
-    useEffect(() => { setPage(1); }, [statusFilter, dateFilter, selectedBranchId]);
-
     // ── Buyurtmalar
     const { data: ordersResult, isLoading: ordersLoading, isFetching } = useQuery({
-        queryKey: ['orders', selectedBranchId, page, limit, statusFilter, dateFilter, search],
+        queryKey: ['orders', selectedBranchId, statusFilter, dateFilter, quickFilter, search],
         queryFn: async () => {
             if (!selectedBranchId) return { items: [] as Order[], total: 0 };
 
-            const params: BranchOrdersQuery = {
-                page,
-                limit,
-            };
-
             const normalizedSearch = search.trim().toLowerCase();
-            const needsLocalFiltering = !!dateFilter || !!normalizedSearch || statusFilter !== 'ALL';
-
-            if (!needsLocalFiltering) {
-                const pageResult = await getBranchOrdersPage(selectedBranchId, params);
-                return { items: pageResult.items, total: pageResult.total };
-            }
+            const quickBounds = quickFilter !== 'all'
+                ? getFilterBounds(quickFilter === 'today' ? 'today' : quickFilter === 'weekly' ? 'last7' : 'last30')
+                : null;
 
             const allOrdersResult = await getAllBranchOrders(selectedBranchId, { limit: 100 });
 
@@ -238,7 +226,12 @@ export default function ManagerOrders() {
                 const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
                 if (!matchesStatus) return false;
 
-                const matchesDate = !dateFilter || getOrderDateKey(order.createdAt) === dateFilter;
+                const dateKey = getOrderDateKey(order.createdAt);
+                const matchesDate = dateFilter
+                    ? dateKey === dateFilter
+                    : quickBounds
+                        ? !!dateKey && dateKey >= quickBounds.start && dateKey <= quickBounds.end
+                        : true;
                 if (!matchesDate) return false;
 
                 if (!normalizedSearch) return true;
@@ -247,11 +240,7 @@ export default function ManagerOrders() {
                 return haystack.includes(normalizedSearch);
             });
 
-            const startIndex = (page - 1) * limit;
-            return {
-                items: filteredOrders.slice(startIndex, startIndex + limit),
-                total: filteredOrders.length,
-            };
+            return { items: filteredOrders, total: filteredOrders.length };
         },
         enabled: !!selectedBranchId,
         placeholderData: prev => prev,
@@ -259,10 +248,7 @@ export default function ManagerOrders() {
 
     const allOrders = ordersResult?.items ?? [];
     const total     = ordersResult?.total ?? allOrders.length;
-    const totalPages = Math.max(Math.ceil(total / limit), 1);
-    const startItem  = total === 0 ? 0 : (page - 1) * limit + 1;
-    const endItem    = Math.min(page * limit, total);
-    const filtered = allOrders;
+    const filtered  = allOrders;
 
     const { data: reportCatalog } = useQuery({
         queryKey: ['orders-report-catalog', selectedBranchId],
@@ -461,8 +447,23 @@ export default function ManagerOrders() {
                                     <SelectItem value="CANCELED">Bekor qilingan</SelectItem>
                                 </SelectContent>
                             </Select>
+                            <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-background p-1">
+                                {(['today', 'weekly', 'monthly'] as const).map((qf) => (
+                                    <button
+                                        key={qf}
+                                        onClick={() => { setQuickFilter(quickFilter === qf ? 'all' : qf); setDateFilter(''); }}
+                                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                                            quickFilter === qf
+                                                ? 'bg-emerald-500 text-white shadow-sm'
+                                                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                                        }`}
+                                    >
+                                        {qf === 'today' ? 'Bugun' : qf === 'weekly' ? 'Haftalik' : 'Oylik'}
+                                    </button>
+                                ))}
+                            </div>
                             <Input type="date" value={dateFilter}
-                                onChange={e => setDateFilter(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
+                                onChange={e => { setDateFilter(e.target.value); setQuickFilter('all'); }} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
                             <div className="ml-auto flex items-center gap-2">
                                 {isFetching && !ordersLoading && (
                                     <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -566,42 +567,6 @@ export default function ManagerOrders() {
                             )}
                         </div>
 
-                        {/* Pagination */}
-                        {total > 0 && (
-                            <div className="flex items-center justify-between px-4 py-3 border-t border-border/60 bg-muted/20">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-xs text-muted-foreground">
-                                        {ordersLoading
-                                            ? <span className="inline-flex items-center gap-1.5"><Loader2 className="h-3 w-3 animate-spin" />Yuklanmoqda...</span>
-                                            : <><span className="font-semibold text-foreground">{startItem}–{endItem}</span> / jami <span className="font-semibold text-foreground">{total}</span></>
-                                        }
-                                    </span>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="text-xs text-muted-foreground">Ko'rsatish:</span>
-                                        <Select value={String(limit)} onValueChange={v => { setLimit(Number(v)); setPage(1); }}>
-                                            <SelectTrigger className="h-7 w-16 text-xs border-border/60 bg-background"><SelectValue /></SelectTrigger>
-                                            <SelectContent>
-                                                {[5, 10, 20, 50].map(n => <SelectItem key={n} value={String(n)} className="text-xs">{n} ta</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(1)} disabled={page === 1}><ChevronsLeft className="h-3.5 w-3.5" /></Button>
-                                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(p => p - 1)} disabled={page === 1}><ChevronLeft className="h-3.5 w-3.5" /></Button>
-                                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                                        const p = totalPages <= 5 ? i + 1 : page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i;
-                                        return (
-                                            <Button key={p} variant={p === page ? 'default' : 'outline'} size="icon"
-                                                className={`h-7 w-7 text-xs ${p === page ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}`}
-                                                onClick={() => setPage(p)}>{p}</Button>
-                                        );
-                                    })}
-                                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(p => p + 1)} disabled={page === totalPages}><ChevronRight className="h-3.5 w-3.5" /></Button>
-                                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(totalPages)} disabled={page === totalPages}><ChevronsRight className="h-3.5 w-3.5" /></Button>
-                                </div>
-                            </div>
-                        )}
                     </Card>
                 </TabsContent>
 

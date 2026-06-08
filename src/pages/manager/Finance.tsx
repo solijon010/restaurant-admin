@@ -3,9 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Calendar, ChevronDown, ChevronRight, Loader2, Package, Search, ShoppingBag, TrendingUp, Wallet } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Calendar as CalendarUI } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -62,17 +64,22 @@ function getDateBounds(type: TimeType, fromDate: string, toDate: string) {
   return null;
 }
 
+function localDateStr(d: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 function getDateRangeLabel(type: TimeType, fromDate: string, toDate: string): string | null {
   const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
+  const todayStr = localDateStr(today);
   if (type === "today") return fmt(todayStr);
   if (type === "weekly") {
     const from = new Date(today); from.setDate(today.getDate() - 6);
-    return `${fmt(from.toISOString().slice(0, 10))} — ${fmt(todayStr)}`;
+    return `${fmt(localDateStr(from))} — ${fmt(todayStr)}`;
   }
   if (type === "monthly") {
     const from = new Date(today); from.setDate(today.getDate() - 29);
-    return `${fmt(from.toISOString().slice(0, 10))} — ${fmt(todayStr)}`;
+    return `${fmt(localDateStr(from))} — ${fmt(todayStr)}`;
   }
   if (type === "custom" && fromDate && toDate) {
     return `${fmt(fromDate)} — ${fmt(toDate)}`;
@@ -247,48 +254,89 @@ export default function Finance() {
   const [timeType, setTimeType] = useState<TimeType>("today");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [fromOpen, setFromOpen] = useState(false);
+  const [toOpen, setToOpen] = useState(false);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [expandedWaiter, setExpandedWaiter] = useState<string | null>(null);
 
-  const waiterQueryKey = ["waiters-finance", selectedBranchId, timeType, fromDate, toDate];
-
-  const { data: waitersRaw = [], isLoading: waitersLoading } = useQuery({
-    queryKey: waiterQueryKey,
+  // Waiter base info (kpiPercent) — date-independent
+  const { data: waitersBase = [] } = useQuery({
+    queryKey: ["waiters-base", selectedBranchId],
     queryFn: async () => {
-      const filter = mapTimeType(timeType);
-      const response = await userService.getWaiterInfo(selectedBranchId, {
-        filter,
-        from: filter === "custom" ? fromDate : undefined,
-        to: filter === "custom" ? toDate : undefined,
-      });
+      const response = await userService.getWaiterInfo(selectedBranchId, { filter: "today" });
       return response.data.data ?? [];
     },
-    enabled: !!selectedBranchId && (timeType !== "custom" || (!!fromDate && !!toDate)),
+    enabled: !!selectedBranchId,
+    staleTime: 5 * 60 * 1000,
   });
 
-  const { data: expandedOrders = [], isLoading: expandedLoading } = useQuery({
-    queryKey: ["waiter-room-breakdown", selectedBranchId, expandedWaiter, timeType, fromDate, toDate],
+  // All orders filtered locally by date — source of truth for stats
+  const { data: filteredOrders = [], isLoading: waitersLoading } = useQuery({
+    queryKey: ["orders-finance", selectedBranchId, timeType, fromDate, toDate],
     queryFn: async () => {
-      const result = await getAllBranchOrders(selectedBranchId, { limit: 200 });
+      const result = await getAllBranchOrders(selectedBranchId, { limit: 100 });
       const bounds = getDateBounds(timeType, fromDate, toDate);
-      const waiter = waitersRaw.find((w) => w.waiterId === expandedWaiter);
       return result.items.filter((order) => {
         if (order.status !== "SUCCESS") return false;
         if (bounds) {
           const d = new Date(order.createdAt);
           if (d < bounds.start || d > bounds.end) return false;
         }
-        if (waiter) {
-          const nameParts = waiter.fullName.toLowerCase().split(" ");
-          const orderName = `${order.user?.firstName ?? ""} ${order.user?.lastName ?? ""}`.toLowerCase();
-          if (order.user?.id && order.user.id !== expandedWaiter &&
-              !nameParts.some((p) => orderName.includes(p))) return false;
-          if (!order.user?.id && !nameParts.some((p) => orderName.includes(p))) return false;
-        }
         return true;
       });
     },
-    enabled: !!expandedWaiter && !!selectedBranchId,
+    enabled: !!selectedBranchId && (timeType !== "custom" || (!!fromDate && !!toDate)),
   });
+
+  // Compute per-waiter stats from local filtered orders
+  const waitersRaw = useMemo(() => {
+    if (!waitersBase.length) return [];
+
+    const statsMap = new Map<string, { totalOrders: number; totalSum: number }>();
+    filteredOrders.forEach((order) => {
+      const id = order.user?.id ?? "__unknown__";
+      const prev = statsMap.get(id) ?? { totalOrders: 0, totalSum: 0 };
+      statsMap.set(id, { totalOrders: prev.totalOrders + 1, totalSum: prev.totalSum + getOrderTotal(order) });
+    });
+
+    const allTotal = filteredOrders.reduce((s, o) => s + getOrderTotal(o), 0);
+
+    return waitersBase.map((waiter) => {
+      const isAll = waiter.fullName.toLowerCase().includes("barcha");
+      if (isAll) {
+        const kpiAmount = waitersBase
+          .filter((w) => !w.fullName.toLowerCase().includes("barcha"))
+          .reduce((s, w) => {
+            const st = statsMap.get(w.waiterId) ?? { totalSum: 0 };
+            return s + Math.round(st.totalSum * (Number(w.kpiPercent) / 100));
+          }, 0);
+        return { ...waiter, totalOrders: filteredOrders.length, totalSum: allTotal, kpiAmount };
+      }
+      const stats = statsMap.get(waiter.waiterId) ?? { totalOrders: 0, totalSum: 0 };
+      return {
+        ...waiter,
+        totalOrders: stats.totalOrders,
+        totalSum: stats.totalSum,
+        kpiAmount: Math.round(stats.totalSum * (Number(waiter.kpiPercent) / 100)),
+      };
+    });
+  }, [waitersBase, filteredOrders]);
+
+  const expandedLoading = false;
+  const expandedOrders = useMemo(() => {
+    if (!expandedWaiter) return [];
+    const waiter = waitersBase.find((w) => w.waiterId === expandedWaiter);
+    const isAllWaiters = !waiter || waiter.fullName.toLowerCase().includes("barcha");
+    return filteredOrders.filter((order) => {
+      if (!isAllWaiters && waiter) {
+        const nameParts = waiter.fullName.toLowerCase().split(" ").filter(Boolean);
+        const orderName = `${order.user?.firstName ?? ""} ${order.user?.lastName ?? ""}`.toLowerCase();
+        if (order.user?.id === expandedWaiter) return true;
+        if (!nameParts.some((p) => p.length > 2 && orderName.includes(p))) return false;
+      }
+      return true;
+    });
+  }, [expandedWaiter, waitersBase, filteredOrders]);
 
   const expandedRoomStats = useMemo(() => {
     const map = new Map<string, { orders: number; sum: number }>();
@@ -305,7 +353,6 @@ export default function Finance() {
   const waitersList = useMemo(() => {
     const term = waiterSearch.trim().toLowerCase();
     if (!term) return waitersRaw;
-
     return waitersRaw.filter((waiter) => waiter.fullName.toLowerCase().includes(term));
   }, [waitersRaw, waiterSearch]);
 
@@ -395,32 +442,86 @@ export default function Finance() {
               ))}
             </div>
 
-            {getDateRangeLabel(timeType, fromDate, toDate) && (
-              <div className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-background px-3 py-1.5">
-                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium text-muted-foreground">
-                  {getDateRangeLabel(timeType, fromDate, toDate)}
-                </span>
-              </div>
-            )}
+            <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+              <PopoverTrigger asChild>
+                <button className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-background px-3 py-1.5 transition-colors hover:bg-muted hover:border-emerald-400 hover:text-emerald-600">
+                  <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {getDateRangeLabel(timeType, fromDate, toDate) ?? fmt(localDateStr(new Date()))}
+                  </span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarUI
+                  mode="single"
+                  selected={
+                    timeType === "custom" && fromDate
+                      ? new Date(fromDate)
+                      : new Date()
+                  }
+                  onSelect={(date) => {
+                    if (date) {
+                      const s = localDateStr(date);
+                      setFromDate(s);
+                      setToDate(s);
+                      setTimeType("custom");
+                    }
+                    setDatePickerOpen(false);
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           {timeType === "custom" && (
             <div className="flex flex-wrap items-center gap-2">
-              <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <Input
-                type="date"
-                value={fromDate}
-                onChange={(event) => setFromDate(event.target.value)}
-                className="h-9 w-40 bg-background"
-              />
+              <Popover open={fromOpen} onOpenChange={setFromOpen}>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-background px-3 py-1.5 h-9 text-xs font-medium hover:bg-muted transition-colors">
+                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className={fromDate ? "text-foreground" : "text-muted-foreground"}>
+                      {fromDate ? fmt(fromDate) : "DD.MM.YYYY"}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarUI
+                    mode="single"
+                    selected={fromDate ? new Date(fromDate) : undefined}
+                    onSelect={(date) => {
+                      if (date) setFromDate(localDateStr(date));
+                      setFromOpen(false);
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
               <span className="text-sm text-muted-foreground">—</span>
-              <Input
-                type="date"
-                value={toDate}
-                onChange={(event) => setToDate(event.target.value)}
-                className="h-9 w-40 bg-background"
-              />
+
+              <Popover open={toOpen} onOpenChange={setToOpen}>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-background px-3 py-1.5 h-9 text-xs font-medium hover:bg-muted transition-colors">
+                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className={toDate ? "text-foreground" : "text-muted-foreground"}>
+                      {toDate ? fmt(toDate) : "DD.MM.YYYY"}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarUI
+                    mode="single"
+                    selected={toDate ? new Date(toDate) : undefined}
+                    onSelect={(date) => {
+                      if (date) setToDate(localDateStr(date));
+                      setToOpen(false);
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
               {(!fromDate || !toDate) && (
                 <span className="text-xs text-amber-600">Ikkala sanani ham tanlang</span>
               )}
