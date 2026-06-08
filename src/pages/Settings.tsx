@@ -49,7 +49,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const isManagerCtx = branches.length > 0 || branchesLoading;
+  const canManageBranches = user?.role === 'MANAGER' || user?.role === 'SUPERADMIN';
 
   // Modal state
   const [formOpen, setFormOpen] = useState(false);
@@ -187,7 +187,7 @@ export default function Settings() {
       </div>
 
       {/* ── Filiallar ────────────────────────────────────────────────── */}
-      {isManagerCtx && (
+      {canManageBranches && (
         <div className="mt-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">

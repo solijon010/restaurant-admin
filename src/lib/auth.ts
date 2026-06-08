@@ -43,7 +43,9 @@ export function getAccessToken(): string | null {
 function parseJwtPayload(token: string): Record<string, unknown> | null {
   try {
     const payload = token.split('.')[1];
-    return JSON.parse(atob(payload));
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), '=');
+    return JSON.parse(atob(padded));
   } catch {
     return null;
   }
@@ -52,7 +54,14 @@ function parseJwtPayload(token: string): Record<string, unknown> | null {
 export function extractUserFromResponse(response: {
   accessToken: string;
   refreshToken: string;
-  user: { id: string; firstName: string; lastName: string; role: UserRole };
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    role: UserRole;
+    phoneNumer?: string;
+    phoneNumber?: string;
+  };
 }): AuthData {
   const payload = parseJwtPayload(response.accessToken);
   return {
@@ -62,6 +71,7 @@ export function extractUserFromResponse(response: {
       id: response.user.id,
       firstName: response.user.firstName,
       lastName: response.user.lastName,
+      phone: response.user.phoneNumer ?? response.user.phoneNumber,
       role: response.user.role,
       companyId: (payload?.companyId as string) ?? null,
       branchId: (payload?.branchId as string) ?? null,
@@ -79,4 +89,8 @@ export function getRoleBasePath(role: UserRole): string {
     case 'KASSA': return '/cashier';
     default: return '/login';
   }
+}
+
+export function hasImplementedDashboard(role: UserRole): boolean {
+  return role === 'SUPERADMIN' || role === 'MANAGER';
 }

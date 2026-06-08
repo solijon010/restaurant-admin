@@ -1,15 +1,15 @@
 import api from "@/lib/api";
+import { DashboardFilter } from "@/services/dashboardService";
 
-// ========== STAFF (Xodimlar) ==========
 export interface StaffPayload {
     firstName: string;
     lastName: string;
-    phoneNumer: string; // ✅ Backend typo: "phoneNumer" (not "phoneNumber")
+    phoneNumer: string;
     password: string;
     role: "MANAGER" | "AFITSANT" | "CHEF" | "KASSA" | "SUPER_AFITSANT";
     branchId: string;
     salary: number;
-    pinCode?: string; // 4 xonali PIN kod (afitsant ilovasi uchun)
+    pinCode?: string;
 }
 
 export interface StaffUpdatePayload {
@@ -18,28 +18,25 @@ export interface StaffUpdatePayload {
     phoneNumer?: string;
     password?: string;
     salary?: number;
-    pinCode?: string; // 4 xonali PIN kod yangilash
+    pinCode?: string;
 }
 
-// ========== MANAGER ==========
 export interface ManagerPayload {
     firstName: string;
     lastName: string;
-    phoneNumer: string; // backend shu nomni kutadi
+    phoneNumer: string;
     password: string;
     companyId: string;
     branchId?: string | null;
 }
 
-// Manager update uchun alohida payload
 export interface ManagerUpdatePayload {
-    firstName: string;
-    lastName: string;
-    phoneNumer: string;
-    password: string;
+    firstName?: string;
+    lastName?: string;
+    phoneNumer?: string;
+    password?: string;
 }
 
-// ========== USER RESPONSE ==========
 export interface UserResponse {
     id: string;
     firstName: string;
@@ -50,7 +47,7 @@ export interface UserResponse {
     companyId: string;
     status: string;
     salary?: number;
-    pinCode?: string; // backend qo'shgandan keyin to'ldiriladi
+    pinCode?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -66,45 +63,71 @@ export interface User {
     role: "SUPERADMIN" | "MANAGER" | "EMPLOYEE";
 }
 
-export const userService = {
-    // ========== STAFF METHODS ==========
+export interface ManagerListParams {
+    status?: "ACTIVE" | "INACTIVE";
+    search?: string;
+    offcet?: number;
+    limit?: number;
+}
 
-    // Barcha xodimlarni olish
+export interface WaiterInfoItem {
+    waiterId: string;
+    fullName: string;
+    salary: string | number;
+    totalOrders: number;
+    totalSum: number;
+    kpiPercent: number;
+    kpiAmount: number;
+}
+
+export interface WaiterInfoResponse {
+    filter: DashboardFilter;
+    from: string;
+    to: string;
+    totalWaiters: number;
+    data: WaiterInfoItem[];
+}
+
+export interface WaiterInfoParams {
+    filter: DashboardFilter;
+    from?: string;
+    to?: string;
+}
+
+export const userService = {
     getAll: () => api.get("/user"),
 
-    // Filial bo'yicha xodimlarni olish (faqat branchId)
     getStaffByBranch: (branchId: string) => api.get(`/user/my/${branchId}`),
 
-    // Xodim yaratish
     createStaff: (data: StaffPayload) => api.post("/user", data),
 
-    // Xodim tahrirlash
     update: (id: string, data: StaffUpdatePayload) =>
         api.patch(`/user/${id}`, data),
 
-    // Xodim o'chirish
     delete: (id: string) => api.delete(`/user/${id}`),
 
-    // Status toggle
     toggleStatus: (id: string) => api.patch(`/user/status/${id}`),
 
-    // ========== MANAGER METHODS ==========
-
-    // Managers olish
-    getManagers: (params?: { status?: string }) => {
-        const query: Record<string, string> = { ...params };
-        if (!query.status) delete query.status;
-        // to'g'ri endpoint – managaer (backend typo)
+    getManagers: (params?: ManagerListParams) => {
+        const query = Object.fromEntries(
+            Object.entries(params ?? {}).filter(([, value]) => value !== undefined && value !== "")
+        );
         return api.get("/user/managaer", { params: query });
     },
 
-    // Manager yaratish
     createManager: (data: ManagerPayload) => api.post("/user/manager", data),
 
-    // Manager tahrirlash
     updateManager: (id: string, data: ManagerUpdatePayload) =>
         api.patch(`/user/manager/${id}`, data),
 
-    // Manager o'chirish
     deleteManager: (id: string) => api.delete(`/user/manager/${id}`),
+
+    getWaiterInfo: (branchId: string, params: WaiterInfoParams) =>
+        api.get<WaiterInfoResponse>(`/user/waiter/info/${branchId}`, {
+            params: {
+                filter: params.filter,
+                ...(params.filter === "custom" && params.from ? { from: params.from } : {}),
+                ...(params.filter === "custom" && params.to ? { to: params.to } : {}),
+            },
+        }),
 };

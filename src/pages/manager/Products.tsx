@@ -43,7 +43,7 @@ import { productService } from "@/services/productService";
 import { categoryService } from "@/services/categoryService";
 import { kitchenService } from "@/services/kitchenService";
 import { useBranch } from "@/contexts/BranchContext";
-import { formatPrice, statusLabels } from "@/lib/mock-data";
+import { formatPrice, statusLabels } from "@/lib/display";
 import api from "@/lib/api";
 import {
     Plus,
@@ -405,7 +405,7 @@ export default function ManagerProducts() {
     const [deleteProdId, setDeleteProdId] = useState<string | null>(null);
     const [viewProdDialog, setViewProdDialog] = useState(false);
     const [viewProd, setViewProd] = useState<Product | null>(null);
-    const [prodViewMode, setProdViewMode] = useState<'table' | 'card'>('table');
+    const prodViewMode = 'card';
     const [prodAdditionalInfo, setProdAdditionalInfo] = useState<string[]>([]);
     const [additionalInfoInput, setAdditionalInfoInput] = useState("");
     const [viewAddInfoInput, setViewAddInfoInput] = useState("");
@@ -946,7 +946,7 @@ export default function ManagerProducts() {
                                             <SelectItem key={c.id} value={c.id}>
                                                 <div className="flex items-center gap-2">
                                                     {c.icon && (
-                                                        <img src={`${import.meta.env.VITE_API_URL}/image/${c.icon}`}
+                                                        <img src={`${import.meta.env.VITE_API_BASE_URL}/image/${c.icon}`}
                                                             alt="" className="h-4 w-4 rounded object-cover" />
                                                     )}
                                                     {c.name}
@@ -972,17 +972,6 @@ export default function ManagerProducts() {
                                     <Loader2 className="h-3 w-3 animate-spin" /> Yangilanmoqda...
                                 </span>
                             )}
-                            {/* View toggle */}
-                            <div className="flex items-center rounded-lg border border-border overflow-hidden">
-                                <button onClick={() => setProdViewMode('table')}
-                                    className={`h-9 px-2.5 flex items-center justify-center transition-colors ${prodViewMode === 'table' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}>
-                                    <List className="h-4 w-4" />
-                                </button>
-                                <button onClick={() => setProdViewMode('card')}
-                                    className={`h-9 px-2.5 flex items-center justify-center transition-colors ${prodViewMode === 'card' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}>
-                                    <LayoutGrid className="h-4 w-4" />
-                                </button>
-                            </div>
                             <Button onClick={openAddProd} size="sm" className="h-9" disabled={activeCats.length === 0}>
                                 <Plus className="h-4 w-4 mr-1" /> Mahsulot qo'shish
                             </Button>
@@ -998,59 +987,58 @@ export default function ManagerProducts() {
                         {prodViewMode === 'card' && (
                             <div>
                                 {prodsLoading ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                                         {[...Array(8)].map((_, i) => <div key={i} className="h-52 skeleton rounded-2xl" />)}
                                     </div>
                                 ) : productsList.length === 0 ? (
                                     <div className="text-center py-16 text-muted-foreground text-sm">Mahsulot topilmadi</div>
                                 ) : (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                                         {productsList.map((p) => {
                                             const cat = categories.find(c => c.id === p.productCategoryId);
                                             const isPopular = popularList.some(pop => pop.productId === p.id);
                                             const isActive = p.status === 'ACTIVE';
                                             return (
-                                                <div key={p.id} style={{ background: '#fff', borderRadius: 16, border: '1px solid hsl(var(--border))', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', transition: 'box-shadow 0.2s' }}
-                                                    onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.1)')}
-                                                    onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)')}
+                                                <div key={p.id} className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col"
+                                                    style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)', transition: 'all 0.18s ease' }}
+                                                    onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.12)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'none'; }}
                                                 >
-                                                    {/* Image */}
-                                                    <div style={{ height: 100, background: 'hsl(var(--muted))', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    {/* Image — strictly contained */}
+                                                    <div className="w-full bg-muted/40 border-b border-border" style={{ height: 180, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                         {p.photo ? (
-                                                            <img src={`${import.meta.env.VITE_API_URL}/image/${p.photo}`} alt={p.name}
-                                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            <img
+                                                                src={`${import.meta.env.VITE_API_BASE_URL}/image/${p.photo}`}
+                                                                alt={p.name}
+                                                                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                                                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                                            />
                                                         ) : (
-                                                            <Package style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))', opacity: 0.4 }} />
+                                                            <Package className="w-10 h-10 text-muted-foreground opacity-30" />
                                                         )}
-                                                        {isPopular && (
-                                                            <div style={{ position: 'absolute', top: 8, right: 8, background: '#f59e0b', borderRadius: 99, padding: '2px 6px', fontSize: 10, fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 3 }}>
-                                                                <Star style={{ width: 9, height: 9, fill: '#fff' }} /> Top
-                                                            </div>
-                                                        )}
-                                                        {/* Actions */}
-                                                        <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 4 }}>
-                                                            <button onClick={() => openEditProd(p)}
-                                                                style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(255,255,255,0.9)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                <Pencil style={{ width: 12, height: 12, color: '#64748b' }} />
-                                                            </button>
-                                                            <button onClick={() => setDeleteProdId(p.id)}
-                                                                style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(255,255,255,0.9)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                <Trash2 style={{ width: 12, height: 12, color: '#ef4444' }} />
-                                                            </button>
-                                                        </div>
                                                     </div>
 
                                                     {/* Content */}
-                                                    <div style={{ padding: '12px 14px' }}>
-                                                        <p style={{ fontSize: 14, fontWeight: 700, color: 'hsl(var(--foreground))', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
+                                                    <div style={{ padding: '12px 14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                                        {/* Name + actions */}
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
+                                                            <p style={{ fontSize: 14, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{p.name}</p>
+                                                            <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
+                                                                <button onClick={() => openEditProd(p)} className="flex items-center justify-center rounded-md bg-muted border border-border hover:bg-blue-50 hover:border-blue-300 transition-colors" style={{ width: 26, height: 26 }}>
+                                                                    <Pencil style={{ width: 11, height: 11, color: '#64748b' }} />
+                                                                </button>
+                                                                <button onClick={() => setDeleteProdId(p.id)} className="flex items-center justify-center rounded-md bg-muted border border-border hover:bg-red-50 hover:border-red-300 transition-colors" style={{ width: 26, height: 26 }}>
+                                                                    <Trash2 style={{ width: 11, height: 11, color: '#ef4444' }} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
                                                         {cat && (
-                                                            <span style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))', background: 'hsl(var(--muted))', padding: '2px 8px', borderRadius: 99, display: 'inline-block', marginBottom: 10 }}>
-                                                                {cat.name}
-                                                            </span>
+                                                            <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5 w-fit mb-3 block">{cat.name}</span>
                                                         )}
 
-                                                        {/* Stats grid */}
-                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px', marginBottom: 12 }}>
+                                                        {/* Narx + Birlik */}
+                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 8px', marginBottom: 10 }}>
                                                             <div>
                                                                 <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Narx</p>
                                                                 <p style={{ fontSize: 13, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0 }}>{formatPrice(p.price)}</p>
@@ -1059,22 +1047,20 @@ export default function ManagerProducts() {
                                                                 <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Birlik</p>
                                                                 <p style={{ fontSize: 13, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0 }}>{p.unit}</p>
                                                             </div>
-                                                            <div>
-                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Miqdor</p>
-                                                                <p style={{ fontSize: 13, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0 }}>{p.amount}</p>
-                                                            </div>
-                                                            <div>
-                                                                <p style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', margin: '0 0 1px' }}>Holat</p>
-                                                                <p style={{ fontSize: 12, fontWeight: 700, color: isActive ? '#10b981' : '#94a3b8', margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: isActive ? '#10b981' : '#94a3b8', display: 'inline-block' }} />
-                                                                    {isActive ? 'Faol' : 'Nofaol'}
-                                                                </p>
-                                                            </div>
                                                         </div>
 
-                                                        {/* Action button */}
+                                                        {/* Toggle + Status */}
+                                                        <div className="flex items-center justify-between mb-3">
+                                                            <Switch checked={isActive} onCheckedChange={() => toggleProductMutation.mutate(p.id)} disabled={toggleProductMutation.isPending} />
+                                                            <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${isActive ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-muted text-muted-foreground border-border'}`}>
+                                                                {isActive ? 'Faol' : 'Nofaol'}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Ko'rish button */}
                                                         <button onClick={() => openViewProd(p)}
-                                                            style={{ width: '100%', padding: '8px', borderRadius: 10, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, background: 'hsl(var(--foreground))', color: 'hsl(var(--background))', transition: 'opacity 0.15s' }}
+                                                            className="w-full rounded-xl border-none cursor-pointer font-semibold transition-opacity text-sm"
+                                                            style={{ padding: '9px', background: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}
                                                             onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
                                                             onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                                                         >
@@ -1107,7 +1093,7 @@ export default function ManagerProducts() {
                                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                                     {p.photo && (
                                                         <img
-                                                            src={`${import.meta.env.VITE_API_URL}/image/${p.photo}`}
+                                                            src={`${import.meta.env.VITE_API_BASE_URL}/image/${p.photo}`}
                                                             alt={p.name}
                                                             className="h-10 w-10 rounded-xl object-cover border border-border shrink-0"
                                                         />
@@ -1204,7 +1190,7 @@ export default function ManagerProducts() {
                                                         <div className="flex items-center gap-2">
                                                             {p.photo && (
                                                                 <img
-                                                                    src={`${import.meta.env.VITE_API_URL}/image/${p.photo}`}
+                                                                    src={`${import.meta.env.VITE_API_BASE_URL}/image/${p.photo}`}
                                                                     alt={p.name}
                                                                     className="h-8 w-8 rounded-lg object-cover border border-border shrink-0"
                                                                 />
@@ -1217,7 +1203,7 @@ export default function ManagerProducts() {
                                                     <TableCell>
                                                         {cat ? (
                                                             <div className="flex items-center gap-1.5">
-                                                                {cat.icon && <img src={`${import.meta.env.VITE_API_URL}/image/${cat.icon}`} alt="" className="h-4 w-4 rounded object-cover" />}
+                                                                {cat.icon && <img src={`${import.meta.env.VITE_API_BASE_URL}/image/${cat.icon}`} alt="" className="h-4 w-4 rounded object-cover" />}
                                                                 <Badge variant="secondary">{cat.name}</Badge>
                                                             </div>
                                                         ) : <span className="text-muted-foreground text-sm">—</span>}
@@ -1287,7 +1273,7 @@ export default function ManagerProducts() {
                                         <div key={c.id} className="rounded-2xl border border-border/60 shadow-sm p-4 bg-background">
                                             <div className="flex items-center justify-between gap-3">
                                                 <div className="min-w-0 flex-1 flex items-center gap-2">
-                                                    {c.icon && <img src={`${import.meta.env.VITE_API_URL}/image/${c.icon}`} alt={c.name} className="h-6 w-6 rounded object-cover border border-border shrink-0" />}
+                                                    {c.icon && <img src={`${import.meta.env.VITE_API_BASE_URL}/image/${c.icon}`} alt={c.name} className="h-6 w-6 rounded object-cover border border-border shrink-0" />}
                                                     <div>
                                                         <p className="font-medium">{c.name}</p>
                                                         <div className="flex items-center gap-2 mt-0.5">
@@ -1339,7 +1325,7 @@ export default function ManagerProducts() {
                                                 <TableRow key={c.id}>
                                                     <TableCell className="font-medium">
                                                         <div className="flex items-center gap-2">
-                                                            {c.icon && <img src={`${import.meta.env.VITE_API_URL}/image/${c.icon}`} alt={c.name} className="h-6 w-6 rounded object-cover border border-border" />}
+                                                            {c.icon && <img src={`${import.meta.env.VITE_API_BASE_URL}/image/${c.icon}`} alt={c.name} className="h-6 w-6 rounded object-cover border border-border" />}
                                                             {c.name}
                                                         </div>
                                                     </TableCell>
@@ -1433,7 +1419,7 @@ export default function ManagerProducts() {
                                                         {cat ? (
                                                             <div className="flex items-center gap-1.5">
                                                                 {cat.icon && (
-                                                                    <img src={`${import.meta.env.VITE_API_URL}/image/${cat.icon}`}
+                                                                    <img src={`${import.meta.env.VITE_API_BASE_URL}/image/${cat.icon}`}
                                                                         alt="" className="h-4 w-4 rounded object-cover" />
                                                                 )}
                                                                 <Badge variant="secondary">{cat.name}</Badge>
@@ -1514,7 +1500,7 @@ export default function ManagerProducts() {
                                             <SelectItem key={c.id} value={c.id}>
                                                 <div className="flex items-center gap-2">
                                                     {c.icon && (
-                                                        <img src={`${import.meta.env.VITE_API_URL}/image/${c.icon}`}
+                                                        <img src={`${import.meta.env.VITE_API_BASE_URL}/image/${c.icon}`}
                                                             alt="" className="h-4 w-4 rounded object-cover" />
                                                     )}
                                                     {c.name}
@@ -1599,7 +1585,7 @@ export default function ManagerProducts() {
                             hint="PNG, JPG • maks 5MB"
                             existingUrl={
                                 editProd?.photo
-                                    ? `${import.meta.env.VITE_API_URL}/image/${editProd.photo}`
+                                    ? `${import.meta.env.VITE_API_BASE_URL}/image/${editProd.photo}`
                                     : null
                             }
                         />
@@ -1644,7 +1630,7 @@ export default function ManagerProducts() {
                             hint="PNG, JPG • maks 2MB"
                             existingUrl={
                                 editCat?.icon
-                                    ? `${import.meta.env.VITE_API_URL}/image/${editCat.icon}`
+                                    ? `${import.meta.env.VITE_API_BASE_URL}/image/${editCat.icon}`
                                     : null
                             }
                         />

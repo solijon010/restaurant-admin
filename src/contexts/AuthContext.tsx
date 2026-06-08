@@ -1,12 +1,13 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { AuthData, AuthUser, getAuth, saveAuth, clearAuth, extractUserFromResponse, UserRole } from '@/lib/auth';
+import { AuthData, AuthUser, getAuth, saveAuth, clearAuth, extractUserFromResponse } from '@/lib/auth';
 import { authService } from '@/services/authService';
 
 interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
-  login: (phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (phone: string, password: string) => Promise<{ success: boolean; user?: AuthUser; error?: string }>;
   logout: () => void;
+  updateUser: (patch: Partial<AuthUser>) => void;
 }
 
 const defaultValue: AuthContextType = {
@@ -14,52 +15,23 @@ const defaultValue: AuthContextType = {
   isAuthenticated: false,
   login: async () => ({ success: false, error: 'AuthProvider not mounted' }),
   logout: () => {},
+  updateUser: () => {},
 };
 
 const AuthContext = createContext<AuthContextType>(defaultValue);
-
-// Demo users for offline/testing fallback
-const DEMO_USERS: Record<string, { password: string; response: Parameters<typeof extractUserFromResponse>[0] }> = {
-  '+998901234567': {
-    password: 'admin123',
-    response: {
-      accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InUxIiwicm9sZSI6IlNVUEVSQURNSU4iLCJicmFuY2hJZCI6bnVsbCwiY29tcGFueUlkIjoiYzEiLCJpYXQiOjE3NzEwMTE1ODYsImV4cCI6MTc3OTY1MTU4Nn0.fake',
-      refreshToken: 'refresh_token_superadmin',
-      user: { id: 'u1', firstName: 'Muhammadrioz', lastName: 'Daminboev', role: 'SUPERADMIN' as UserRole },
-    },
-  },
-  '+998901234568': {
-    password: 'manager123',
-    response: {
-      accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InUyIiwicm9sZSI6Ik1BTkFHRVIiLCJicmFuY2hJZCI6ImIxIiwiY29tcGFueUlkIjoiYzEiLCJpYXQiOjE3NzEwMTE1ODYsImV4cCI6MTc3OTY1MTU4Nn0.fake',
-      refreshToken: 'refresh_token_manager',
-      user: { id: 'u2', firstName: 'Aziz', lastName: 'Rahimov', role: 'MANAGER' as UserRole },
-    },
-  },
-};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [authData, setAuthData] = useState<AuthData | null>(getAuth);
 
   const login = useCallback(async (phone: string, password: string) => {
     try {
-      // Try real API first
       const response = await authService.login({ identifier: phone, password });
       const data = extractUserFromResponse(response.data as Parameters<typeof extractUserFromResponse>[0]);
       saveAuth(data);
       setAuthData(data);
-      return { success: true };
-    } catch (apiError: any) {
-      // If API is unavailable, fall back to demo users
-      const demo = DEMO_USERS[phone];
-      if (demo && demo.password === password) {
-        const data = extractUserFromResponse(demo.response);
-        saveAuth(data);
-        setAuthData(data);
-        return { success: true };
-      }
-
-      const message = apiError?.response?.data?.message || 'Telefon raqam yoki parol noto\'g\'ri';
+      return { success: true, user: data.user };
+    } catch (apiError: unknown) {
+      const message = (apiError as { response?: { data?: { message?: unknown } } })?.response?.data?.message || 'Telefon raqam yoki parol noto\'g\'ri';
       return { success: false, error: typeof message === 'string' ? message : 'Xatolik yuz berdi' };
     }
   }, []);
@@ -69,12 +41,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthData(null);
   }, []);
 
+  const updateUser = useCallback((patch: Partial<AuthUser>) => {
+    setAuthData((current) => {
+      if (!current) return current;
+      const next: AuthData = {
+        ...current,
+        user: {
+          ...current.user,
+          ...patch,
+        },
+      };
+      saveAuth(next);
+      return next;
+    });
+  }, []);
+
   return (
     <AuthContext.Provider value={{
       user: authData?.user ?? null,
       isAuthenticated: !!authData,
       login,
       logout,
+      updateUser,
     }}>
       {children}
     </AuthContext.Provider>

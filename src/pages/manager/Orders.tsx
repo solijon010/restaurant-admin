@@ -1,39 +1,40 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
     Loader2, Search, MoreVertical, Eye, X,
     ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-    Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart,
+    Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart, Settings2,
 } from 'lucide-react';
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { useBranch } from '@/contexts/BranchContext';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { formatPrice } from '@/lib/mock-data';
+import { extractArray } from '@/lib/api-response';
+import { formatPrice } from '@/lib/display';
+import { filterOrdersByDate, getOrderDateKey, todayStr } from '@/lib/order-analytics';
+import { BIRD_REPORT_GROUPS, buildMenuGroupStats, buildSuggestedMenuAssignments, isTrackedMenuProduct, MenuCategoryRecord, MenuGroupAssignments, MenuReportGroup, SHASHLIK_REPORT_GROUPS } from '@/lib/menu-report';
+import { BranchOrder, BranchOrdersQuery, getAllBranchOrders, getBranchOrdersPage, getOrderTotal } from '@/lib/orders';
 import { Card } from '@/components/ui/card';
-import api from '@/lib/api';
+import { categoryService } from '@/services/categoryService';
+import { ProductRecord, productService } from '@/services/productService';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type OrderStatus = 'SUCCESS' | 'CANCELED' | 'PENDING';
-
-interface OrderProduct { id: string; name: string; price: string | number; unit?: string; }
-interface OrderItem    { id: string; count: string | number; status: string; product: OrderProduct; }
-interface OrderRoom    { id: string; name: string; }
-interface OrderUser    { id: string; firstName: string; lastName: string; phoneNumer: string; role?: string; }
-interface Order {
-    id: string; status: OrderStatus; type: string;
-    createdAt: string; endAt: string | null;
-    orderItem: OrderItem[]; room: OrderRoom; user: OrderUser;
-}
+type Order = BranchOrder;
+type OrderStatus = BranchOrder['status'];
+type BranchReportAssignments = Record<string, MenuGroupAssignments>;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
+const REPORT_GROUP_STORAGE_KEY = 'rms_report_group_assignments_v1';
+const UNASSIGNED_GROUP = '__unassigned__';
+const ALL_REPORT_GROUPS = [...SHASHLIK_REPORT_GROUPS, ...BIRD_REPORT_GROUPS];
+
 const STATUS_LABELS: Record<OrderStatus, string> = {
     SUCCESS: 'Yakunlangan', PENDING: 'Kutilmoqda', CANCELED: 'Bekor qilingan',
 };
@@ -103,21 +104,6 @@ const QANOT_ORDAK_CATEGORIES = [
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function toArray<T>(raw: unknown): T[] {
-    if (Array.isArray(raw)) return raw as T[];
-    if (raw && typeof raw === 'object') {
-        const obj = raw as Record<string, unknown>;
-        for (const key of ['data', 'items', 'result', 'results', 'content']) {
-            if (Array.isArray(obj[key])) return obj[key] as T[];
-        }
-    }
-    return [];
-}
-
-function getOrderTotal(o: Order) {
-    return o.orderItem.reduce((s, i) => s + Number(i.product.price) * Number(i.count), 0);
-}
-
 function formatTime(d: string | null) {
     if (!d) return '—';
     return new Date(d).toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
@@ -144,10 +130,6 @@ function norm(s: string) {
 function isSpecialProduct(productName: string) {
     const n = norm(productName);
     return PREDEFINED_CATEGORIES.some(cat => cat.match(n));
-}
-
-function todayStr() {
-    return new Date().toISOString().slice(0, 10);
 }
 
 type Category = { id: string; label: string; match: (n: string) => boolean; dot: string; badge: string };
@@ -187,6 +169,32 @@ function buildStats(orders: Order[], categories: Category[]) {
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
+function loadStoredAssignments(): BranchReportAssignments {
+    if (typeof window === 'undefined') return {};
+
+    try {
+        const raw = window.localStorage.getItem(REPORT_GROUP_STORAGE_KEY);
+        if (!raw) return {};
+
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+        return {};
+    }
+}
+
+function persistAssignments(value: BranchReportAssignments) {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(REPORT_GROUP_STORAGE_KEY, JSON.stringify(value));
+}
+
+function buildAssignmentDraft(products: ProductRecord[], assignments: MenuGroupAssignments) {
+    return products.reduce<MenuGroupAssignments>((acc, product) => {
+        acc[product.id] = assignments[product.id] ?? '';
+        return acc;
+    }, {});
+}
+
 export default function ManagerOrders() {
     const { selectedBranchId } = useBranch();
 
@@ -198,70 +206,203 @@ export default function ManagerOrders() {
     const [detailOrder, setDetailOrder]   = useState<Order | null>(null);
     const [shashlikDate, setShashlikDate] = useState(todayStr);
     const [qanotDate, setQanotDate]       = useState(todayStr);
+    const [isMappingDialogOpen, setIsMappingDialogOpen] = useState(false);
+    const [mappingSearch, setMappingSearch] = useState('');
+    const [storedAssignments, setStoredAssignments] = useState<BranchReportAssignments>(() => loadStoredAssignments());
+    const [draftAssignments, setDraftAssignments] = useState<MenuGroupAssignments>({});
 
     useEffect(() => { setPage(1); }, [statusFilter, dateFilter, selectedBranchId]);
 
     // ── Buyurtmalar
-    const { data: ordersRaw, isLoading: ordersLoading, isFetching } = useQuery({
-        queryKey: ['orders', selectedBranchId, page, limit, statusFilter, dateFilter],
+    const { data: ordersResult, isLoading: ordersLoading, isFetching } = useQuery({
+        queryKey: ['orders', selectedBranchId, page, limit, statusFilter, dateFilter, search],
         queryFn: async () => {
-            const params: Record<string, unknown> = { page, limit };
-            if (statusFilter !== 'ALL') params.status = statusFilter;
-            const res = await api.get(`/order/branch/${selectedBranchId}`, { params });
-            return res.data;
+            if (!selectedBranchId) return { items: [] as Order[], total: 0 };
+
+            const params: BranchOrdersQuery = {
+                page,
+                limit,
+            };
+
+            const normalizedSearch = search.trim().toLowerCase();
+            const needsLocalFiltering = !!dateFilter || !!normalizedSearch || statusFilter !== 'ALL';
+
+            if (!needsLocalFiltering) {
+                const pageResult = await getBranchOrdersPage(selectedBranchId, params);
+                return { items: pageResult.items, total: pageResult.total };
+            }
+
+            const allOrdersResult = await getAllBranchOrders(selectedBranchId, { limit: 100 });
+
+            const filteredOrders = allOrdersResult.items.filter((order) => {
+                const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
+                if (!matchesStatus) return false;
+
+                const matchesDate = !dateFilter || getOrderDateKey(order.createdAt) === dateFilter;
+                if (!matchesDate) return false;
+
+                if (!normalizedSearch) return true;
+
+                const haystack = `${order.room?.name || ''} ${order.user?.firstName || ''} ${order.user?.lastName || ''} ${order.orderItem.map(item => item.product?.name || '').join(' ')}`.toLowerCase();
+                return haystack.includes(normalizedSearch);
+            });
+
+            const startIndex = (page - 1) * limit;
+            return {
+                items: filteredOrders.slice(startIndex, startIndex + limit),
+                total: filteredOrders.length,
+            };
         },
         enabled: !!selectedBranchId,
         placeholderData: prev => prev,
     });
 
-    const allOrders = toArray<Order>(ordersRaw);
-    const total     = (ordersRaw as Record<string, unknown>)?.total as number ?? allOrders.length;
+    const allOrders = ordersResult?.items ?? [];
+    const total     = ordersResult?.total ?? allOrders.length;
     const totalPages = Math.max(Math.ceil(total / limit), 1);
     const startItem  = total === 0 ? 0 : (page - 1) * limit + 1;
     const endItem    = Math.min(page * limit, total);
+    const filtered = allOrders;
 
-    const filtered = search
-        ? allOrders.filter(o => {
-            const txt = `${o.room?.name || ''} ${o.user?.firstName || ''} ${o.user?.lastName || ''} ${o.orderItem.map(i => i.product?.name || '').join(' ')}`.toLowerCase();
-            return txt.includes(search.toLowerCase());
-        })
-        : allOrders;
+    const { data: reportCatalog } = useQuery({
+        queryKey: ['orders-report-catalog', selectedBranchId],
+        queryFn: async () => {
+            const [categoriesResponse, productsResult] = await Promise.all([
+                categoryService.getByBranch(selectedBranchId),
+                productService.getAllByBranch(selectedBranchId, { limit: 100 }),
+            ]);
+
+            return {
+                categories: extractArray<MenuCategoryRecord>(categoriesResponse.data),
+                products: productsResult.items,
+            };
+        },
+        enabled: !!selectedBranchId,
+        staleTime: 5 * 60 * 1000,
+    });
 
     // ── Shashlik hisobi
-    const { data: shRaw, isLoading: shLoading } = useQuery({
+    const { data: shOrders = [], isLoading: shLoading } = useQuery({
         queryKey: ['orders-sh', selectedBranchId, shashlikDate],
         queryFn: async () => {
-            const res = await api.get(`/order/branch/${selectedBranchId}`, {
-                params: { limit: 1000 },
-            });
-            return res.data;
+            const result = await getAllBranchOrders(selectedBranchId, { limit: 100 });
+            return filterOrdersByDate(result.items.filter((order) => order.status === 'SUCCESS'), shashlikDate);
         },
         enabled: !!selectedBranchId,
         staleTime: 2 * 60 * 1000,
     });
-
-    const shOrders = toArray<Order>(shRaw).filter(o => (o.createdAt ?? '').slice(0, 10) === shashlikDate);
-    const stats      = buildStats(shOrders, PREDEFINED_CATEGORIES);
-    const grandTotal = stats.reduce((s, i) => s + i.count, 0);
-    const grandSum   = stats.reduce((s, i) => s + i.sum, 0);
 
     // ── Qanot va O'rdak hisobi
-    const { data: qoRaw, isLoading: qoLoading } = useQuery({
+    const { data: qoOrders = [], isLoading: qoLoading } = useQuery({
         queryKey: ['orders-qo', selectedBranchId, qanotDate],
         queryFn: async () => {
-            const res = await api.get(`/order/branch/${selectedBranchId}`, {
-                params: { limit: 1000 },
-            });
-            return res.data;
+            const result = await getAllBranchOrders(selectedBranchId, { limit: 100 });
+            return filterOrdersByDate(result.items.filter((order) => order.status === 'SUCCESS'), qanotDate);
         },
         enabled: !!selectedBranchId,
         staleTime: 2 * 60 * 1000,
     });
 
-    const qoOrders = toArray<Order>(qoRaw).filter(o => (o.createdAt ?? '').slice(0, 10) === qanotDate);
-    const qoStats    = buildStats(qoOrders, QANOT_ORDAK_CATEGORIES);
-    const qoTotal    = qoStats.reduce((s, i) => s + i.count, 0);
-    const qoSum      = qoStats.reduce((s, i) => s + i.sum, 0);
+    const reportCategories = useMemo(
+        () => reportCatalog?.categories ?? [],
+        [reportCatalog?.categories],
+    );
+    const reportProducts = useMemo(
+        () => reportCatalog?.products ?? [],
+        [reportCatalog?.products],
+    );
+    const reportCategoryMap = useMemo(
+        () => new Map(reportCategories.map((category) => [category.id, category.name])),
+        [reportCategories],
+    );
+    const storedBranchAssignments = selectedBranchId ? storedAssignments[selectedBranchId] ?? null : null;
+    const suggestedAssignments = useMemo(
+        () => buildSuggestedMenuAssignments(reportProducts, reportCategories, ALL_REPORT_GROUPS),
+        [reportCategories, reportProducts],
+    );
+    const effectiveAssignments = useMemo(
+        () => ({ ...suggestedAssignments, ...(storedBranchAssignments ?? {}) }),
+        [storedBranchAssignments, suggestedAssignments],
+    );
+    const mappingCounts = useMemo(
+        () => ALL_REPORT_GROUPS.reduce<Record<string, number>>((acc, group) => {
+            acc[group.id] = Object.values(draftAssignments).filter((value) => value === group.id).length;
+            return acc;
+        }, {}),
+        [draftAssignments],
+    );
+    const filteredMappingProducts = useMemo(() => {
+        const term = mappingSearch.trim().toLowerCase();
+        const assignments = isMappingDialogOpen ? draftAssignments : effectiveAssignments;
+
+        return [...reportProducts]
+            .sort((left, right) => {
+                const leftAssigned = assignments[left.id] ? 1 : 0;
+                const rightAssigned = assignments[right.id] ? 1 : 0;
+                if (leftAssigned !== rightAssigned) return rightAssigned - leftAssigned;
+                return left.name.localeCompare(right.name, 'uz');
+            })
+            .filter((product) => {
+                if (!term) return true;
+
+                const categoryName = reportCategoryMap.get(product.productCategoryId) ?? '';
+                const haystack = `${product.name} ${categoryName}`.toLowerCase();
+                return haystack.includes(term);
+            });
+    }, [draftAssignments, effectiveAssignments, isMappingDialogOpen, mappingSearch, reportCategoryMap, reportProducts]);
+
+    useEffect(() => {
+        if (!isMappingDialogOpen) return;
+        setMappingSearch('');
+        setDraftAssignments(buildAssignmentDraft(reportProducts, effectiveAssignments));
+    }, [effectiveAssignments, isMappingDialogOpen, reportProducts]);
+
+    const openMappingDialog = () => {
+        setDraftAssignments(buildAssignmentDraft(reportProducts, effectiveAssignments));
+        setMappingSearch('');
+        setIsMappingDialogOpen(true);
+    };
+
+    const updateDraftAssignment = (productId: string, value: string) => {
+        setDraftAssignments((prev) => ({
+            ...prev,
+            [productId]: value === UNASSIGNED_GROUP ? '' : value,
+        }));
+    };
+
+    const resetDraftAssignments = () => {
+        setDraftAssignments(buildAssignmentDraft(reportProducts, suggestedAssignments));
+    };
+
+    const saveDraftAssignments = () => {
+        if (!selectedBranchId) return;
+
+        const nextAssignments = {
+            ...storedAssignments,
+            [selectedBranchId]: buildAssignmentDraft(reportProducts, draftAssignments),
+        };
+
+        setStoredAssignments(nextAssignments);
+        persistAssignments(nextAssignments);
+        setIsMappingDialogOpen(false);
+    };
+
+    const stats = useMemo(
+        () => buildMenuGroupStats(shOrders, reportProducts, reportCategories, SHASHLIK_REPORT_GROUPS, effectiveAssignments),
+        [effectiveAssignments, reportCategories, reportProducts, shOrders],
+    );
+    const qoStats = useMemo(
+        () => buildMenuGroupStats(qoOrders, reportProducts, reportCategories, BIRD_REPORT_GROUPS, effectiveAssignments),
+        [effectiveAssignments, qoOrders, reportCategories, reportProducts],
+    );
+
+    const grandOrders = stats.reduce((sum, item) => sum + item.orderCount, 0);
+    const grandQuantity = stats.reduce((sum, item) => sum + item.quantity, 0);
+    const grandSum = stats.reduce((sum, item) => sum + item.sum, 0);
+
+    const qoOrderTotal = qoStats.reduce((sum, item) => sum + item.orderCount, 0);
+    const qoQuantity = qoStats.reduce((sum, item) => sum + item.quantity, 0);
+    const qoSum = qoStats.reduce((sum, item) => sum + item.sum, 0);
 
     // ─── Render ───────────────────────────────────────────────────────────────
     return (
@@ -361,76 +502,46 @@ export default function ManagerOrders() {
                             ))}
                         </div>
 
-                        {/* Desktop */}
-                        <div className="hidden md:block overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="hover:bg-muted/40 bg-muted/40 border-border/60">
-                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Xona / Stol</TableHead>
-                                        <TableHead className="text-xs font-bold py-3">
-                                            <span className="flex items-center gap-1.5 text-green-600">
-                                                <LogIn className="h-3.5 w-3.5" />O'tirgan
-                                            </span>
-                                        </TableHead>
-                                        <TableHead className="text-xs font-bold py-3">
-                                            <span className="flex items-center gap-1.5 text-red-500">
-                                                <LogOut className="h-3.5 w-3.5" />Turgan
-                                            </span>
-                                        </TableHead>
-                                        <TableHead className="text-xs font-bold py-3">
-                                            <span className="flex items-center gap-1.5 text-blue-500">
-                                                <Clock className="h-3.5 w-3.5" />Davomiylik
-                                            </span>
-                                        </TableHead>
-                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Mahsulotlar</TableHead>
-                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Summa</TableHead>
-                                        <TableHead className="text-xs font-bold text-foreground/70 py-3">Holat</TableHead>
-                                        <TableHead className="text-right text-xs font-bold text-foreground/70 py-3">Amallar</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {ordersLoading ? (
-                                        <TableRow><TableCell colSpan={8} className="text-center py-16">
-                                            <div className="flex flex-col items-center gap-2">
-                                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                                                <span className="text-sm text-muted-foreground">Yuklanmoqda...</span>
+                        {/* Desktop — Card list */}
+                        <div className="hidden md:block">
+
+                            {ordersLoading ? (
+                                <div className="flex flex-col items-center gap-2 py-16">
+                                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                    <span className="text-sm text-muted-foreground">Yuklanmoqda...</span>
+                                </div>
+                            ) : filtered.length === 0 ? (
+                                <div className="flex flex-col items-center gap-2 py-16 text-muted-foreground">
+                                    <UtensilsCrossed className="h-8 w-8 opacity-30" />
+                                    <span className="text-sm">Buyurtma topilmadi</span>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-3">
+                                {filtered.map(o => {
+                                    const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ${oi.count} dona`);
+                                    return (
+                                        <div key={o.id} className={`grid grid-cols-[100px_130px_130px_100px_1fr_120px_120px_50px] xl:grid-cols-[120px_140px_140px_110px_1fr_130px_130px_60px] gap-2 xl:gap-3 items-center bg-card border border-border rounded-2xl px-4 py-3.5 hover:shadow-md hover:border-sky-200 transition-all ${isFetching ? 'opacity-60' : ''}`}>
+                                            <span className="font-semibold text-sm">{o.room?.name || '—'}</span>
+
+                                            <div>
+                                                <p className="font-medium text-sm text-green-600">{formatTime(o.createdAt)}</p>
+                                                <p className="text-xs text-muted-foreground">{formatDate(o.createdAt)}</p>
                                             </div>
-                                        </TableCell></TableRow>
-                                    ) : filtered.length === 0 ? (
-                                        <TableRow><TableCell colSpan={8} className="py-20">
-                                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                                <UtensilsCrossed className="h-8 w-8 opacity-30" />
-                                                <span className="text-sm">Buyurtma topilmadi</span>
+
+                                            <div>
+                                                {o.endAt ? (
+                                                    <>
+                                                        <p className="font-medium text-sm text-red-500">{formatTime(o.endAt)}</p>
+                                                        <p className="text-xs text-muted-foreground">{formatDate(o.endAt)}</p>
+                                                    </>
+                                                ) : (
+                                                    <Badge variant="secondary" className="text-xs">Hali ketmagan</Badge>
+                                                )}
                                             </div>
-                                        </TableCell></TableRow>
-                                    ) : filtered.map(o => {
-                                        const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ${oi.count} dona`);
-                                        return (
-                                            <TableRow key={o.id} className={`transition-opacity border-b border-border hover:bg-muted/30 ${isFetching ? 'opacity-60' : ''}`} style={{ height: 64 }}>
-                                                <TableCell className="font-semibold">{o.room?.name || '—'}</TableCell>
 
-                                                <TableCell>
-                                                    <p className="font-medium text-sm">{formatTime(o.createdAt)}</p>
-                                                    <p className="text-xs text-muted-foreground">{formatDate(o.createdAt)}</p>
-                                                </TableCell>
+                                            <span className="text-sm text-muted-foreground">{duration(o.createdAt, o.endAt)}</span>
 
-                                                <TableCell>
-                                                    {o.endAt ? (
-                                                        <>
-                                                            <p className="font-medium text-sm">{formatTime(o.endAt)}</p>
-                                                            <p className="text-xs text-muted-foreground">{formatDate(o.endAt)}</p>
-                                                        </>
-                                                    ) : (
-                                                        <Badge variant="secondary" className="text-xs">Hali ketmagan</Badge>
-                                                    )}
-                                                </TableCell>
-
-                                                <TableCell className="text-sm text-muted-foreground">
-                                                    {duration(o.createdAt, o.endAt)}
-                                                </TableCell>
-
-                                                <TableCell className="max-w-[200px]">
-                                                    <div className="flex flex-wrap gap-1">
+                                            <div className="flex flex-wrap gap-1 max-w-[200px]">
                                                         {prodNames.slice(0, 3).map((n, i) => (
                                                             <Badge key={i} variant="outline" className="text-xs">{n}</Badge>
                                                         ))}
@@ -438,24 +549,21 @@ export default function ManagerOrders() {
                                                             <Badge variant="outline" className="text-xs">+{prodNames.length - 3}</Badge>
                                                         )}
                                                     </div>
-                                                </TableCell>
 
-                                                <TableCell className="font-semibold">{formatPrice(getOrderTotal(o))}</TableCell>
+                                            <span className="font-bold text-sm">{formatPrice(getOrderTotal(o))}</span>
 
-                                                <TableCell>
-                                                    <StatusBadge status={o.status} />
-                                                </TableCell>
+                                            <div><StatusBadge status={o.status} /></div>
 
-                                                <TableCell className="text-right">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted" onClick={() => setDetailOrder(o)}>
-                                                        <Eye className="h-4 w-4 text-muted-foreground" />
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                </TableBody>
-                            </Table>
+                                            <div className="flex justify-end">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted rounded-full" onClick={() => setDetailOrder(o)}>
+                                                    <Eye className="h-4 w-4 text-muted-foreground" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                </div>
+                            )}
                         </div>
 
                         {/* Pagination */}
@@ -504,10 +612,17 @@ export default function ManagerOrders() {
                         <div className="flex flex-wrap items-center gap-3 mb-1">
                             <Input type="date" value={shashlikDate}
                                 onChange={e => setShashlikDate(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
-                            {!shLoading && grandTotal > 0 && (
+                            <Button type="button" variant="outline" className="h-9 gap-2" onClick={openMappingDialog}>
+                                <Settings2 className="h-4 w-4" />
+                                Guruhlarni sozlash
+                            </Button>
+                            {!shLoading && grandQuantity > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
                                     <span className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full">
-                                        <Flame className="h-3.5 w-3.5" />{grandTotal} ta porsiya
+                                        <Flame className="h-3.5 w-3.5" />{grandOrders} ta zakaz
+                                    </span>
+                                    <span className="text-sm font-semibold text-foreground bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full">
+                                        {grandQuantity} ta porsiya
                                     </span>
                                     <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">
                                         {formatPrice(grandSum)}
@@ -532,7 +647,10 @@ export default function ManagerOrders() {
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <span className={`inline-flex items-center rounded-full border px-3 py-0.5 text-sm font-bold ${item.badge}`}>
-                                                    {item.count} ta porsiya
+                                                    {item.orderCount} ta zakaz
+                                                </span>
+                                                <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-0.5 rounded-full">
+                                                    {item.quantity} ta porsiya
                                                 </span>
                                                 <span className="text-sm font-semibold text-muted-foreground">
                                                     {item.sum > 0 ? formatPrice(item.sum) : '—'}
@@ -550,7 +668,8 @@ export default function ManagerOrders() {
                                                 <TableHeader>
                                                     <TableRow className="bg-muted/10 hover:bg-muted/10">
                                                         <TableHead className="text-xs font-semibold pl-5">Stol / Xona</TableHead>
-                                                        <TableHead className="text-xs font-semibold">Soni</TableHead>
+                                                        <TableHead className="text-xs font-semibold">Zakaz</TableHead>
+                                                        <TableHead className="text-xs font-semibold">Porsiya</TableHead>
                                                         <TableHead className="text-xs font-semibold text-right pr-5">Summa</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
@@ -560,9 +679,10 @@ export default function ManagerOrders() {
                                                             <TableCell className="font-medium pl-5">{row.table}</TableCell>
                                                             <TableCell>
                                                                 <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${item.badge}`}>
-                                                                    {row.count} ta
+                                                                    {row.orderCount} ta
                                                                 </span>
                                                             </TableCell>
+                                                            <TableCell className="font-medium">{row.quantity} ta</TableCell>
                                                             <TableCell className="text-right font-semibold pr-5">
                                                                 {formatPrice(row.sum)}
                                                             </TableCell>
@@ -573,9 +693,10 @@ export default function ManagerOrders() {
                                                             <TableCell className="pl-5 text-sm">Jami</TableCell>
                                                             <TableCell>
                                                                 <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold ${item.badge}`}>
-                                                                    {item.count} ta
+                                                                    {item.orderCount} ta
                                                                 </span>
                                                             </TableCell>
+                                                            <TableCell>{item.quantity} ta</TableCell>
                                                             <TableCell className="text-right pr-5">{formatPrice(item.sum)}</TableCell>
                                                         </TableRow>
                                                     )}
@@ -595,10 +716,17 @@ export default function ManagerOrders() {
                         <div className="flex flex-wrap items-center gap-3 mb-1">
                             <Input type="date" value={qanotDate}
                                 onChange={e => setQanotDate(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
-                            {!qoLoading && qoTotal > 0 && (
+                            <Button type="button" variant="outline" className="h-9 gap-2" onClick={openMappingDialog}>
+                                <Settings2 className="h-4 w-4" />
+                                Guruhlarni sozlash
+                            </Button>
+                            {!qoLoading && qoQuantity > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
                                     <span className="flex items-center gap-1.5 text-sm font-semibold text-yellow-600 bg-yellow-50 border border-yellow-200 px-3 py-1.5 rounded-full">
-                                        <Bird className="h-3.5 w-3.5" />{qoTotal} ta porsiya
+                                        <Bird className="h-3.5 w-3.5" />{qoOrderTotal} ta zakaz
+                                    </span>
+                                    <span className="text-sm font-semibold text-foreground bg-yellow-50 border border-yellow-200 px-3 py-1.5 rounded-full">
+                                        {qoQuantity} ta porsiya
                                     </span>
                                     <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">
                                         {formatPrice(qoSum)}
@@ -623,7 +751,10 @@ export default function ManagerOrders() {
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <span className={`inline-flex items-center rounded-full border px-3 py-0.5 text-sm font-bold ${item.badge}`}>
-                                                    {item.count} ta porsiya
+                                                    {item.orderCount} ta zakaz
+                                                </span>
+                                                <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-0.5 rounded-full">
+                                                    {item.quantity} ta porsiya
                                                 </span>
                                                 <span className="text-sm font-semibold text-muted-foreground">
                                                     {item.sum > 0 ? formatPrice(item.sum) : '—'}
@@ -641,7 +772,8 @@ export default function ManagerOrders() {
                                                 <TableHeader>
                                                     <TableRow className="bg-muted/10 hover:bg-muted/10">
                                                         <TableHead className="text-xs font-semibold pl-5">Stol / Xona</TableHead>
-                                                        <TableHead className="text-xs font-semibold">Soni</TableHead>
+                                                        <TableHead className="text-xs font-semibold">Zakaz</TableHead>
+                                                        <TableHead className="text-xs font-semibold">Porsiya</TableHead>
                                                         <TableHead className="text-xs font-semibold text-right pr-5">Summa</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
@@ -651,9 +783,10 @@ export default function ManagerOrders() {
                                                             <TableCell className="font-medium pl-5">{row.table}</TableCell>
                                                             <TableCell>
                                                                 <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${item.badge}`}>
-                                                                    {row.count} ta
+                                                                    {row.orderCount} ta
                                                                 </span>
                                                             </TableCell>
+                                                            <TableCell className="font-medium">{row.quantity} ta</TableCell>
                                                             <TableCell className="text-right font-semibold pr-5">
                                                                 {formatPrice(row.sum)}
                                                             </TableCell>
@@ -664,9 +797,10 @@ export default function ManagerOrders() {
                                                             <TableCell className="pl-5 text-sm">Jami</TableCell>
                                                             <TableCell>
                                                                 <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold ${item.badge}`}>
-                                                                    {item.count} ta
+                                                                    {item.orderCount} ta
                                                                 </span>
                                                             </TableCell>
+                                                            <TableCell>{item.quantity} ta</TableCell>
                                                             <TableCell className="text-right pr-5">{formatPrice(item.sum)}</TableCell>
                                                         </TableRow>
                                                     )}
@@ -682,10 +816,110 @@ export default function ManagerOrders() {
             </Tabs>
 
             {/* ═══ DETAIL SHEET ═══ */}
+            <Dialog open={isMappingDialogOpen} onOpenChange={setIsMappingDialogOpen}>
+                <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden">
+                    <DialogHeader>
+                        <DialogTitle>Hisobot guruhlarini sozlash</DialogTitle>
+                        <DialogDescription>
+                            Har bir filial uchun mahsulotlarni kerakli hisobot guruhiga biriktiring. Hisobot endi nomga emas, tanlangan mahsulotga qarab hisoblanadi.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 overflow-hidden">
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    value={mappingSearch}
+                                    onChange={(event) => setMappingSearch(event.target.value)}
+                                    placeholder="Mahsulot yoki kategoriya bo'yicha qidiring"
+                                    className="pl-9"
+                                />
+                            </div>
+                            <Button type="button" variant="outline" onClick={resetDraftAssignments}>
+                                Standart taklifni qayta yuklash
+                            </Button>
+                            <Button type="button" onClick={saveDraftAssignments}>
+                                Saqlash
+                            </Button>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                            {ALL_REPORT_GROUPS.map((group: MenuReportGroup) => (
+                                <span
+                                    key={group.id}
+                                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${group.badge}`}
+                                >
+                                    <span className={`h-2.5 w-2.5 rounded-full ${group.dot}`} />
+                                    {group.label}: {mappingCounts[group.id] ?? 0} ta mahsulot
+                                </span>
+                            ))}
+                        </div>
+
+                        <div className="overflow-auto rounded-xl border border-border/60">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-muted/30">
+                                        <TableHead className="min-w-[220px]">Mahsulot</TableHead>
+                                        <TableHead className="min-w-[180px]">Kategoriya</TableHead>
+                                        <TableHead className="min-w-[220px]">Hisobot guruhi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredMappingProducts.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="py-10 text-center text-sm text-muted-foreground">
+                                                Mos mahsulot topilmadi
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : filteredMappingProducts.map((product) => (
+                                        <TableRow key={product.id}>
+                                            <TableCell>
+                                                <div className="space-y-1">
+                                                    <p className="font-medium">{product.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{formatPrice(Number(product.price ?? 0))}</p>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-sm text-muted-foreground">
+                                                {reportCategoryMap.get(product.productCategoryId) ?? '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Select
+                                                    value={draftAssignments[product.id] || UNASSIGNED_GROUP}
+                                                    onValueChange={(value) => updateDraftAssignment(product.id, value)}
+                                                >
+                                                    <SelectTrigger className="w-full">
+                                                        <SelectValue placeholder="Ajratilmagan" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value={UNASSIGNED_GROUP}>Ajratilmagan</SelectItem>
+                                                        {ALL_REPORT_GROUPS.map((group: MenuReportGroup) => (
+                                                            <SelectItem key={group.id} value={group.id}>
+                                                                {group.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             <Dialog open={!!detailOrder} onOpenChange={() => setDetailOrder(null)}>
                 <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto p-0 gap-0 [&>button]:hidden">
                     {detailOrder && (
                         <div>
+                            <DialogHeader className="sr-only">
+                                <DialogTitle>Buyurtma tafsilotlari</DialogTitle>
+                                <DialogDescription>
+                                    Tanlangan buyurtmaning xona, vaqt, mahsulot va summa tafsilotlari.
+                                </DialogDescription>
+                            </DialogHeader>
                             {/* Header */}
                             <div className="sticky top-0 bg-card border-b border-border px-6 py-4 z-10">
                                 <div className="flex items-center justify-between">
@@ -745,7 +979,7 @@ export default function ManagerOrders() {
                                     </p>
                                     <div className="rounded-xl border border-border overflow-hidden">
                                         {detailOrder.orderItem.map((oi, i) => {
-                                            const isSpecial = isSpecialProduct(oi.product?.name || '');
+                                            const isSpecial = isTrackedMenuProduct(oi.product, reportProducts, reportCategories, effectiveAssignments);
                                             return (
                                                 <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < detailOrder.orderItem.length - 1 ? 'border-b border-border' : ''} ${isSpecial ? 'bg-amber-50' : i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}`}>
                                                     <div className="flex items-center gap-3 min-w-0">
