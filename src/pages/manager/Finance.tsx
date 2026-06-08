@@ -263,7 +263,7 @@ export default function Finance() {
   const { data: waitersBase = [] } = useQuery({
     queryKey: ["waiters-base", selectedBranchId],
     queryFn: async () => {
-      const response = await userService.getWaiterInfo(selectedBranchId, { filter: "today" });
+      const response = await userService.getWaiterInfo(selectedBranchId, { filter: "last30" });
       return response.data.data ?? [];
     },
     enabled: !!selectedBranchId,
@@ -304,13 +304,12 @@ export default function Finance() {
     return waitersBase.map((waiter) => {
       const isAll = waiter.fullName.toLowerCase().includes("barcha");
       if (isAll) {
-        const kpiAmount = waitersBase
-          .filter((w) => !w.fullName.toLowerCase().includes("barcha"))
-          .reduce((s, w) => {
-            const st = statsMap.get(w.waiterId) ?? { totalSum: 0 };
-            return s + Math.round(st.totalSum * (Number(w.kpiPercent) / 100));
-          }, 0);
-        return { ...waiter, totalOrders: filteredOrders.length, totalSum: allTotal, kpiAmount };
+        return {
+          ...waiter,
+          totalOrders: filteredOrders.length,
+          totalSum: allTotal,
+          kpiAmount: Math.round(allTotal * (Number(waiter.kpiPercent) / 100)),
+        };
       }
       const stats = statsMap.get(waiter.waiterId) ?? { totalOrders: 0, totalSum: 0 };
       return {
