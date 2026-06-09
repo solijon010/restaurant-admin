@@ -399,47 +399,49 @@ export default function ManagerOrders() {
             </div>
 
             <Tabs defaultValue="orders">
-                <TabsList className="bg-transparent p-0 h-auto rounded-none gap-3 w-full justify-start mb-6">
+                <TabsList className="bg-transparent p-0 h-auto rounded-none gap-1.5 sm:gap-2 w-full justify-start mb-4 sm:mb-6 flex-wrap">
                     <TabsTrigger
                         value="orders"
-                        className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
+                        className="flex items-center gap-1.5 px-3 py-2 sm:px-5 sm:py-2.5 h-auto rounded-lg border text-xs sm:text-sm font-medium transition-all
                             data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm
                             data-[state=inactive]:bg-background data-[state=inactive]:text-blue-600 data-[state=inactive]:border-blue-200 data-[state=inactive]:hover:bg-blue-50 dark:data-[state=inactive]:hover:bg-blue-950/30"
                     >
-                        <ShoppingCart className="h-4 w-4 shrink-0" />
-                        Buyurtmalar tarixi
+                        <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                        <span className="hidden xs:inline">Buyurtmalar tarixi</span>
+                        <span className="xs:hidden">Tarixi</span>
                     </TabsTrigger>
                     <TabsTrigger
                         value="shashlik"
-                        className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
+                        className="flex items-center gap-1.5 px-3 py-2 sm:px-5 sm:py-2.5 h-auto rounded-lg border text-xs sm:text-sm font-medium transition-all
                             data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 data-[state=active]:shadow-sm
                             data-[state=inactive]:bg-background data-[state=inactive]:text-emerald-600 data-[state=inactive]:border-emerald-200 data-[state=inactive]:hover:bg-emerald-50 dark:data-[state=inactive]:hover:bg-emerald-950/30"
                     >
-                        <Flame className="h-4 w-4 shrink-0" />
+                        <Flame className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                         Shashlik hisobi
                     </TabsTrigger>
                     <TabsTrigger
                         value="qanot-ordak"
-                        className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
+                        className="flex items-center gap-1.5 px-3 py-2 sm:px-5 sm:py-2.5 h-auto rounded-lg border text-xs sm:text-sm font-medium transition-all
                             data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:border-amber-500 data-[state=active]:shadow-sm
                             data-[state=inactive]:bg-background data-[state=inactive]:text-amber-600 data-[state=inactive]:border-amber-200 data-[state=inactive]:hover:bg-amber-50 dark:data-[state=inactive]:hover:bg-amber-950/30"
                     >
-                        <Bird className="h-4 w-4 shrink-0" />
-                        Qanot va O'rdak
+                        <Bird className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                        <span className="hidden sm:inline">Qanot va O'rdak</span>
+                        <span className="sm:hidden">Qanot</span>
                     </TabsTrigger>
                 </TabsList>
 
                 {/* ══ BUYURTMALAR TARIXI ══════════════════════════════════════════ */}
                 <TabsContent value="orders">
                     <Card className="shadow-none border border-border/60">
-                        <div className="flex flex-wrap items-center gap-2.5 px-4 py-3 border-b border-border/60">
-                            <div className="relative flex-1 min-w-[180px] max-w-xs">
+                        <div className="flex flex-wrap items-center gap-2 px-3 py-2.5 border-b border-border/60">
+                            <div className="relative flex-1 min-w-[120px] max-w-xs">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                                <Input placeholder="Xona, afitsant, mahsulot..." value={search}
-                                    onChange={e => setSearch(e.target.value)} className="pl-9 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
+                                <Input placeholder="Xona, afitsant..." value={search}
+                                    onChange={e => setSearch(e.target.value)} className="pl-9 h-8 bg-muted/40 border-0 focus-visible:ring-1 text-xs" />
                             </div>
                             <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger className="w-40 h-9 bg-muted/40 border-0 focus:ring-1"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="w-32 sm:w-40 h-8 bg-muted/40 border-0 focus:ring-1 text-xs"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="ALL">Barcha holat</SelectItem>
                                     <SelectItem value="PENDING">Kutilmoqda</SelectItem>
@@ -447,12 +449,12 @@ export default function ManagerOrders() {
                                     <SelectItem value="CANCELED">Bekor qilingan</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-background p-1">
+                            <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-background p-0.5">
                                 {(['today', 'weekly', 'monthly'] as const).map((qf) => (
                                     <button
                                         key={qf}
                                         onClick={() => { setQuickFilter(quickFilter === qf ? 'all' : qf); setDateFilter(''); }}
-                                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                                        className={`rounded-lg px-2 py-1 text-xs font-semibold transition-all ${
                                             quickFilter === qf
                                                 ? 'bg-emerald-500 text-white shadow-sm'
                                                 : 'text-muted-foreground hover:text-foreground hover:bg-muted'
@@ -463,7 +465,7 @@ export default function ManagerOrders() {
                                 ))}
                             </div>
                             <Input type="date" value={dateFilter}
-                                onChange={e => { setDateFilter(e.target.value); setQuickFilter('all'); }} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
+                                onChange={e => { setDateFilter(e.target.value); setQuickFilter('all'); }} className="w-32 sm:w-36 h-8 bg-muted/40 border-0 focus-visible:ring-1 text-xs" />
                             <div className="ml-auto flex items-center gap-2">
                                 {isFetching && !ordersLoading && (
                                     <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -471,7 +473,7 @@ export default function ManagerOrders() {
                                     </span>
                                 )}
                                 {!ordersLoading && (
-                                    <span className="text-xs font-medium text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-full">{total} ta buyurtma</span>
+                                    <span className="text-xs font-medium text-muted-foreground bg-muted/60 px-2 py-1 rounded-full">{total} ta buyurtma</span>
                                 )}
                             </div>
                         </div>
@@ -521,37 +523,37 @@ export default function ManagerOrders() {
                                 {filtered.map(o => {
                                     const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ${oi.count} dona`);
                                     return (
-                                        <div key={o.id} className={`grid grid-cols-[100px_130px_130px_100px_1fr_120px_120px_50px] xl:grid-cols-[120px_140px_140px_110px_1fr_130px_130px_60px] gap-2 xl:gap-3 items-center bg-card border border-border rounded-2xl px-4 py-3.5 hover:shadow-md hover:border-sky-200 transition-all ${isFetching ? 'opacity-60' : ''}`}>
-                                            <span className="font-semibold text-sm">{o.room?.name || '—'}</span>
+                                        <div key={o.id} className={`grid grid-cols-[80px_100px_90px_1fr_95px_90px_36px] lg:grid-cols-[90px_115px_115px_80px_1fr_105px_105px_40px] xl:grid-cols-[120px_140px_140px_110px_1fr_130px_130px_60px] gap-1 lg:gap-2 xl:gap-3 items-center bg-card border border-border rounded-2xl px-2.5 py-2.5 lg:px-4 lg:py-3.5 hover:shadow-md hover:border-sky-200 transition-all ${isFetching ? 'opacity-60' : ''}`}>
+                                            <span className="font-semibold text-xs lg:text-sm truncate">{o.room?.name || '—'}</span>
 
                                             <div>
-                                                <p className="font-medium text-sm text-green-600">{formatTime(o.createdAt)}</p>
-                                                <p className="text-xs text-muted-foreground">{formatDate(o.createdAt)}</p>
+                                                <p className="font-medium text-xs lg:text-sm text-green-600">{formatTime(o.createdAt)}</p>
+                                                <p className="text-xs text-muted-foreground hidden lg:block">{formatDate(o.createdAt)}</p>
                                             </div>
 
                                             <div>
                                                 {o.endAt ? (
                                                     <>
-                                                        <p className="font-medium text-sm text-red-500">{formatTime(o.endAt)}</p>
-                                                        <p className="text-xs text-muted-foreground">{formatDate(o.endAt)}</p>
+                                                        <p className="font-medium text-xs lg:text-sm text-red-500">{formatTime(o.endAt)}</p>
+                                                        <p className="text-xs text-muted-foreground hidden lg:block">{formatDate(o.endAt)}</p>
                                                     </>
                                                 ) : (
-                                                    <Badge variant="secondary" className="text-xs">Hali ketmagan</Badge>
+                                                    <Badge variant="secondary" className="text-xs">—</Badge>
                                                 )}
                                             </div>
 
-                                            <span className="text-sm text-muted-foreground">{duration(o.createdAt, o.endAt)}</span>
+                                            <span className="text-xs text-muted-foreground hidden lg:block">{duration(o.createdAt, o.endAt)}</span>
 
-                                            <div className="flex flex-wrap gap-1 max-w-[200px]">
-                                                        {prodNames.slice(0, 3).map((n, i) => (
+                                            <div className="flex flex-wrap gap-1">
+                                                        {prodNames.slice(0, 2).map((n, i) => (
                                                             <Badge key={i} variant="outline" className="text-xs">{n}</Badge>
                                                         ))}
-                                                        {prodNames.length > 3 && (
-                                                            <Badge variant="outline" className="text-xs">+{prodNames.length - 3}</Badge>
+                                                        {prodNames.length > 2 && (
+                                                            <Badge variant="outline" className="text-xs">+{prodNames.length - 2}</Badge>
                                                         )}
                                                     </div>
 
-                                            <span className="font-bold text-sm">{formatPrice(getOrderTotal(o))}</span>
+                                            <span className="font-bold text-xs lg:text-sm">{formatPrice(getOrderTotal(o))}</span>
 
                                             <div><StatusBadge status={o.status} /></div>
 
