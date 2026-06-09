@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, ChevronDown, ChevronRight, Loader2, Package, Search, ShoppingBag, TrendingUp, Wallet } from "lucide-react";
 
@@ -573,9 +573,8 @@ export default function Finance() {
               waitersList.map((waiter: WaiterInfoItem, index) => {
                 const isExpanded = expandedWaiter === waiter.waiterId;
                 return (
-                  <>
+                  <React.Fragment key={waiter.waiterId}>
                     <TableRow
-                      key={waiter.waiterId}
                       className={`cursor-pointer transition-colors ${isExpanded ? "bg-emerald-50/50 dark:bg-emerald-950/20" : index % 2 === 0 ? "bg-background" : "bg-muted/20"} hover:bg-muted/40`}
                       onClick={() => setExpandedWaiter(isExpanded ? null : waiter.waiterId)}
                     >
@@ -620,7 +619,7 @@ export default function Finance() {
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
+                  </React.Fragment>
                 );
               })
             )}
