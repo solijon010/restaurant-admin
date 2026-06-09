@@ -77,6 +77,10 @@ export async function getAllBranchOrders(
   return { items, total };
 }
 
+export async function deleteOrder(orderId: string) {
+  return api.delete(`/order/${orderId}`);
+}
+
 export function getOrderTotal(order: Pick<BranchOrder, "orderItem">) {
   return order.orderItem.reduce(
     (sum, item) => sum + Number(item.product?.price ?? 0) * Number(item.count ?? 0),
