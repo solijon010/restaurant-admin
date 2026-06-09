@@ -904,7 +904,7 @@ export default function ManagerProducts() {
                         <TabsTrigger value="products"
                             className="px-4 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground">
                             Mahsulotlar
-                            {prodsTotal > 0 && <span className="ml-1.5 text-xs bg-muted text-muted-foreground rounded-full px-1.5 py-0.5 data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-700">{prodsTotal}</span>}
+                            {prodsTotal > 0 && <span className="ml-1.5 text-xs bg-muted text-muted-foreground rounded-full px-1.5 py-0.5 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/40 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400">{prodsTotal}</span>}
                         </TabsTrigger>
                         <TabsTrigger value="categories"
                             className="px-4 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground">
@@ -978,7 +978,7 @@ export default function ManagerProducts() {
                         </div>
 
                         {activeCats.length === 0 && !catsLoading && (
-                            <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-700 text-sm px-4 py-3 mb-4 flex items-center gap-2">
+                            <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 text-sm px-4 py-3 mb-4 flex items-center gap-2">
                                 ⚠️ Mahsulot qo'shish uchun avval faol kategoriya yarating
                             </div>
                         )}
@@ -1024,10 +1024,10 @@ export default function ManagerProducts() {
                                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
                                                             <p style={{ fontSize: 14, fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{p.name}</p>
                                                             <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
-                                                                <button onClick={() => openEditProd(p)} className="flex items-center justify-center rounded-md bg-muted border border-border hover:bg-blue-50 hover:border-blue-300 transition-colors" style={{ width: 26, height: 26 }}>
+                                                                <button onClick={() => openEditProd(p)} className="flex items-center justify-center rounded-md bg-muted border border-border hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:border-blue-300 dark:hover:border-blue-700 transition-colors" style={{ width: 26, height: 26 }}>
                                                                     <Pencil style={{ width: 11, height: 11, color: '#64748b' }} />
                                                                 </button>
-                                                                <button onClick={() => setDeleteProdId(p.id)} className="flex items-center justify-center rounded-md bg-muted border border-border hover:bg-red-50 hover:border-red-300 transition-colors" style={{ width: 26, height: 26 }}>
+                                                                <button onClick={() => setDeleteProdId(p.id)} className="flex items-center justify-center rounded-md bg-muted border border-border hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300 dark:hover:border-red-700 transition-colors" style={{ width: 26, height: 26 }}>
                                                                     <Trash2 style={{ width: 11, height: 11, color: '#ef4444' }} />
                                                                 </button>
                                                             </div>
@@ -1052,7 +1052,7 @@ export default function ManagerProducts() {
                                                         {/* Toggle + Status */}
                                                         <div className="flex items-center justify-between mb-3">
                                                             <Switch checked={isActive} onCheckedChange={() => toggleProductMutation.mutate(p.id)} disabled={toggleProductMutation.isPending} />
-                                                            <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${isActive ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-muted text-muted-foreground border-border'}`}>
+                                                            <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${isActive ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' : 'bg-muted text-muted-foreground border-border'}`}>
                                                                 {isActive ? 'Faol' : 'Nofaol'}
                                                             </span>
                                                         </div>
@@ -1070,6 +1070,12 @@ export default function ManagerProducts() {
                                                 </div>
                                             );
                                         })}
+                                    </div>
+                                )}
+                                {(prodsTotal > 0 || prodsTotalPages > 1) && (
+                                    <div className="mt-4 border border-border/60 rounded-2xl overflow-hidden">
+                                        <Pagination page={page} totalPages={prodsTotalPages} total={prodsTotal}
+                                            limit={limit} onPageChange={setPage} onLimitChange={setLimit} isLoading={prodsLoading} />
                                     </div>
                                 )}
                             </div>

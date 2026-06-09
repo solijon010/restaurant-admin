@@ -284,7 +284,7 @@ export function AppLayout({ requiredRole }: { requiredRole: UserRole }) {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 p-4 sm:p-6 lg:p-8 page-enter">
+                <div className="flex-1 p-3 sm:p-4 lg:p-5 xl:p-8 page-enter">
                     {!isRoot && (
                         <button onClick={() => navigate(-1)}
                             className="hidden lg:inline-flex items-center gap-1.5 mb-6"

@@ -3,8 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
-    Loader2, Search, MoreVertical, Eye, X,
-    ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
+    Loader2, Search, MoreVertical, Eye, X, Trash2,
     Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart, Settings2,
 } from 'lucide-react';
 import {
@@ -12,15 +11,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useBranch } from '@/contexts/BranchContext';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { extractArray } from '@/lib/api-response';
 import { formatPrice } from '@/lib/display';
-import { filterOrdersByDate, getOrderDateKey, todayStr } from '@/lib/order-analytics';
+import { filterOrdersByDate, getFilterBounds, getOrderDateKey, todayStr } from '@/lib/order-analytics';
 import { BIRD_REPORT_GROUPS, buildMenuGroupStats, buildSuggestedMenuAssignments, isTrackedMenuProduct, MenuCategoryRecord, MenuGroupAssignments, MenuReportGroup, SHASHLIK_REPORT_GROUPS } from '@/lib/menu-report';
-import { BranchOrder, BranchOrdersQuery, getAllBranchOrders, getBranchOrdersPage, getOrderTotal } from '@/lib/orders';
+import { BranchOrder, deleteOrder, getAllBranchOrders, getOrderTotal } from '@/lib/orders';
 import { Card } from '@/components/ui/card';
 import { categoryService } from '@/services/categoryService';
 import { ProductRecord, productService } from '@/services/productService';
@@ -44,17 +43,17 @@ const STATUS_VARIANT: Record<OrderStatus, 'default' | 'secondary' | 'destructive
 
 const StatusBadge = ({ status }: { status: OrderStatus }) => {
     if (status === 'SUCCESS') return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
             Yakunlangan
         </span>
     );
     if (status === 'CANCELED') return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">
             Bekor qilingan
         </span>
     );
     return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
             Kutilmoqda
         </span>
     );
@@ -67,21 +66,21 @@ const PREDEFINED_CATEGORIES = [
         label: 'Qiyma shashlik',
         match: (n: string) => n.includes('qiyma'),
         dot: 'bg-orange-500',
-        badge: 'bg-orange-50 text-orange-700 border-orange-200',
+        badge: 'bg-orange-50 dark:!bg-emerald-950/40 text-orange-700 dark:!text-emerald-400 border-orange-200 dark:!border-emerald-800',
     },
     {
         id: 'gosht-shashlik',
         label: "Go'sht shashlik",
         match: (n: string) => n.includes('shashlik') && !n.includes('qiyma') && !n.includes("qo'y") && !n.includes('qoy'),
         dot: 'bg-red-500',
-        badge: 'bg-red-50 text-red-700 border-red-200',
+        badge: 'bg-red-50 dark:!bg-emerald-950/40 text-red-700 dark:!text-emerald-400 border-red-200 dark:!border-emerald-800',
     },
     {
         id: 'qoy-shashlik',
         label: "Qo'y go'shtidan shashlik",
         match: (n: string) => n.includes("qo'y") || n.includes('qoy'),
         dot: 'bg-amber-500',
-        badge: 'bg-amber-50 text-amber-700 border-amber-200',
+        badge: 'bg-amber-50 dark:!bg-emerald-950/40 text-amber-700 dark:!text-emerald-400 border-amber-200 dark:!border-emerald-800',
     },
 ];
 
@@ -92,14 +91,14 @@ const QANOT_ORDAK_CATEGORIES = [
         label: 'Qanot',
         match: (n: string) => n.includes('qanot'),
         dot: 'bg-yellow-500',
-        badge: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+        badge: 'bg-yellow-50 dark:!bg-emerald-950/40 text-yellow-700 dark:!text-emerald-400 border-yellow-200 dark:!border-emerald-800',
     },
     {
         id: 'ordak',
         label: "O'rdak",
         match: (n: string) => n.includes("o'rdak") || n.includes('ordak'),
         dot: 'bg-lime-600',
-        badge: 'bg-lime-50 text-lime-700 border-lime-200',
+        badge: 'bg-lime-50 dark:!bg-emerald-950/40 text-lime-700 dark:!text-emerald-400 border-lime-200 dark:!border-emerald-800',
     },
 ];
 
@@ -197,12 +196,19 @@ function buildAssignmentDraft(products: ProductRecord[], assignments: MenuGroupA
 
 export default function ManagerOrders() {
     const { selectedBranchId } = useBranch();
+    const queryClient = useQueryClient();
+
+    const deleteMutation = useMutation({
+        mutationFn: (orderId: string) => deleteOrder(orderId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['orders', selectedBranchId] });
+        },
+    });
 
     const [search, setSearch]             = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('ALL');
     const [dateFilter, setDateFilter]     = useState('');
-    const [page, setPage]                 = useState(1);
-    const [limit, setLimit]               = useState(10);
+    const [quickFilter, setQuickFilter]   = useState<'all' | 'today' | 'weekly' | 'monthly'>('all');
     const [detailOrder, setDetailOrder]   = useState<Order | null>(null);
     const [shashlikDate, setShashlikDate] = useState(todayStr);
     const [qanotDate, setQanotDate]       = useState(todayStr);
@@ -211,26 +217,16 @@ export default function ManagerOrders() {
     const [storedAssignments, setStoredAssignments] = useState<BranchReportAssignments>(() => loadStoredAssignments());
     const [draftAssignments, setDraftAssignments] = useState<MenuGroupAssignments>({});
 
-    useEffect(() => { setPage(1); }, [statusFilter, dateFilter, selectedBranchId]);
-
     // ── Buyurtmalar
     const { data: ordersResult, isLoading: ordersLoading, isFetching } = useQuery({
-        queryKey: ['orders', selectedBranchId, page, limit, statusFilter, dateFilter, search],
+        queryKey: ['orders', selectedBranchId, statusFilter, dateFilter, quickFilter, search],
         queryFn: async () => {
             if (!selectedBranchId) return { items: [] as Order[], total: 0 };
 
-            const params: BranchOrdersQuery = {
-                page,
-                limit,
-            };
-
             const normalizedSearch = search.trim().toLowerCase();
-            const needsLocalFiltering = !!dateFilter || !!normalizedSearch || statusFilter !== 'ALL';
-
-            if (!needsLocalFiltering) {
-                const pageResult = await getBranchOrdersPage(selectedBranchId, params);
-                return { items: pageResult.items, total: pageResult.total };
-            }
+            const quickBounds = quickFilter !== 'all'
+                ? getFilterBounds(quickFilter === 'today' ? 'today' : quickFilter === 'weekly' ? 'last7' : 'last30')
+                : null;
 
             const allOrdersResult = await getAllBranchOrders(selectedBranchId, { limit: 100 });
 
@@ -238,7 +234,12 @@ export default function ManagerOrders() {
                 const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
                 if (!matchesStatus) return false;
 
-                const matchesDate = !dateFilter || getOrderDateKey(order.createdAt) === dateFilter;
+                const dateKey = getOrderDateKey(order.createdAt);
+                const matchesDate = dateFilter
+                    ? dateKey === dateFilter
+                    : quickBounds
+                        ? !!dateKey && dateKey >= quickBounds.start && dateKey <= quickBounds.end
+                        : true;
                 if (!matchesDate) return false;
 
                 if (!normalizedSearch) return true;
@@ -247,11 +248,7 @@ export default function ManagerOrders() {
                 return haystack.includes(normalizedSearch);
             });
 
-            const startIndex = (page - 1) * limit;
-            return {
-                items: filteredOrders.slice(startIndex, startIndex + limit),
-                total: filteredOrders.length,
-            };
+            return { items: filteredOrders, total: filteredOrders.length };
         },
         enabled: !!selectedBranchId,
         placeholderData: prev => prev,
@@ -259,10 +256,7 @@ export default function ManagerOrders() {
 
     const allOrders = ordersResult?.items ?? [];
     const total     = ordersResult?.total ?? allOrders.length;
-    const totalPages = Math.max(Math.ceil(total / limit), 1);
-    const startItem  = total === 0 ? 0 : (page - 1) * limit + 1;
-    const endItem    = Math.min(page * limit, total);
-    const filtered = allOrders;
+    const filtered  = allOrders;
 
     const { data: reportCatalog } = useQuery({
         queryKey: ['orders-report-catalog', selectedBranchId],
@@ -413,47 +407,49 @@ export default function ManagerOrders() {
             </div>
 
             <Tabs defaultValue="orders">
-                <TabsList className="bg-transparent p-0 h-auto rounded-none gap-3 w-full justify-start mb-6">
+                <TabsList className="bg-transparent p-0 h-auto rounded-none gap-1.5 sm:gap-2 w-full justify-start mb-4 sm:mb-6 flex-wrap">
                     <TabsTrigger
                         value="orders"
-                        className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
+                        className="flex items-center gap-1.5 px-3 py-2 sm:px-5 sm:py-2.5 h-auto rounded-lg border text-xs sm:text-sm font-medium transition-all
                             data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm
-                            data-[state=inactive]:bg-background data-[state=inactive]:text-blue-600 data-[state=inactive]:border-blue-200 data-[state=inactive]:hover:bg-blue-50"
+                            data-[state=inactive]:bg-background data-[state=inactive]:text-blue-600 data-[state=inactive]:border-blue-200 data-[state=inactive]:hover:bg-blue-50 dark:data-[state=inactive]:hover:bg-blue-950/30"
                     >
-                        <ShoppingCart className="h-4 w-4 shrink-0" />
-                        Buyurtmalar tarixi
+                        <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                        <span className="hidden xs:inline">Buyurtmalar tarixi</span>
+                        <span className="xs:hidden">Tarixi</span>
                     </TabsTrigger>
                     <TabsTrigger
                         value="shashlik"
-                        className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
+                        className="flex items-center gap-1.5 px-3 py-2 sm:px-5 sm:py-2.5 h-auto rounded-lg border text-xs sm:text-sm font-medium transition-all
                             data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:border-emerald-600 data-[state=active]:shadow-sm
-                            data-[state=inactive]:bg-background data-[state=inactive]:text-emerald-600 data-[state=inactive]:border-emerald-200 data-[state=inactive]:hover:bg-emerald-50"
+                            data-[state=inactive]:bg-background data-[state=inactive]:text-emerald-600 data-[state=inactive]:border-emerald-200 data-[state=inactive]:hover:bg-emerald-50 dark:data-[state=inactive]:hover:bg-emerald-950/30"
                     >
-                        <Flame className="h-4 w-4 shrink-0" />
+                        <Flame className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                         Shashlik hisobi
                     </TabsTrigger>
                     <TabsTrigger
                         value="qanot-ordak"
-                        className="flex items-center gap-2 px-5 py-2.5 h-auto rounded-lg border text-sm font-medium transition-all
+                        className="flex items-center gap-1.5 px-3 py-2 sm:px-5 sm:py-2.5 h-auto rounded-lg border text-xs sm:text-sm font-medium transition-all
                             data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:border-amber-500 data-[state=active]:shadow-sm
-                            data-[state=inactive]:bg-background data-[state=inactive]:text-amber-600 data-[state=inactive]:border-amber-200 data-[state=inactive]:hover:bg-amber-50"
+                            data-[state=inactive]:bg-background data-[state=inactive]:text-amber-600 data-[state=inactive]:border-amber-200 data-[state=inactive]:hover:bg-amber-50 dark:data-[state=inactive]:hover:bg-amber-950/30"
                     >
-                        <Bird className="h-4 w-4 shrink-0" />
-                        Qanot va O'rdak
+                        <Bird className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                        <span className="hidden sm:inline">Qanot va O'rdak</span>
+                        <span className="sm:hidden">Qanot</span>
                     </TabsTrigger>
                 </TabsList>
 
                 {/* ══ BUYURTMALAR TARIXI ══════════════════════════════════════════ */}
                 <TabsContent value="orders">
                     <Card className="shadow-none border border-border/60">
-                        <div className="flex flex-wrap items-center gap-2.5 px-4 py-3 border-b border-border/60">
-                            <div className="relative flex-1 min-w-[180px] max-w-xs">
+                        <div className="flex flex-wrap items-center gap-2 px-3 py-2.5 border-b border-border/60">
+                            <div className="relative flex-1 min-w-[120px] max-w-xs">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                                <Input placeholder="Xona, afitsant, mahsulot..." value={search}
-                                    onChange={e => setSearch(e.target.value)} className="pl-9 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
+                                <Input placeholder="Xona, afitsant..." value={search}
+                                    onChange={e => setSearch(e.target.value)} className="pl-9 h-8 bg-muted/40 border-0 focus-visible:ring-1 text-xs" />
                             </div>
                             <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger className="w-40 h-9 bg-muted/40 border-0 focus:ring-1"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="w-32 sm:w-40 h-8 bg-muted/40 border-0 focus:ring-1 text-xs"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="ALL">Barcha holat</SelectItem>
                                     <SelectItem value="PENDING">Kutilmoqda</SelectItem>
@@ -461,8 +457,23 @@ export default function ManagerOrders() {
                                     <SelectItem value="CANCELED">Bekor qilingan</SelectItem>
                                 </SelectContent>
                             </Select>
+                            <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-background p-0.5">
+                                {(['today', 'weekly', 'monthly'] as const).map((qf) => (
+                                    <button
+                                        key={qf}
+                                        onClick={() => { setQuickFilter(quickFilter === qf ? 'all' : qf); setDateFilter(''); }}
+                                        className={`rounded-lg px-2 py-1 text-xs font-semibold transition-all ${
+                                            quickFilter === qf
+                                                ? 'bg-emerald-500 text-white shadow-sm'
+                                                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                                        }`}
+                                    >
+                                        {qf === 'today' ? 'Bugun' : qf === 'weekly' ? 'Haftalik' : 'Oylik'}
+                                    </button>
+                                ))}
+                            </div>
                             <Input type="date" value={dateFilter}
-                                onChange={e => setDateFilter(e.target.value)} className="w-40 h-9 bg-muted/40 border-0 focus-visible:ring-1" />
+                                onChange={e => { setDateFilter(e.target.value); setQuickFilter('all'); }} className="w-32 sm:w-36 h-8 bg-muted/40 border-0 focus-visible:ring-1 text-xs" />
                             <div className="ml-auto flex items-center gap-2">
                                 {isFetching && !ordersLoading && (
                                     <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -470,7 +481,7 @@ export default function ManagerOrders() {
                                     </span>
                                 )}
                                 {!ordersLoading && (
-                                    <span className="text-xs font-medium text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-full">{total} ta buyurtma</span>
+                                    <span className="text-xs font-medium text-muted-foreground bg-muted/60 px-2 py-1 rounded-full">{total} ta buyurtma</span>
                                 )}
                             </div>
                         </div>
@@ -493,10 +504,15 @@ export default function ManagerOrders() {
                                         <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{duration(o.createdAt, o.endAt)}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="font-semibold text-sm">{formatPrice(getOrderTotal(o))}</span>
-                                        <Button variant="ghost" size="sm" onClick={() => setDetailOrder(o)}>
-                                            <Eye className="h-4 w-4 mr-1" /> Ko'rish
-                                        </Button>
+                                        <span className="font-semibold text-sm">{formatPrice(Math.round(getOrderTotal(o) * 1.08))}</span>
+                                        <div className="flex gap-1">
+                                            <Button variant="ghost" size="sm" onClick={() => setDetailOrder(o)}>
+                                                <Eye className="h-4 w-4 mr-1" /> Ko'rish
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50" onClick={() => deleteMutation.mutate(o.id)} disabled={deleteMutation.isPending}>
+                                                <Trash2 className="h-4 w-4 text-red-400" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </Card>
                             ))}
@@ -520,43 +536,46 @@ export default function ManagerOrders() {
                                 {filtered.map(o => {
                                     const prodNames = o.orderItem.map(oi => `${oi.product?.name || '?'} ${oi.count} dona`);
                                     return (
-                                        <div key={o.id} className={`grid grid-cols-[100px_130px_130px_100px_1fr_120px_120px_50px] xl:grid-cols-[120px_140px_140px_110px_1fr_130px_130px_60px] gap-2 xl:gap-3 items-center bg-card border border-border rounded-2xl px-4 py-3.5 hover:shadow-md hover:border-sky-200 transition-all ${isFetching ? 'opacity-60' : ''}`}>
-                                            <span className="font-semibold text-sm">{o.room?.name || '—'}</span>
+                                        <div key={o.id} className={`grid grid-cols-[80px_100px_90px_1fr_95px_90px_36px] lg:grid-cols-[90px_115px_115px_80px_1fr_105px_105px_40px] xl:grid-cols-[120px_140px_140px_110px_1fr_130px_130px_60px] gap-1 lg:gap-2 xl:gap-3 items-center bg-card border border-border rounded-2xl px-2.5 py-2.5 lg:px-4 lg:py-3.5 hover:shadow-md hover:border-sky-200 transition-all ${isFetching ? 'opacity-60' : ''}`}>
+                                            <span className="font-semibold text-xs lg:text-sm truncate">{o.room?.name || '—'}</span>
 
                                             <div>
-                                                <p className="font-medium text-sm text-green-600">{formatTime(o.createdAt)}</p>
-                                                <p className="text-xs text-muted-foreground">{formatDate(o.createdAt)}</p>
+                                                <p className="font-medium text-xs lg:text-sm text-green-600">{formatTime(o.createdAt)}</p>
+                                                <p className="text-xs text-muted-foreground hidden lg:block">{formatDate(o.createdAt)}</p>
                                             </div>
 
                                             <div>
                                                 {o.endAt ? (
                                                     <>
-                                                        <p className="font-medium text-sm text-red-500">{formatTime(o.endAt)}</p>
-                                                        <p className="text-xs text-muted-foreground">{formatDate(o.endAt)}</p>
+                                                        <p className="font-medium text-xs lg:text-sm text-red-500">{formatTime(o.endAt)}</p>
+                                                        <p className="text-xs text-muted-foreground hidden lg:block">{formatDate(o.endAt)}</p>
                                                     </>
                                                 ) : (
-                                                    <Badge variant="secondary" className="text-xs">Hali ketmagan</Badge>
+                                                    <Badge variant="secondary" className="text-xs">—</Badge>
                                                 )}
                                             </div>
 
-                                            <span className="text-sm text-muted-foreground">{duration(o.createdAt, o.endAt)}</span>
+                                            <span className="text-xs text-muted-foreground hidden lg:block">{duration(o.createdAt, o.endAt)}</span>
 
-                                            <div className="flex flex-wrap gap-1 max-w-[200px]">
-                                                        {prodNames.slice(0, 3).map((n, i) => (
+                                            <div className="flex flex-wrap gap-1">
+                                                        {prodNames.slice(0, 2).map((n, i) => (
                                                             <Badge key={i} variant="outline" className="text-xs">{n}</Badge>
                                                         ))}
-                                                        {prodNames.length > 3 && (
-                                                            <Badge variant="outline" className="text-xs">+{prodNames.length - 3}</Badge>
+                                                        {prodNames.length > 2 && (
+                                                            <Badge variant="outline" className="text-xs">+{prodNames.length - 2}</Badge>
                                                         )}
                                                     </div>
 
-                                            <span className="font-bold text-sm">{formatPrice(getOrderTotal(o))}</span>
+                                            <span className="font-bold text-xs lg:text-sm">{formatPrice(Math.round(getOrderTotal(o) * 1.08))}</span>
 
                                             <div><StatusBadge status={o.status} /></div>
 
-                                            <div className="flex justify-end">
+                                            <div className="flex justify-end gap-1">
                                                 <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted rounded-full" onClick={() => setDetailOrder(o)}>
                                                     <Eye className="h-4 w-4 text-muted-foreground" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50 rounded-full" onClick={() => deleteMutation.mutate(o.id)} disabled={deleteMutation.isPending}>
+                                                    <Trash2 className="h-4 w-4 text-red-400 hover:text-red-600" />
                                                 </Button>
                                             </div>
                                         </div>
@@ -566,42 +585,6 @@ export default function ManagerOrders() {
                             )}
                         </div>
 
-                        {/* Pagination */}
-                        {total > 0 && (
-                            <div className="flex items-center justify-between px-4 py-3 border-t border-border/60 bg-muted/20">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-xs text-muted-foreground">
-                                        {ordersLoading
-                                            ? <span className="inline-flex items-center gap-1.5"><Loader2 className="h-3 w-3 animate-spin" />Yuklanmoqda...</span>
-                                            : <><span className="font-semibold text-foreground">{startItem}–{endItem}</span> / jami <span className="font-semibold text-foreground">{total}</span></>
-                                        }
-                                    </span>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="text-xs text-muted-foreground">Ko'rsatish:</span>
-                                        <Select value={String(limit)} onValueChange={v => { setLimit(Number(v)); setPage(1); }}>
-                                            <SelectTrigger className="h-7 w-16 text-xs border-border/60 bg-background"><SelectValue /></SelectTrigger>
-                                            <SelectContent>
-                                                {[5, 10, 20, 50].map(n => <SelectItem key={n} value={String(n)} className="text-xs">{n} ta</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(1)} disabled={page === 1}><ChevronsLeft className="h-3.5 w-3.5" /></Button>
-                                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(p => p - 1)} disabled={page === 1}><ChevronLeft className="h-3.5 w-3.5" /></Button>
-                                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                                        const p = totalPages <= 5 ? i + 1 : page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i;
-                                        return (
-                                            <Button key={p} variant={p === page ? 'default' : 'outline'} size="icon"
-                                                className={`h-7 w-7 text-xs ${p === page ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}`}
-                                                onClick={() => setPage(p)}>{p}</Button>
-                                        );
-                                    })}
-                                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(p => p + 1)} disabled={page === totalPages}><ChevronRight className="h-3.5 w-3.5" /></Button>
-                                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPage(totalPages)} disabled={page === totalPages}><ChevronsRight className="h-3.5 w-3.5" /></Button>
-                                </div>
-                            </div>
-                        )}
                     </Card>
                 </TabsContent>
 
@@ -618,10 +601,10 @@ export default function ManagerOrders() {
                             </Button>
                             {!shLoading && grandQuantity > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
-                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full">
+                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-orange-600 dark:!text-emerald-400 bg-orange-50 dark:!bg-emerald-950/40 border border-orange-200 dark:!border-emerald-800 px-3 py-1.5 rounded-full">
                                         <Flame className="h-3.5 w-3.5" />{grandOrders} ta zakaz
                                     </span>
-                                    <span className="text-sm font-semibold text-foreground bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-full">
+                                    <span className="text-sm font-semibold text-foreground bg-orange-50 dark:!bg-emerald-950/40 border border-orange-200 dark:!border-emerald-800 px-3 py-1.5 rounded-full">
                                         {grandQuantity} ta porsiya
                                     </span>
                                     <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">
@@ -722,11 +705,11 @@ export default function ManagerOrders() {
                             </Button>
                             {!qoLoading && qoQuantity > 0 && (
                                 <div className="flex items-center gap-2 ml-auto">
-                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-yellow-600 bg-yellow-50 border border-yellow-200 px-3 py-1.5 rounded-full">
+                                    <span className="flex items-center gap-1.5 text-sm font-semibold text-yellow-600 dark:!text-emerald-400 bg-yellow-50 dark:!bg-emerald-950/40 border border-yellow-200 dark:!border-emerald-800 px-3 py-1.5 rounded-full">
                                         <Bird className="h-3.5 w-3.5" />{qoOrderTotal} ta zakaz
                                     </span>
-                                    <span className="text-sm font-semibold text-foreground bg-yellow-50 border border-yellow-200 px-3 py-1.5 rounded-full">
-                                        {qoQuantity} ta porsiya
+                                    <span className="text-sm font-semibold text-foreground bg-yellow-50 dark:!bg-emerald-950/40 border border-yellow-200 dark:!border-emerald-800 px-3 py-1.5 rounded-full">
+                                        {qoQuantity} kg
                                     </span>
                                     <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">
                                         {formatPrice(qoSum)}
@@ -754,7 +737,7 @@ export default function ManagerOrders() {
                                                     {item.orderCount} ta zakaz
                                                 </span>
                                                 <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-0.5 rounded-full">
-                                                    {item.quantity} ta porsiya
+                                                    {item.quantity} kg
                                                 </span>
                                                 <span className="text-sm font-semibold text-muted-foreground">
                                                     {item.sum > 0 ? formatPrice(item.sum) : '—'}
@@ -773,7 +756,7 @@ export default function ManagerOrders() {
                                                     <TableRow className="bg-muted/10 hover:bg-muted/10">
                                                         <TableHead className="text-xs font-semibold pl-5">Stol / Xona</TableHead>
                                                         <TableHead className="text-xs font-semibold">Zakaz</TableHead>
-                                                        <TableHead className="text-xs font-semibold">Porsiya</TableHead>
+                                                        <TableHead className="text-xs font-semibold">Miqdor (kg)</TableHead>
                                                         <TableHead className="text-xs font-semibold text-right pr-5">Summa</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
@@ -786,7 +769,7 @@ export default function ManagerOrders() {
                                                                     {row.orderCount} ta
                                                                 </span>
                                                             </TableCell>
-                                                            <TableCell className="font-medium">{row.quantity} ta</TableCell>
+                                                            <TableCell className="font-medium">{row.quantity} kg</TableCell>
                                                             <TableCell className="text-right font-semibold pr-5">
                                                                 {formatPrice(row.sum)}
                                                             </TableCell>
@@ -800,7 +783,7 @@ export default function ManagerOrders() {
                                                                     {item.orderCount} ta
                                                                 </span>
                                                             </TableCell>
-                                                            <TableCell>{item.quantity} ta</TableCell>
+                                                            <TableCell>{item.quantity} kg</TableCell>
                                                             <TableCell className="text-right pr-5">{formatPrice(item.sum)}</TableCell>
                                                         </TableRow>
                                                     )}
@@ -942,15 +925,15 @@ export default function ManagerOrders() {
                             <div className="px-6 py-5 space-y-5">
                                 {/* Vaqt va davomiylik */}
                                 <div className="grid grid-cols-3 gap-3">
-                                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-                                        <p className="text-xs text-emerald-600 font-medium mb-1 flex items-center gap-1"><LogIn className="h-3 w-3" /> Kirdi</p>
-                                        <p className="text-base font-bold text-emerald-800">{formatTime(detailOrder.createdAt)}</p>
-                                        <p className="text-xs text-emerald-600 mt-0.5">{formatDate(detailOrder.createdAt)}</p>
+                                    <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-3">
+                                        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-1 flex items-center gap-1"><LogIn className="h-3 w-3" /> Kirdi</p>
+                                        <p className="text-base font-bold text-emerald-800 dark:text-emerald-300">{formatTime(detailOrder.createdAt)}</p>
+                                        <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">{formatDate(detailOrder.createdAt)}</p>
                                     </div>
-                                    <div className="rounded-xl border border-red-200 bg-red-50 p-3">
-                                        <p className="text-xs text-red-600 font-medium mb-1 flex items-center gap-1"><LogOut className="h-3 w-3" /> Chiqdi</p>
-                                        <p className="text-base font-bold text-red-800">{formatTime(detailOrder.endAt)}</p>
-                                        {detailOrder.endAt && <p className="text-xs text-red-600 mt-0.5">{formatDate(detailOrder.endAt)}</p>}
+                                    <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-3">
+                                        <p className="text-xs text-red-600 dark:text-red-400 font-medium mb-1 flex items-center gap-1"><LogOut className="h-3 w-3" /> Chiqdi</p>
+                                        <p className="text-base font-bold text-red-800 dark:text-red-300">{formatTime(detailOrder.endAt)}</p>
+                                        {detailOrder.endAt && <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">{formatDate(detailOrder.endAt)}</p>}
                                     </div>
                                     <div className="rounded-xl border border-border bg-muted/40 p-3">
                                         <p className="text-xs text-muted-foreground font-medium mb-1 flex items-center gap-1"><Clock className="h-3 w-3" /> Davomiylik</p>
@@ -962,7 +945,7 @@ export default function ManagerOrders() {
                                 <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between">
                                     <div>
                                         <p className="text-xs text-muted-foreground mb-0.5">Jami summa</p>
-                                        <p className="text-2xl font-black text-emerald-600">{formatPrice(getOrderTotal(detailOrder))}</p>
+                                        <p className="text-2xl font-black text-emerald-600">{formatPrice(Math.round(getOrderTotal(detailOrder) * 1.08))}</p>
                                     </div>
                                     {detailOrder.user && (
                                         <div className="text-right">
@@ -981,13 +964,13 @@ export default function ManagerOrders() {
                                         {detailOrder.orderItem.map((oi, i) => {
                                             const isSpecial = isTrackedMenuProduct(oi.product, reportProducts, reportCategories, effectiveAssignments);
                                             return (
-                                                <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < detailOrder.orderItem.length - 1 ? 'border-b border-border' : ''} ${isSpecial ? 'bg-amber-50' : i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}`}>
+                                                <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < detailOrder.orderItem.length - 1 ? 'border-b border-border' : ''} ${isSpecial ? 'bg-amber-50 dark:bg-amber-950/20' : i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}`}>
                                                     <div className="flex items-center gap-3 min-w-0">
-                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold shrink-0 ${isSpecial ? 'bg-amber-200 text-amber-800' : 'bg-muted text-muted-foreground'}`}>
+                                                        <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold shrink-0 ${isSpecial ? 'bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-300' : 'bg-muted text-muted-foreground'}`}>
                                                             {i + 1}
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <p className={`text-sm font-medium truncate ${isSpecial ? 'text-amber-800' : ''}`}>{oi.product?.name || '?'}</p>
+                                                            <p className={`text-sm font-medium truncate ${isSpecial ? 'text-amber-800 dark:text-amber-300' : ''}`}>{oi.product?.name || '?'}</p>
                                                             {oi.product?.unit && <p className="text-xs text-muted-foreground">{oi.product.unit}</p>}
                                                         </div>
                                                     </div>

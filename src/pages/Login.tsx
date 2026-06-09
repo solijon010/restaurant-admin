@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Phone } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Lock, Phone } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';

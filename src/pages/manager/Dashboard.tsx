@@ -181,51 +181,47 @@ export default function ManagerDashboard() {
       </div>
 
       {cardsLoading ? (
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[...Array(4)].map((_, index) => (
-            <div key={index} className="skeleton h-28 rounded-2xl" />
+            <div key={index} className="skeleton h-24 rounded-2xl" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[
             {
               label: "Xodimlar",
               value: staff.length,
               icon: Users,
               color: "#0EA5E9",
-              bg: "#EFF6FF",
             },
             {
               label: "Buyurtmalar",
               value: totalOrders,
               icon: ShoppingCart,
               color: "#F59E0B",
-              bg: "#FFFBEB",
             },
             {
               label: "Jami daromad",
               value: formatPrice(totalRevenue),
               icon: Banknote,
               color: "#10B981",
-              bg: "#ECFDF5",
             },
             {
               label: "O'rtacha buyurtma",
               value: formatPrice(averageOrder),
               icon: ArrowUpRight,
               color: "#8B5CF6",
-              bg: "#F5F3FF",
             },
           ].map((item, index) => (
             <div
               key={index}
               className="card-hover"
               style={{
-                background: "#fff",
+                background: "hsl(var(--card))",
                 borderRadius: 16,
                 border: "1px solid hsl(var(--border))",
-                padding: "20px",
+                padding: "14px",
                 position: "relative",
                 overflow: "hidden",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
@@ -244,7 +240,7 @@ export default function ManagerDashboard() {
                     width: 40,
                     height: 40,
                     borderRadius: 10,
-                    background: item.bg,
+                    background: `${item.color}20`,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -255,7 +251,7 @@ export default function ManagerDashboard() {
               </div>
               <p
                 style={{
-                  fontSize: 26,
+                  fontSize: 22,
                   fontWeight: 800,
                   color: "hsl(var(--foreground))",
                   margin: 0,
@@ -317,13 +313,13 @@ export default function ManagerDashboard() {
             <p className="text-sm">Bu kunda yakunlangan buyurtma yo&apos;q</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2 p-3 lg:grid-cols-3">
             {roomStats.map((room, index) => (
               <div
                 key={room.name}
                 className="group flex items-center gap-3 rounded-lg border border-border p-3.5 transition-colors hover:bg-muted/30"
               >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold text-muted-foreground transition-colors group-hover:bg-emerald-50 group-hover:text-emerald-600">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold text-muted-foreground transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-950/30 group-hover:text-emerald-600">
                   {index + 1}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -453,7 +449,9 @@ export default function ManagerDashboard() {
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "8px",
                       fontSize: "12px",
+                      color: "hsl(var(--foreground))",
                     }}
+                    wrapperStyle={{ outline: "none" }}
                   />
                   <Bar dataKey="revenue" fill="#0EA5E9" name={t("Daromad", language)} radius={[6, 6, 0, 0]} />
                 </BarChart>

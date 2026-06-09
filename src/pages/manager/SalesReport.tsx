@@ -53,32 +53,32 @@ const FILTERS: { label: string; filter: FilterType; active: string; inactive: st
   {
     label: "Bugun",
     filter: "today",
-    active: "border-emerald-500 bg-emerald-500 text-white",
-    inactive: "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
+    active: "border-emerald-600 bg-emerald-600 text-white",
+    inactive: "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
   },
   {
     label: "Kecha",
     filter: "yesterday",
-    active: "border-blue-500 bg-blue-500 text-white",
-    inactive: "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100",
+    active: "border-emerald-600 bg-emerald-600 text-white",
+    inactive: "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
   },
   {
     label: "7 kun",
     filter: "last7",
-    active: "border-violet-500 bg-violet-500 text-white",
-    inactive: "border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100",
+    active: "border-emerald-600 bg-emerald-600 text-white",
+    inactive: "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
   },
   {
     label: "30 kun",
     filter: "last30",
-    active: "border-orange-500 bg-orange-500 text-white",
-    inactive: "border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100",
+    active: "border-emerald-600 bg-emerald-600 text-white",
+    inactive: "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
   },
   {
     label: "Boshqa",
     filter: "custom",
-    active: "border-slate-700 bg-slate-700 text-white",
-    inactive: "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100",
+    active: "border-emerald-600 bg-emerald-600 text-white",
+    inactive: "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
   },
 ];
 
@@ -200,7 +200,7 @@ export default function SalesReport() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600/10">
           <TrendingUp className="h-5 w-5 text-emerald-600" />
         </div>
         <div>
@@ -259,25 +259,25 @@ export default function SalesReport() {
               label: "Jami daromad",
               value: formatPrice(isSingleDay ? dayTotal : totalRevenue),
               icon: Banknote,
-              bg: "bg-emerald-50",
+              bg: "bg-emerald-50 dark:bg-emerald-950/30",
               iconColor: "text-emerald-600",
-              valueColor: "text-emerald-600",
+              valueColor: "text-emerald-600 dark:text-emerald-400",
             },
             {
               label: "Buyurtmalar",
               value: `${isSingleDay ? dayOrderCount : totalOrders} ta`,
               icon: ShoppingCart,
-              bg: "bg-blue-50",
+              bg: "bg-blue-50 dark:bg-blue-950/30",
               iconColor: "text-blue-600",
-              valueColor: "text-blue-600",
+              valueColor: "text-blue-600 dark:text-blue-400",
             },
             {
               label: "O'rtacha buyurtma",
               value: formatPrice(isSingleDay ? (dayOrderCount > 0 ? dayTotal / dayOrderCount : 0) : averageOrder),
               icon: ArrowUpRight,
-              bg: "bg-violet-50",
+              bg: "bg-violet-50 dark:bg-violet-950/30",
               iconColor: "text-violet-600",
-              valueColor: "text-violet-600",
+              valueColor: "text-violet-600 dark:text-violet-400",
             },
           ].map((item, index) => (
             <Card key={index} className="flex items-center gap-4 rounded-2xl border border-border/60 p-4 shadow-sm">
@@ -315,7 +315,7 @@ export default function SalesReport() {
               <div className="h-[220px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={revenueData} barGap={2} barCategoryGap="25%">
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(222,12%,91%)" vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis
                       dataKey="date"
                       tick={{ fontSize: 11, fill: "hsl(222,10%,50%)" }}
@@ -339,10 +339,12 @@ export default function SalesReport() {
                       formatter={(value: number) => formatPrice(value)}
                       contentStyle={{
                         background: "hsl(var(--card))",
-                        border: "1px solid hsl(222,12%,90%)",
+                        border: "1px solid hsl(var(--border))",
                         borderRadius: "10px",
                         fontSize: "12px",
+                        color: "hsl(var(--foreground))",
                       }}
+                      wrapperStyle={{ outline: "none" }}
                     />
                     <Bar dataKey="revenue" fill="hsl(32,95%,52%)" name="Daromad" radius={[5, 5, 0, 0]} />
                   </BarChart>
@@ -363,16 +365,16 @@ export default function SalesReport() {
                       <stop offset="95%" stopColor="#0EA5E9" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                     tickLine={false}
                     axisLine={false}
                     interval={Math.max(0, Math.floor(revenueData.length / 6))}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) =>
@@ -386,10 +388,11 @@ export default function SalesReport() {
                   <Tooltip
                     formatter={(value: number) => formatPrice(value)}
                     contentStyle={{
-                      background: "#fff",
-                      border: "1px solid hsl(214,32%,91%)",
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
                       borderRadius: 10,
                       fontSize: 12,
+                      color: "hsl(var(--foreground))",
                     }}
                   />
                   <Area
@@ -412,7 +415,7 @@ export default function SalesReport() {
       {isSingleDay && (
         <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm">
           <div className="flex items-center gap-3 border-b border-border/60 px-4 py-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/30">
               <Home className="h-3.5 w-3.5 text-emerald-600" />
             </div>
             <div>
@@ -452,10 +455,10 @@ export default function SalesReport() {
                     <div
                       className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
                         index === 0
-                          ? "bg-amber-100 text-amber-700"
+                          ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
                           : index === 1
-                            ? "bg-slate-100 text-slate-600"
-                            : "bg-emerald-50 text-emerald-600"
+                            ? "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                            : "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
                       }`}
                     >
                       {index + 1}
@@ -508,11 +511,13 @@ export default function SalesReport() {
                   <Tooltip
                     formatter={(value: number) => formatPrice(value)}
                     contentStyle={{
-                      background: "#fff",
-                      border: "1px solid hsl(214,32%,91%)",
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
                       borderRadius: 10,
                       fontSize: 12,
+                      color: "hsl(var(--foreground))",
                     }}
+                    wrapperStyle={{ outline: "none" }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -525,10 +530,10 @@ export default function SalesReport() {
             <div style={{ height: 220 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={roomStats.slice(0, 8)} layout="vertical" margin={{ top: 0, right: 10, bottom: 0, left: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,32%,91%)" horizontal={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
                   <XAxis
                     type="number"
-                    tick={{ fontSize: 10, fill: "#64748b" }}
+                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) =>
@@ -542,7 +547,7 @@ export default function SalesReport() {
                   <YAxis
                     type="category"
                     dataKey="name"
-                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                     tickLine={false}
                     axisLine={false}
                     width={55}
@@ -550,10 +555,11 @@ export default function SalesReport() {
                   <Tooltip
                     formatter={(value: number) => formatPrice(value)}
                     contentStyle={{
-                      background: "#fff",
-                      border: "1px solid hsl(214,32%,91%)",
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
                       borderRadius: 10,
                       fontSize: 12,
+                      color: "hsl(var(--foreground))",
                     }}
                   />
                   <Bar dataKey="sum" fill="#0EA5E9" radius={[0, 6, 6, 0]} name="Daromad" />
