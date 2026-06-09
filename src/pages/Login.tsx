@@ -28,7 +28,7 @@ export default function Login() {
     setError('');
     setLoading(true);
 
-    const result = await login(phone, pass);
+    const result = await login(phone, password);
 
     setLoading(false);
 
@@ -386,16 +386,16 @@ export default function Login() {
                 </div>
                 <input
                   className="input-field"
-                  type={show ? 'text' : 'password'}
+                  type={showPassword ? 'text' : 'password'}
                   name="password"
                   autoComplete="new-password"
                   autoCorrect="off"
                   autoCapitalize="none"
                   spellCheck={false}
                   placeholder="********"
-                  value={pass}
+                  value={password}
                   required
-                  onChange={(event) => setPass(event.target.value)}
+                  onChange={(event) => setPassword(event.target.value)}
                   style={{
                     flex: 1,
                     background: 'none',
@@ -408,7 +408,7 @@ export default function Login() {
                 />
                 <button
                   type="button"
-                  onClick={() => setShow(!show)}
+                  onClick={() => setShowPassword(!showPassword)}
                   style={{
                     background: 'none',
                     border: 'none',
@@ -418,7 +418,7 @@ export default function Login() {
                     display: 'flex',
                   }}
                 >
-                  {show ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
