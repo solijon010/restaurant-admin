@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
     Loader2, Search, MoreVertical, Eye, X, Trash2,
-    Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart,
+    Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart, Settings2,
 } from 'lucide-react';
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { extractArray } from '@/lib/api-response';
 import { formatPrice } from '@/lib/display';
 import { filterOrdersByDate, getFilterBounds, getOrderDateKey, todayStr } from '@/lib/order-analytics';
-import { BIRD_REPORT_GROUPS, buildMenuGroupStats, isTrackedMenuProduct, MenuCategoryRecord, SHASHLIK_REPORT_GROUPS } from '@/lib/menu-report';
+import { BIRD_REPORT_GROUPS, buildMenuGroupStats, buildSuggestedMenuAssignments, isTrackedMenuProduct, MenuCategoryRecord, MenuGroupAssignments, MenuReportGroup, SHASHLIK_REPORT_GROUPS } from '@/lib/menu-report';
 import { BranchOrder, deleteOrder, getAllBranchOrders, getOrderTotal } from '@/lib/orders';
 import { Card } from '@/components/ui/card';
 import { categoryService } from '@/services/categoryService';
@@ -504,7 +504,7 @@ export default function ManagerOrders() {
                                         <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{duration(o.createdAt, o.endAt)}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="font-semibold text-sm">{formatPrice(getOrderTotal(o))}</span>
+                                        <span className="font-semibold text-sm">{formatPrice(Math.round(getOrderTotal(o) * 1.08))}</span>
                                         <div className="flex gap-1">
                                             <Button variant="ghost" size="sm" onClick={() => setDetailOrder(o)}>
                                                 <Eye className="h-4 w-4 mr-1" /> Ko'rish
@@ -566,7 +566,7 @@ export default function ManagerOrders() {
                                                         )}
                                                     </div>
 
-                                            <span className="font-bold text-xs lg:text-sm">{formatPrice(getOrderTotal(o))}</span>
+                                            <span className="font-bold text-xs lg:text-sm">{formatPrice(Math.round(getOrderTotal(o) * 1.08))}</span>
 
                                             <div><StatusBadge status={o.status} /></div>
 
@@ -709,7 +709,7 @@ export default function ManagerOrders() {
                                         <Bird className="h-3.5 w-3.5" />{qoOrderTotal} ta zakaz
                                     </span>
                                     <span className="text-sm font-semibold text-foreground bg-yellow-50 dark:!bg-emerald-950/40 border border-yellow-200 dark:!border-emerald-800 px-3 py-1.5 rounded-full">
-                                        {qoQuantity} ta porsiya
+                                        {qoQuantity} kg
                                     </span>
                                     <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-1.5 rounded-full">
                                         {formatPrice(qoSum)}
@@ -737,7 +737,7 @@ export default function ManagerOrders() {
                                                     {item.orderCount} ta zakaz
                                                 </span>
                                                 <span className="text-sm font-semibold text-foreground bg-muted/60 px-3 py-0.5 rounded-full">
-                                                    {item.quantity} ta porsiya
+                                                    {item.quantity} kg
                                                 </span>
                                                 <span className="text-sm font-semibold text-muted-foreground">
                                                     {item.sum > 0 ? formatPrice(item.sum) : '—'}
@@ -756,7 +756,7 @@ export default function ManagerOrders() {
                                                     <TableRow className="bg-muted/10 hover:bg-muted/10">
                                                         <TableHead className="text-xs font-semibold pl-5">Stol / Xona</TableHead>
                                                         <TableHead className="text-xs font-semibold">Zakaz</TableHead>
-                                                        <TableHead className="text-xs font-semibold">Porsiya</TableHead>
+                                                        <TableHead className="text-xs font-semibold">Miqdor (kg)</TableHead>
                                                         <TableHead className="text-xs font-semibold text-right pr-5">Summa</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
@@ -769,7 +769,7 @@ export default function ManagerOrders() {
                                                                     {row.orderCount} ta
                                                                 </span>
                                                             </TableCell>
-                                                            <TableCell className="font-medium">{row.quantity} ta</TableCell>
+                                                            <TableCell className="font-medium">{row.quantity} kg</TableCell>
                                                             <TableCell className="text-right font-semibold pr-5">
                                                                 {formatPrice(row.sum)}
                                                             </TableCell>
@@ -783,7 +783,7 @@ export default function ManagerOrders() {
                                                                     {item.orderCount} ta
                                                                 </span>
                                                             </TableCell>
-                                                            <TableCell>{item.quantity} ta</TableCell>
+                                                            <TableCell>{item.quantity} kg</TableCell>
                                                             <TableCell className="text-right pr-5">{formatPrice(item.sum)}</TableCell>
                                                         </TableRow>
                                                     )}
@@ -945,7 +945,7 @@ export default function ManagerOrders() {
                                 <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between">
                                     <div>
                                         <p className="text-xs text-muted-foreground mb-0.5">Jami summa</p>
-                                        <p className="text-2xl font-black text-emerald-600">{formatPrice(getOrderTotal(detailOrder))}</p>
+                                        <p className="text-2xl font-black text-emerald-600">{formatPrice(Math.round(getOrderTotal(detailOrder) * 1.08))}</p>
                                     </div>
                                     {detailOrder.user && (
                                         <div className="text-right">
