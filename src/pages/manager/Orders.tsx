@@ -3,23 +3,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
-    Loader2, Search, MoreVertical, Eye, X,
-    Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart, Settings2,
+    Loader2, Search, MoreVertical, Eye, X, Trash2,
+    Clock, LogIn, LogOut, Flame, UtensilsCrossed, Bird, ShoppingCart,
 } from 'lucide-react';
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useBranch } from '@/contexts/BranchContext';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { extractArray } from '@/lib/api-response';
 import { formatPrice } from '@/lib/display';
 import { filterOrdersByDate, getFilterBounds, getOrderDateKey, todayStr } from '@/lib/order-analytics';
-import { BIRD_REPORT_GROUPS, buildMenuGroupStats, buildSuggestedMenuAssignments, isTrackedMenuProduct, MenuCategoryRecord, MenuGroupAssignments, MenuReportGroup, SHASHLIK_REPORT_GROUPS } from '@/lib/menu-report';
-import { BranchOrder, getAllBranchOrders, getOrderTotal } from '@/lib/orders';
+import { BIRD_REPORT_GROUPS, buildMenuGroupStats, isTrackedMenuProduct, MenuCategoryRecord, SHASHLIK_REPORT_GROUPS } from '@/lib/menu-report';
+import { BranchOrder, deleteOrder, getAllBranchOrders, getOrderTotal } from '@/lib/orders';
 import { Card } from '@/components/ui/card';
 import { categoryService } from '@/services/categoryService';
 import { ProductRecord, productService } from '@/services/productService';
@@ -196,6 +196,14 @@ function buildAssignmentDraft(products: ProductRecord[], assignments: MenuGroupA
 
 export default function ManagerOrders() {
     const { selectedBranchId } = useBranch();
+    const queryClient = useQueryClient();
+
+    const deleteMutation = useMutation({
+        mutationFn: (orderId: string) => deleteOrder(orderId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['orders', selectedBranchId] });
+        },
+    });
 
     const [search, setSearch]             = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -497,9 +505,14 @@ export default function ManagerOrders() {
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span className="font-semibold text-sm">{formatPrice(getOrderTotal(o))}</span>
-                                        <Button variant="ghost" size="sm" onClick={() => setDetailOrder(o)}>
-                                            <Eye className="h-4 w-4 mr-1" /> Ko'rish
-                                        </Button>
+                                        <div className="flex gap-1">
+                                            <Button variant="ghost" size="sm" onClick={() => setDetailOrder(o)}>
+                                                <Eye className="h-4 w-4 mr-1" /> Ko'rish
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50" onClick={() => deleteMutation.mutate(o.id)} disabled={deleteMutation.isPending}>
+                                                <Trash2 className="h-4 w-4 text-red-400" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </Card>
                             ))}
@@ -557,9 +570,12 @@ export default function ManagerOrders() {
 
                                             <div><StatusBadge status={o.status} /></div>
 
-                                            <div className="flex justify-end">
+                                            <div className="flex justify-end gap-1">
                                                 <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted rounded-full" onClick={() => setDetailOrder(o)}>
                                                     <Eye className="h-4 w-4 text-muted-foreground" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50 rounded-full" onClick={() => deleteMutation.mutate(o.id)} disabled={deleteMutation.isPending}>
+                                                    <Trash2 className="h-4 w-4 text-red-400 hover:text-red-600" />
                                                 </Button>
                                             </div>
                                         </div>
