@@ -181,13 +181,13 @@ export default function ManagerDashboard() {
       </div>
 
       {cardsLoading ? (
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[...Array(4)].map((_, index) => (
-            <div key={index} className="skeleton h-28 rounded-2xl" />
+            <div key={index} className="skeleton h-24 rounded-2xl" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[
             {
               label: "Xodimlar",
@@ -221,7 +221,7 @@ export default function ManagerDashboard() {
                 background: "hsl(var(--card))",
                 borderRadius: 16,
                 border: "1px solid hsl(var(--border))",
-                padding: "20px",
+                padding: "14px",
                 position: "relative",
                 overflow: "hidden",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
@@ -251,7 +251,7 @@ export default function ManagerDashboard() {
               </div>
               <p
                 style={{
-                  fontSize: 26,
+                  fontSize: 22,
                   fontWeight: 800,
                   color: "hsl(var(--foreground))",
                   margin: 0,
@@ -313,7 +313,7 @@ export default function ManagerDashboard() {
             <p className="text-sm">Bu kunda yakunlangan buyurtma yo&apos;q</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2 p-3 lg:grid-cols-3">
             {roomStats.map((room, index) => (
               <div
                 key={room.name}

@@ -116,6 +116,8 @@ function RoomBreakdown({ roomStats, totalKpi, orders }: {
 
   return (
     <>
+      <div className="overflow-x-auto">
+      <div className="min-w-[400px]">
       <div className="mb-3 grid grid-cols-4 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         <span>Xona / Stol</span>
         <span className="text-center">Buyurtma</span>
@@ -130,7 +132,7 @@ function RoomBreakdown({ roomStats, totalKpi, orders }: {
             <div
               key={room.name}
               onClick={() => setSelectedRoom(room.name)}
-              className="grid cursor-pointer grid-cols-4 items-center rounded-xl border border-border/50 bg-background px-4 py-3 shadow-sm transition-all duration-200 hover:border-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/30 dark:hover:border-emerald-700 hover:shadow-md"
+              className="grid cursor-pointer grid-cols-4 items-center rounded-xl border border-border/50 bg-background px-3 py-2.5 shadow-sm transition-all duration-200 hover:border-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/30 dark:hover:border-emerald-700 hover:shadow-md"
             >
               <div className="flex items-center gap-2">
                 <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" />
@@ -152,7 +154,7 @@ function RoomBreakdown({ roomStats, totalKpi, orders }: {
         })}
       </div>
 
-      <div className="mt-3 grid grid-cols-4 items-center rounded-xl border border-border/40 bg-muted/40 px-4 py-3">
+      <div className="mt-3 grid grid-cols-4 items-center rounded-xl border border-border/40 bg-muted/40 px-3 py-2.5">
         <span className="text-sm font-bold text-muted-foreground">Jami</span>
         <div className="flex justify-center">
           <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white">{totalOrders} ta</span>
@@ -163,6 +165,8 @@ function RoomBreakdown({ roomStats, totalKpi, orders }: {
         <div className="flex justify-end">
           <span className="text-sm font-bold text-amber-600">{formatPrice(totalKpi)}</span>
         </div>
+      </div>
+      </div>
       </div>
 
       <Dialog open={!!selectedRoom} onOpenChange={() => setSelectedRoom(null)}>
@@ -185,7 +189,7 @@ function RoomBreakdown({ roomStats, totalKpi, orders }: {
                   <p className="py-4 text-center text-base text-muted-foreground">Mahsulot topilmadi</p>
                 ) : (
                   <>
-                    <div className="grid grid-cols-4 border-b px-4 pb-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <div className="grid grid-cols-4 border-b px-3 pb-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                       <span>Mahsulot</span>
                       <span className="text-center">Miqdor</span>
                       <span className="text-right">Summa</span>
@@ -197,7 +201,7 @@ function RoomBreakdown({ roomStats, totalKpi, orders }: {
                       return (
                         <div
                           key={product.name}
-                          className="grid grid-cols-4 items-center rounded-xl border border-border/40 bg-muted/20 px-4 py-3.5"
+                          className="grid grid-cols-4 items-center rounded-xl border border-border/40 bg-muted/20 px-3 py-3"
                         >
                           <span className="text-base font-semibold">{product.name}</span>
                           <div className="flex justify-center">
@@ -415,9 +419,9 @@ export default function Finance() {
       )}
 
       <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm">
-        <div className="m-3 space-y-3 rounded-2xl bg-muted/40 p-3">
+        <div className="m-2 sm:m-3 space-y-2 sm:space-y-3 rounded-2xl bg-muted/40 p-2 sm:p-3">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="relative w-52">
+            <div className="relative w-full sm:w-44">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Ofitsiant qidirish..."
